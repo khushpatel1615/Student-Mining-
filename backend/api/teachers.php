@@ -80,15 +80,38 @@ function handleGet($pdo, $userId, $userRole)
     } else {
         // List all teachers
         $stmt = $pdo->query("
-            SELECT u.id, u.full_name, u.email, u.avatar_url, u.created_at,
-                   COUNT(ts.id) as subject_count
+            SELECT u.id, u.full_name, u.email, u.avatar_url, u.created_at
             FROM users u
-            LEFT JOIN teacher_subjects ts ON u.id = ts.teacher_id
             WHERE u.role = 'teacher'
-            GROUP BY u.id
             ORDER BY u.full_name
         ");
         $teachers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if (!empty($teachers)) {
+            $teacherIds = array_column($teachers, 'id');
+            $placeholders = str_repeat('?,', count($teacherIds) - 1) . '?';
+
+            $sql = "SELECT ts.teacher_id, s.id, s.name, s.code, s.semester, s.credits, p.name as program_name, ts.assigned_at
+                    FROM teacher_subjects ts
+                    JOIN subjects s ON ts.subject_id = s.id
+                    JOIN programs p ON s.program_id = p.id
+                    WHERE ts.teacher_id IN ($placeholders)
+                    ORDER BY p.name, s.semester, s.name";
+
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($teacherIds);
+            $allAssignments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $assignmentsMap = [];
+            foreach ($allAssignments as $assign) {
+                $assignmentsMap[$assign['teacher_id']][] = $assign;
+            }
+
+            foreach ($teachers as &$teacher) {
+                $teacher['assigned_subjects'] = $assignmentsMap[$teacher['id']] ?? [];
+                $teacher['subject_count'] = count($teacher['assigned_subjects']);
+            }
+        }
 
         echo json_encode(['success' => true, 'data' => $teachers]);
     }

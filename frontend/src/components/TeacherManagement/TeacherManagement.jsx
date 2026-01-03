@@ -82,17 +82,7 @@ function TeacherManagement() {
             })
             const data = await response.json()
             if (data.success) {
-                // Fetch detailed info for each teacher
-                const detailedTeachers = await Promise.all(
-                    data.data.map(async (teacher) => {
-                        const detailRes = await fetch(`${API_BASE}/teachers.php?id=${teacher.id}`, {
-                            headers: { 'Authorization': `Bearer ${token}` }
-                        })
-                        const detailData = await detailRes.json()
-                        return detailData.success ? detailData.data : teacher
-                    })
-                )
-                setTeachers(detailedTeachers)
+                setTeachers(data.data)
             } else {
                 setError(data.error || 'Failed to load teachers')
             }

@@ -70,24 +70,9 @@ function handleGet($pdo, $userId, $userRole)
         $announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // Fetch attachments
-        if (!empty($announcements)) {
-            $ids = array_column($announcements, 'id');
-            $placeholders = str_repeat('?,', count($ids) - 1) . '?';
-            $stmtAtt = $pdo->prepare("SELECT * FROM announcement_attachments WHERE announcement_id IN ($placeholders)");
-            $stmtAtt->execute($ids);
-            $allAttachments = $stmtAtt->fetchAll(PDO::FETCH_ASSOC);
-
-            $attachmentsMap = [];
-            foreach ($allAttachments as $att) {
-                $attachmentsMap[$att['announcement_id']][] = $att;
-            }
-
-            foreach ($announcements as &$ann) {
-                $ann['attachments'] = $attachmentsMap[$ann['id']] ?? [];
-                // Backward compatibility
-                $ann['attachment_url'] = !empty($ann['attachments']) ? $ann['attachments'][0]['file_path'] : null;
-            }
-        }
+        attachAttachments($pdo, $announcements);
+        attachAttachments($pdo, $announcements);
+        attachAttachments($pdo, $announcements);
 
         echo json_encode(['success' => true, 'data' => $announcements]);
 
@@ -427,28 +412,6 @@ function handlePut($pdo, $userId, $userRole)
     $stmt = $pdo->prepare("UPDATE announcements SET " . implode(", ", $updates) . " WHERE id = ?");
     $stmt->execute($params);
 
-    // Handle File Additions during Edit
-    // Note: PUT requests in PHP don't parse $_FILES automatically if multipart/form-data is used with PUT.
-    // Clients usually send POST with _method=PUT or just POST for updates if files involved.
-    // However, assuming we might receive files here if the client uses a workaround or if we change client to POST for updates.
-    // Given the task, let's assume standard PHP limitations and check if we need to handle $_FILES.
-    // If the client sends POST with action=update or similar, it works. But this is a REST API using PUT method.
-    // PHP workaround: Parse input manually or rely on the fact that for simple text edits we use PUT (JSON), but for file additions we might need POST.
-    // BUT the prompt asks for it. I will add the logic assuming the server/client handles the method or we parse it.
-    // ACTUALLY, simpler: Update TeacherDashboard to use POST for edits if files are present? Or standard workaround.
-    // For now, I'll add the file processing logic here. If $_FILES is empty on PUT, it won't hurt.
-
-    // ... Actually, standard PHP `$_FILES` is empty on PUT. 
-    // I will recommend the frontend to use POST for updates with files.
-    // But let's add the logic here in case we switch method.
-
-    // To properly support files in "Edit", the frontend usually needs to send a POST request.
-    // I'll update the logic here to look for files in case; 
-
-    // ... Wait, I can't access $_FILES in PUT. 
-    // I will instruct the frontend to use POST for update if files are new.
-    // Or I'll just check `$_FILES` here.
-
     /* 
        Refactored Logic: Use the same helper as POST if possible, but for now duplicate for safety 
        since scope is inside function.
@@ -535,4 +498,28 @@ function handleDelete($pdo, $userId, $userRole)
     $stmt->execute([$announcementId]);
 
     echo json_encode(['success' => true, 'message' => 'Announcement deleted successfully']);
+}
+
+function attachAttachments($pdo, &$announcements)
+{
+    if (empty($announcements)) {
+        return;
+    }
+
+    $ids = array_column($announcements, 'id');
+    $placeholders = str_repeat('?,', count($ids) - 1) . '?';
+    $stmtAtt = $pdo->prepare("SELECT * FROM announcement_attachments WHERE announcement_id IN ($placeholders)");
+    $stmtAtt->execute($ids);
+    $allAttachments = $stmtAtt->fetchAll(PDO::FETCH_ASSOC);
+
+    $attachmentsMap = [];
+    foreach ($allAttachments as $att) {
+        $attachmentsMap[$att['announcement_id']][] = $att;
+    }
+
+    foreach ($announcements as &$ann) {
+        $ann['attachments'] = $attachmentsMap[$ann['id']] ?? [];
+        // Backward compatibility
+        $ann['attachment_url'] = !empty($ann['attachments']) ? $ann['attachments'][0]['file_path'] : null;
+    }
 }

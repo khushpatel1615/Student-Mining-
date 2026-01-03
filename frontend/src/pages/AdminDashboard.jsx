@@ -9,7 +9,7 @@ import EnrollmentManagement from '../components/EnrollmentManagement/EnrollmentM
 import GradeManagement from '../components/GradeManagement/GradeManagement'
 import AttendanceManagement from '../components/AttendanceManagement/AttendanceManagement'
 import TeacherManagement from '../components/TeacherManagement/TeacherManagement'
-import './Dashboard.css'
+import './AdminDashboard.css'
 
 // Icons
 const DataIcon = () => (
@@ -232,7 +232,7 @@ function AdminDashboard() {
                 onConfirm={confirmLogout}
                 onCancel={() => setShowLogoutModal(false)}
             />
-            <div className="dashboard">
+            <div className={`admin-dashboard-page dashboard ${theme}`}>
                 {/* Navigation */}
                 <nav className="dashboard-nav">
                     <div className="dashboard-nav-brand">

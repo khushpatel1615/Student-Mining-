@@ -213,7 +213,7 @@ function TeacherDashboard() {
     }
 
     return (
-        <div className={`teacher-dashboard ${theme}`}>
+        <div className={`teacher-dashboard-page teacher-dashboard ${theme}`}>
             {/* Header */}
             <header className="teacher-header">
                 <h1>
