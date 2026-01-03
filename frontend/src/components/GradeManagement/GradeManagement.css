@@ -1,0 +1,198 @@
+/* ============================================
+   Grade Management Styles
+   ============================================ */
+
+.grade-management {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.grade-management-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.grade-management-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.grade-filters {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+}
+
+/* Messages */
+.message {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+}
+
+.message.error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid var(--error);
+    color: var(--error);
+}
+
+.message.success {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid #10b981;
+    color: #10b981;
+}
+
+/* Grades Table */
+.grades-table-container {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.grades-table-wrapper {
+    overflow-x: auto;
+}
+
+.grades-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+.grades-table th,
+.grades-table td {
+    padding: 0.75rem 1rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.grades-table th {
+    background: var(--bg-tertiary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-tertiary);
+}
+
+.grades-table th.sticky-col,
+.grades-table td.sticky-col {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: var(--bg-secondary);
+    text-align: left;
+    min-width: 200px;
+}
+
+.grades-table th.sticky-col {
+    background: var(--bg-tertiary);
+}
+
+.grades-table tbody tr {
+    transition: background var(--transition-fast);
+}
+
+.grades-table tbody tr:hover {
+    background: var(--bg-tertiary);
+}
+
+.grades-table tbody tr:hover td.sticky-col {
+    background: var(--bg-tertiary);
+}
+
+.grades-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Criteria Header */
+.criteria-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.criteria-header small {
+    font-weight: 400;
+    color: var(--text-tertiary);
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+/* Grade Input */
+.grade-input {
+    width: 60px;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    text-align: center;
+    transition: all var(--transition-fast);
+}
+
+.grade-input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+}
+
+.grade-input::placeholder {
+    color: var(--text-tertiary);
+}
+
+/* Hide number spinner */
+.grade-input::-webkit-outer-spin-button,
+.grade-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.grade-input[type=number] {
+    -moz-appearance: textfield;
+}
+
+/* Total and Percentage */
+.total-marks {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.percentage {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.percentage.pass {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.percentage.fail {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .grade-management-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .grade-filters {
+        flex-direction: column;
+    }
+}

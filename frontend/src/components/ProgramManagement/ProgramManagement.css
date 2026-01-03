@@ -1,0 +1,130 @@
+/* ============================================
+   Program Management Styles
+   ============================================ */
+
+.program-management {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Header with actions */
+.program-management-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.program-management-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Programs Table */
+.programs-table-container {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.programs-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.programs-table th,
+.programs-table td {
+    padding: 1rem 1.25rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.programs-table th {
+    background: var(--bg-tertiary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-tertiary);
+}
+
+.programs-table tbody tr {
+    transition: background var(--transition-fast);
+}
+
+.programs-table tbody tr:hover {
+    background: var(--bg-tertiary);
+}
+
+.programs-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Program Info */
+.program-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.program-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.program-description {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Code Badge */
+.code-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    background: rgba(99, 102, 241, 0.1);
+    color: #6366f1;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: monospace;
+}
+
+/* Stats */
+.program-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.program-stats span {
+    color: var(--text-secondary);
+}
+
+.program-stats strong {
+    color: var(--text-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .program-management-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .programs-table-container {
+        overflow-x: auto;
+    }
+
+    .programs-table {
+        min-width: 600px;
+    }
+}

@@ -1,0 +1,28 @@
+# Enable CORS for all API endpoints
+<IfModule mod_headers.c>
+    # Handle preflight OPTIONS requests
+    Header always set Access-Control-Allow-Origin "http://localhost:5173"
+    Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+    Header always set Access-Control-Allow-Credentials "true"
+    Header always set Access-Control-Max-Age "86400"
+    
+    # Return 204 for OPTIONS requests
+    RewriteEngine On
+    RewriteCond %{REQUEST_METHOD} OPTIONS
+    RewriteRule ^(.*)$ $1 [R=204,L]
+</IfModule>
+
+# Ensure JSON responses are properly handled
+<IfModule mod_mime.c>
+    AddType application/json .json
+</IfModule>
+
+# Enable error logging
+php_flag display_errors Off
+php_flag log_errors On
+
+# Pass Authorization header to PHP
+RewriteEngine On
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]

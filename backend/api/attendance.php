@@ -1,0 +1,388 @@
+<?php
+/**
+ * Student Attendance API
+ * Handles attendance tracking for enrolled subjects
+ */
+
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/jwt.php';
+require_once __DIR__ . '/../includes/notifications.php';
+
+setCORSHeaders();
+
+$method = $_SERVER['REQUEST_METHOD'];
+$pdo = getDBConnection();
+
+try {
+    switch ($method) {
+        case 'GET':
+            handleGet($pdo);
+            break;
+        case 'POST':
+            handlePost($pdo);
+            break;
+        case 'PUT':
+            handlePut($pdo);
+            break;
+        default:
+            http_response_code(405);
+            echo json_encode(['error' => 'Method not allowed']);
+    }
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['error' => $e->getMessage()]);
+}
+
+/**
+ * GET - Get attendance records
+ */
+function handleGet($pdo)
+{
+    $user = getAuthUser();
+    if (!$user) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Unauthorized']);
+        return;
+    }
+
+    $userId = $_GET['user_id'] ?? $user['sub'];
+    $enrollmentId = $_GET['enrollment_id'] ?? null;
+    $subjectId = $_GET['subject_id'] ?? null;
+    $month = $_GET['month'] ?? null; // Format: YYYY-MM
+
+    // If not admin, can only view own attendance
+    if ($user['role'] !== 'admin' && $userId != $user['sub']) {
+        http_response_code(403);
+        echo json_encode(['error' => 'Access denied']);
+        return;
+    }
+
+    if ($enrollmentId) {
+        // Get attendance for specific enrollment
+        $sql = "
+            SELECT 
+                sa.id,
+                sa.attendance_date,
+                sa.status,
+                sa.remarks,
+                DATE_FORMAT(sa.attendance_date, '%W') as day_name
+            FROM student_attendance sa
+            WHERE sa.enrollment_id = ?
+        ";
+        $params = [$enrollmentId];
+
+        if ($month) {
+            $sql .= " AND DATE_FORMAT(sa.attendance_date, '%Y-%m') = ?";
+            $params[] = $month;
+        }
+
+        $sql .= " ORDER BY sa.attendance_date DESC";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Calculate summary
+        $summary = [
+            'total' => count($records),
+            'present' => 0,
+            'absent' => 0,
+            'late' => 0,
+            'excused' => 0,
+            'percentage' => 0
+        ];
+
+        foreach ($records as $record) {
+            $summary[$record['status']]++;
+        }
+
+        if ($summary['total'] > 0) {
+            $summary['percentage'] = round(
+                (($summary['present'] + $summary['late']) / $summary['total']) * 100,
+                2
+            );
+        }
+
+        echo json_encode([
+            'success' => true,
+            'data' => [
+                'records' => $records,
+                'summary' => $summary
+            ]
+        ]);
+
+    } else {
+        // Get attendance summary for all subjects
+        $sql = "
+            SELECT 
+                se.id as enrollment_id,
+                s.id as subject_id,
+                s.name as subject_name,
+                s.code as subject_code,
+                s.semester,
+                COUNT(sa.id) as total_classes,
+                COUNT(CASE WHEN sa.status = 'present' THEN 1 END) as present_count,
+                COUNT(CASE WHEN sa.status = 'absent' THEN 1 END) as absent_count,
+                COUNT(CASE WHEN sa.status = 'late' THEN 1 END) as late_count,
+                COUNT(CASE WHEN sa.status = 'excused' THEN 1 END) as excused_count,
+                ROUND(
+                    (COUNT(CASE WHEN sa.status IN ('present', 'late') THEN 1 END) * 100.0) / 
+                    NULLIF(COUNT(sa.id), 0), 2
+                ) as attendance_percentage
+            FROM student_enrollments se
+            JOIN subjects s ON se.subject_id = s.id
+            LEFT JOIN student_attendance sa ON se.id = sa.enrollment_id
+            WHERE se.user_id = ?
+        ";
+        $params = [$userId];
+
+        if ($subjectId) {
+            $sql .= " AND s.id = ?";
+            $params[] = $subjectId;
+        }
+
+        $sql .= " GROUP BY se.id, s.id ORDER BY s.semester ASC, s.name ASC";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        echo json_encode(['success' => true, 'data' => $results]);
+    }
+}
+
+/**
+ * POST - Mark attendance (Admin only)
+ */
+function handlePost($pdo)
+{
+    $user = verifyAdminToken();
+    if (!$user) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Unauthorized. Admin access required.']);
+        return;
+    }
+
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    // Single attendance entry
+    if (!empty($data['enrollment_id']) && !empty($data['date'])) {
+        $stmt = $pdo->prepare("
+            INSERT INTO student_attendance (enrollment_id, attendance_date, status, remarks, marked_by)
+            VALUES (?, ?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE status = ?, remarks = ?, marked_by = ?
+        ");
+
+        $status = $data['status'] ?? 'present';
+        $remarks = $data['remarks'] ?? null;
+
+        $stmt->execute([
+            $data['enrollment_id'],
+            $data['date'],
+            $status,
+            $remarks,
+            $user['sub'],
+            $status,
+            $remarks,
+            $user['sub']
+        ]);
+
+        // Notify if absent or late
+        if (in_array($status, ['absent', 'late'])) {
+            // Get user and subject info
+            $infoStmt = $pdo->prepare("
+                SELECT se.user_id, se.subject_id, s.name as subject_name 
+                FROM student_enrollments se 
+                JOIN subjects s ON se.subject_id = s.id 
+                WHERE se.id = ?
+            ");
+            $infoStmt->execute([$data['enrollment_id']]);
+            $info = $infoStmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($info) {
+                $title = $status === 'absent' ? 'Absence Recorded' : 'Late Attendance Recorded';
+                createNotification(
+                    $pdo,
+                    $info['user_id'],
+                    'attendance_warning',
+                    $title,
+                    "You have been marked {$status} for {$info['subject_name']} on {$data['date']}.",
+                    $data['enrollment_id']
+                );
+            }
+        }
+
+        echo json_encode(['success' => true, 'message' => 'Attendance marked']);
+        return;
+    }
+
+    // Bulk attendance for a subject/date
+    if (!empty($data['subject_id']) && !empty($data['date']) && !empty($data['students'])) {
+        $pdo->beginTransaction();
+
+        try {
+            $stmt = $pdo->prepare("
+                INSERT INTO student_attendance (enrollment_id, attendance_date, status, remarks, marked_by)
+                SELECT se.id, ?, ?, ?, ?
+                FROM student_enrollments se
+                WHERE se.user_id = ? AND se.subject_id = ?
+                ON DUPLICATE KEY UPDATE status = ?, remarks = ?, marked_by = ?
+            ");
+
+            $markedCount = 0;
+
+            foreach ($data['students'] as $student) {
+                $status = $student['status'] ?? 'present';
+                $remarks = $student['remarks'] ?? null;
+
+                $stmt->execute([
+                    $data['date'],
+                    $status,
+                    $remarks,
+                    $user['sub'],
+                    $student['user_id'],
+                    $data['subject_id'],
+                    $status,
+                    $remarks,
+                    $user['sub']
+                ]);
+                $markedCount++;
+
+                // Notify if absent or late
+                if (in_array($status, ['absent', 'late'])) {
+                    $title = $status === 'absent' ? 'Absence Recorded' : 'Late Attendance Recorded';
+                    createNotification(
+                        $pdo,
+                        $student['user_id'],
+                        'attendance_warning',
+                        $title,
+                        "You have been marked {$status} for subject ID {$data['subject_id']} on {$data['date']}.",
+                        null
+                    );
+                }
+            }
+
+            $pdo->commit();
+
+            echo json_encode([
+                'success' => true,
+                'message' => "Attendance marked for $markedCount students"
+            ]);
+
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+        return;
+    }
+
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid request format']);
+}
+
+/**
+ * PUT - Update attendance record (Admin only)
+ */
+function handlePut($pdo)
+{
+    $user = verifyAdminToken();
+    if (!$user) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Unauthorized. Admin access required.']);
+        return;
+    }
+
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    if (empty($data['id'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Attendance record ID is required']);
+        return;
+    }
+
+    $fields = [];
+    $params = [];
+
+    if (isset($data['status'])) {
+        $fields[] = 'status = ?';
+        $params[] = $data['status'];
+    }
+    if (isset($data['remarks'])) {
+        $fields[] = 'remarks = ?';
+        $params[] = $data['remarks'];
+    }
+
+    if (empty($fields)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'No fields to update']);
+        return;
+    }
+
+    $fields[] = 'marked_by = ?';
+    $params[] = $user['sub'];
+    $params[] = $data['id'];
+
+    $stmt = $pdo->prepare("UPDATE student_attendance SET " . implode(', ', $fields) . " WHERE id = ?");
+    $stmt->execute($params);
+
+    // Notify if status was updated to absent/late
+    if (isset($data['status']) && in_array($data['status'], ['absent', 'late'])) {
+        // Get enrollment info
+        $infoStmt = $pdo->prepare("
+            SELECT se.user_id, s.name as subject_name 
+            FROM student_attendance sa
+            JOIN student_enrollments se ON sa.enrollment_id = se.id
+            JOIN subjects s ON se.subject_id = s.id 
+            WHERE sa.id = ?
+        ");
+        $infoStmt->execute([$data['id']]);
+        $info = $infoStmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($info) {
+            $title = $data['status'] === 'absent' ? 'Absence Updated' : 'Late Attendance Updated';
+            createNotification(
+                $pdo,
+                $info['user_id'],
+                'attendance_warning',
+                $title,
+                "Your attendance status has been updated to {$data['status']} for {$info['subject_name']}.",
+                null
+            );
+        }
+    }
+
+    echo json_encode(['success' => true, 'message' => 'Attendance updated']);
+}
+
+/**
+ * Helper: Get authenticated user payload
+ */
+function getAuthUser()
+{
+    $headers = getallheaders();
+    $authHeader = $headers['Authorization'] ?? '';
+
+    if (empty($authHeader) || !preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches)) {
+        return null;
+    }
+
+    $result = verifyToken($matches[1]);
+
+    if (!$result['valid']) {
+        return null;
+    }
+
+    return $result['payload'];
+}
+
+/**
+ * Helper: Verify admin token
+ */
+function verifyAdminToken()
+{
+    $user = getAuthUser();
+    if (!$user || $user['role'] !== 'admin') {
+        return null;
+    }
+    return $user;
+}

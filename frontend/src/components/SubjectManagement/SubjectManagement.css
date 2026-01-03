@@ -1,0 +1,305 @@
+/* ============================================
+   Subject Management Styles
+   ============================================ */
+
+.subject-management {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Header with actions */
+.subject-management-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.subject-management-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Filters Row */
+.subject-filters {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+}
+
+/* Subjects Table */
+.subjects-table-container {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.subjects-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.subjects-table th,
+.subjects-table td {
+    padding: 1rem 1.25rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.subjects-table th {
+    background: var(--bg-tertiary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-tertiary);
+}
+
+.subjects-table tbody tr {
+    transition: background var(--transition-fast);
+}
+
+.subjects-table tbody tr:hover {
+    background: var(--bg-tertiary);
+}
+
+.subjects-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Subject Info */
+.subject-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.subject-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.subject-code {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    font-family: monospace;
+}
+
+/* Type Badges */
+.type-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.type-badge.core {
+    background: rgba(99, 102, 241, 0.1);
+    color: #6366f1;
+}
+
+.type-badge.elective {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.type-badge.open {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+/* Semester Badge */
+.semester-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: var(--accent-gradient);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+/* Credits */
+.credits-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.credits-badge strong {
+    color: var(--text-primary);
+}
+
+/* Evaluation Criteria Tags */
+.criteria-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.criteria-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+}
+
+.criteria-tag strong {
+    margin-left: 0.25rem;
+    color: var(--text-primary);
+}
+
+/* Evaluation Editor */
+.evaluation-editor {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+}
+
+.evaluation-editor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.evaluation-editor-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.evaluation-total {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+}
+
+.evaluation-total.valid {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.evaluation-total.invalid {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.evaluation-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.evaluation-row {
+    display: grid;
+    grid-template-columns: 1fr 80px 80px 32px;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.evaluation-row input {
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+}
+
+.evaluation-row input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+}
+
+.btn-remove-row {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    color: var(--error);
+    transition: all var(--transition-fast);
+}
+
+.btn-remove-row:hover {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: var(--error);
+}
+
+.btn-remove-row svg {
+    width: 14px;
+    height: 14px;
+}
+
+.btn-add-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: transparent;
+    border: 1px dashed var(--border-color);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    color: var(--text-tertiary);
+    font-size: 0.875rem;
+    transition: all var(--transition-fast);
+    margin-top: 0.5rem;
+}
+
+.btn-add-row:hover {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+}
+
+.btn-add-row svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .subject-management-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .subject-filters {
+        flex-direction: column;
+    }
+
+    .subjects-table-container {
+        overflow-x: auto;
+    }
+
+    .subjects-table {
+        min-width: 800px;
+    }
+
+    .evaluation-row {
+        grid-template-columns: 1fr;
+    }
+}
