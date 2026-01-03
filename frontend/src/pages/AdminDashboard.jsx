@@ -8,6 +8,7 @@ import SubjectManagement from '../components/SubjectManagement/SubjectManagement
 import EnrollmentManagement from '../components/EnrollmentManagement/EnrollmentManagement'
 import GradeManagement from '../components/GradeManagement/GradeManagement'
 import AttendanceManagement from '../components/AttendanceManagement/AttendanceManagement'
+import TeacherManagement from '../components/TeacherManagement/TeacherManagement'
 import './Dashboard.css'
 
 // Icons
@@ -126,7 +127,8 @@ const TABS = [
     { id: 'subjects', label: 'Subjects', icon: LayersIcon },
     { id: 'enrollments', label: 'Enrollments', icon: ClipboardIcon },
     { id: 'grades', label: 'Grades', icon: AwardIcon },
-    { id: 'attendance', label: 'Attendance', icon: CalendarIcon }
+    { id: 'attendance', label: 'Attendance', icon: CalendarIcon },
+    { id: 'teachers', label: 'Teachers', icon: UsersIcon }
 ]
 
 function AdminDashboard() {
@@ -216,6 +218,8 @@ function AdminDashboard() {
                 return <GradeManagement />
             case 'attendance':
                 return <AttendanceManagement />
+            case 'teachers':
+                return <TeacherManagement />
             default:
                 return <StudentManagement />
         }

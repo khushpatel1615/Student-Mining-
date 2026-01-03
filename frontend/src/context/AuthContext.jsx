@@ -123,11 +123,12 @@ export function AuthProvider({ children }) {
     }
 
     const redirectByRole = (role) => {
-        if (role === 'admin') {
-            navigate('/admin/dashboard')
-        } else {
-            navigate('/student/dashboard')
+        const dashboardMap = {
+            admin: '/admin/dashboard',
+            teacher: '/teacher/dashboard',
+            student: '/student/dashboard'
         }
+        navigate(dashboardMap[role] || '/student/dashboard')
     }
 
     // Set password for users who signed in via Google

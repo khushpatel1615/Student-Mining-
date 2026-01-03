@@ -45,6 +45,21 @@ const InfoIcon = () => (
     </svg>
 )
 
+const MegaphoneIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 11l18-5v12L3 13v-2z" />
+        <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
+    </svg>
+)
+
+const DownloadIcon = (props) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        <polyline points="7 10 12 15 17 10" />
+        <line x1="12" y1="15" x2="12" y2="3" />
+    </svg>
+)
+
 const CheckCircleIcon = () => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
@@ -60,9 +75,10 @@ function SubjectDetailPage() {
     const { token } = useAuth()
     const { theme } = useTheme()
     const [data, setData] = useState(null)
+    const [announcements, setAnnouncements] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
-    const [activeTab, setActiveTab] = useState('grades')
+    const [activeTab, setActiveTab] = useState('announcements')
 
     useEffect(() => {
         const fetchSubjectDetails = async () => {
@@ -87,8 +103,23 @@ function SubjectDetailPage() {
 
         if (subjectId && token) {
             fetchSubjectDetails()
+            fetchAnnouncements()
         }
     }, [subjectId, token])
+
+    const fetchAnnouncements = async () => {
+        try {
+            const response = await fetch(`${API_BASE}/announcements.php?subject_id=${subjectId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            const result = await response.json()
+            if (result.success) {
+                setAnnouncements(result.data || [])
+            }
+        } catch (err) {
+            console.error('Failed to fetch announcements:', err)
+        }
+    }
 
     const getSubjectIcon = (subjectType) => {
         switch (subjectType) {
@@ -196,6 +227,13 @@ function SubjectDetailPage() {
             {/* Navigation Tabs */}
             <nav className="subject-nav">
                 <button
+                    className={`nav-tab ${activeTab === 'announcements' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('announcements')}
+                >
+                    <MegaphoneIcon />
+                    Announcements
+                </button>
+                <button
                     className={`nav-tab ${activeTab === 'grades' ? 'active' : ''}`}
                     onClick={() => setActiveTab('grades')}
                 >
@@ -220,6 +258,72 @@ function SubjectDetailPage() {
 
             {/* Content Area */}
             <main className="subject-content">
+                {activeTab === 'announcements' && (
+                    <div className="announcements-section">
+                        {announcements.length === 0 ? (
+                            <div className="empty-announcements">
+                                <MegaphoneIcon />
+                                <p>No announcements yet for this course.</p>
+                            </div>
+                        ) : (
+                            <div className="announcements-list">
+                                {announcements.map(announcement => (
+                                    <div key={announcement.id} className={`announcement-card ${announcement.is_pinned ? 'pinned' : ''}`}>
+                                        <div className="announcement-header">
+                                            <div className="megaphone-icon">
+                                                <MegaphoneIcon />
+                                            </div>
+                                            <div className="announcement-meta">
+                                                <h4>{announcement.title}</h4>
+                                                <span className="date">
+                                                    {new Date(announcement.created_at).toLocaleDateString('en-US', {
+                                                        weekday: 'long',
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric',
+                                                        hour: 'numeric',
+                                                        minute: '2-digit'
+                                                    })}
+                                                </span>
+                                                <span className="teacher-name">Posted by {announcement.teacher_name}</span>
+                                            </div>
+                                        </div>
+                                        <div className="announcement-content">
+                                            {announcement.content.split('\n').map((para, i) => (
+                                                <p key={i}>{para}</p>
+                                            ))}
+                                            {announcement.attachment_url && (
+                                                <a
+                                                    href={`http://localhost/StudentDataMining/${announcement.attachment_url}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="attachment-link"
+                                                    style={{
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: '0.5rem',
+                                                        marginTop: '1rem',
+                                                        padding: '0.5rem 1rem',
+                                                        background: '#f0f0f0',
+                                                        borderRadius: '8px',
+                                                        textDecoration: 'none',
+                                                        color: 'var(--text-primary)',
+                                                        fontSize: '0.9rem',
+                                                        border: '1px solid #ddd'
+                                                    }}
+                                                >
+                                                    <DownloadIcon width={16} height={16} />
+                                                    Download PDF Attachment
+                                                </a>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 {activeTab === 'grades' && (
                     <div className="grades-section">
                         {/* Final Grade Summary */}

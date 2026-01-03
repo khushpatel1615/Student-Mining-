@@ -4,10 +4,11 @@ import LoginPage from './pages/LoginPage'
 import StudentDashboard from './pages/StudentDashboard'
 import SubjectDetailPage from './pages/SubjectDetailPage'
 import AdminDashboard from './pages/AdminDashboard'
+import TeacherDashboard from './pages/TeacherDashboard'
 import './App.css'
 
 // Protected Route Component
-function ProtectedRoute({ children, allowedRole }) {
+function ProtectedRoute({ children, allowedRoles }) {
     const { user, loading, isAuthenticated } = useAuth()
 
     // Show loading state while checking auth
@@ -25,10 +26,15 @@ function ProtectedRoute({ children, allowedRole }) {
         return <Navigate to="/" replace />
     }
 
-    // Role check
-    if (allowedRole && user.role !== allowedRole) {
+    // Role check - now supports array of allowed roles
+    if (allowedRoles && !allowedRoles.includes(user.role)) {
         // Redirect to their own dashboard
-        return <Navigate to={user.role === 'admin' ? '/admin/dashboard' : '/student/dashboard'} replace />
+        const dashboardMap = {
+            admin: '/admin/dashboard',
+            teacher: '/teacher/dashboard',
+            student: '/student/dashboard'
+        }
+        return <Navigate to={dashboardMap[user.role] || '/student/dashboard'} replace />
     }
 
     return children
@@ -48,7 +54,12 @@ function AuthRoute({ children }) {
     }
 
     if (isAuthenticated) {
-        return <Navigate to={user.role === 'admin' ? '/admin/dashboard' : '/student/dashboard'} replace />
+        const dashboardMap = {
+            admin: '/admin/dashboard',
+            teacher: '/teacher/dashboard',
+            student: '/student/dashboard'
+        }
+        return <Navigate to={dashboardMap[user.role] || '/student/dashboard'} replace />
     }
 
     return children
@@ -71,7 +82,7 @@ function App() {
             <Route
                 path="/student/dashboard"
                 element={
-                    <ProtectedRoute allowedRole="student">
+                    <ProtectedRoute allowedRoles={['student']}>
                         <StudentDashboard />
                     </ProtectedRoute>
                 }
@@ -79,7 +90,7 @@ function App() {
             <Route
                 path="/student/subject/:subjectId"
                 element={
-                    <ProtectedRoute allowedRole="student">
+                    <ProtectedRoute allowedRoles={['student']}>
                         <SubjectDetailPage />
                     </ProtectedRoute>
                 }
@@ -89,8 +100,18 @@ function App() {
             <Route
                 path="/admin/dashboard"
                 element={
-                    <ProtectedRoute allowedRole="admin">
+                    <ProtectedRoute allowedRoles={['admin']}>
                         <AdminDashboard />
+                    </ProtectedRoute>
+                }
+            />
+
+            {/* Teacher Routes */}
+            <Route
+                path="/teacher/dashboard"
+                element={
+                    <ProtectedRoute allowedRoles={['teacher']}>
+                        <TeacherDashboard />
                     </ProtectedRoute>
                 }
             />
