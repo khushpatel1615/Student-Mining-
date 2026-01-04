@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import './TeacherDashboard.css'
+import QuickActionsPanel from '../components/QuickActions/QuickActionsPanel'
+import ActivityFeed from '../components/ActivityFeed/ActivityFeed'
 
 const API_BASE = 'http://localhost/StudentDataMining/backend/api'
 
@@ -63,6 +65,37 @@ function TeacherDashboard() {
     const [formData, setFormData] = useState({ title: '', content: '', is_pinned: false })
     const [file, setFile] = useState(null)
     const [editingId, setEditingId] = useState(null)
+
+    // Mock Teacher Activities
+    const teacherActivities = [
+        {
+            id: 1,
+            type: 'submission',
+            title: 'New Assignment Submission',
+            description: '5 students submitted "Database Project"',
+            timestamp: new Date(Date.now() - 1000 * 60 * 45), // 45 mins ago
+            icon: '📄',
+            isUnread: true
+        },
+        {
+            id: 2,
+            type: 'alert',
+            title: 'Attendance Alert',
+            description: 'Attendance for "Web Dev" is below 80% today',
+            timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3), // 3 hours ago
+            icon: '⚠️',
+            isUnread: true
+        },
+        {
+            id: 3,
+            type: 'system',
+            title: 'System Maintenance',
+            description: 'Scheduled maintenance this weekend',
+            timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
+            icon: '🔧',
+            isUnread: false
+        }
+    ]
 
     useEffect(() => {
         fetchAssignedSubjects()
@@ -389,6 +422,12 @@ function TeacherDashboard() {
                         </div>
                     )}
                 </section>
+
+                {/* Right Sidebar - Quick Actions & Feed */}
+                <aside className="teacher-right-sidebar">
+                    <QuickActionsPanel userRole="teacher" />
+                    <ActivityFeed activities={teacherActivities} />
+                </aside>
             </main>
         </div>
     )

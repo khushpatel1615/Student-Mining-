@@ -1,0 +1,74 @@
+/* Skeleton Card Loading State */
+.skeleton-card {
+    pointer-events: none;
+    user-select: none;
+}
+
+.shimmer {
+    background: linear-gradient(90deg,
+            var(--bg-tertiary) 0%,
+            var(--bg-glass-border) 50%,
+            var(--bg-tertiary) 100%);
+    background-size: 200% 100%;
+    animation: shimmerMove 1.5s infinite;
+}
+
+@keyframes shimmerMove {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.skeleton-content {
+    padding: 1.25rem;
+}
+
+.skeleton-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-lg);
+    margin-bottom: 0.85rem;
+}
+
+.skeleton-header {
+    margin-bottom: 1rem;
+}
+
+.skeleton-title {
+    height: 20px;
+    width: 70%;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.skeleton-code {
+    height: 14px;
+    width: 40%;
+    border-radius: 4px;
+}
+
+.skeleton-metrics {
+    display: flex;
+    gap: 1rem;
+    margin: 1rem 0;
+    background: var(--bg-tertiary);
+    padding: 0.65rem;
+    border-radius: var(--radius-md);
+}
+
+.skeleton-metric {
+    height: 32px;
+    flex: 1;
+    border-radius: 4px;
+}
+
+.skeleton-progress {
+    height: 8px;
+    width: 100%;
+    border-radius: var(--radius-full);
+    margin-top: 0.5rem;
+}

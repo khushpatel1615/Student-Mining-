@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import LogoutModal from '../components/LogoutModal/LogoutModal'
@@ -9,6 +10,8 @@ import EnrollmentManagement from '../components/EnrollmentManagement/EnrollmentM
 import GradeManagement from '../components/GradeManagement/GradeManagement'
 import AttendanceManagement from '../components/AttendanceManagement/AttendanceManagement'
 import TeacherManagement from '../components/TeacherManagement/TeacherManagement'
+import QuickActionsPanel from '../components/QuickActions/QuickActionsPanel'
+import ActivityFeed from '../components/ActivityFeed/ActivityFeed'
 import './AdminDashboard.css'
 
 // Icons
@@ -135,7 +138,9 @@ function AdminDashboard() {
     const { user, token, logout } = useAuth()
     const { theme, toggleTheme } = useTheme()
     const [showLogoutModal, setShowLogoutModal] = useState(false)
-    const [activeTab, setActiveTab] = useState('students')
+    const [searchParams, setSearchParams] = useSearchParams()
+    const activeTab = searchParams.get('tab') || 'students'
+    const setActiveTab = (tab) => setSearchParams({ tab })
 
     // Dashboard stats
     const [stats, setStats] = useState({
@@ -144,6 +149,37 @@ function AdminDashboard() {
         atRiskCount: 0,
         engagementRate: 0
     })
+
+    // Mock Admin Activities
+    const adminActivities = [
+        {
+            id: 1,
+            type: 'system',
+            title: 'System Backup',
+            description: 'Daily database backup completion',
+            timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5), // 5 hours ago
+            icon: '💾',
+            isUnread: false
+        },
+        {
+            id: 2,
+            type: 'alert',
+            title: 'Security Alert',
+            description: 'Multiple failed login attempts detected',
+            timestamp: new Date(Date.now() - 1000 * 60 * 60 * 12), // 12 hours ago
+            icon: '🛡️',
+            isUnread: true
+        },
+        {
+            id: 3,
+            type: 'submission',
+            title: 'New User Registration',
+            description: 'Teacher "Sarah Jones" added to system',
+            timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
+            icon: '👤',
+            isUnread: false
+        }
+    ]
 
     // Fetch dashboard statistics
     const fetchStats = useCallback(async () => {
@@ -267,82 +303,90 @@ function AdminDashboard() {
                     </div>
                 </nav>
 
-                {/* Main Content */}
-                <main className="dashboard-main">
-                    {/* Welcome Section */}
-                    <section className="dashboard-welcome">
-                        <h1>{getGreeting()}, {user?.full_name?.split(' ')[0]}! 🎯</h1>
-                        <p>Welcome to the administration dashboard. Monitor and manage student performance.</p>
-                    </section>
+                {/* Main Content Layout */}
+                <div className="dashboard-layout">
+                    <main className="dashboard-main-content">
+                        {/* Welcome Section */}
+                        <section className="dashboard-welcome">
+                            <h1>{getGreeting()}, {user?.full_name?.split(' ')[0]}! 🎯</h1>
+                            <p>Welcome to the administration dashboard. Monitor and manage student performance.</p>
+                        </section>
 
-                    {/* Stats Cards - Now with real data */}
-                    <section className="dashboard-stats">
-                        <div className="stat-card" style={{ animationDelay: '0.1s' }}>
-                            <div className="stat-card-header">
-                                <div className="stat-card-icon" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
-                                    <UsersIcon />
+                        {/* Stats Cards - Now with real data */}
+                        <section className="dashboard-stats">
+                            <div className="stat-card" style={{ animationDelay: '0.1s' }}>
+                                <div className="stat-card-header">
+                                    <div className="stat-card-icon" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
+                                        <UsersIcon />
+                                    </div>
+                                </div>
+                                <div className="stat-card-value">{stats.totalStudents}</div>
+                                <div className="stat-card-label">Total Students</div>
+                            </div>
+
+                            <div className="stat-card" style={{ animationDelay: '0.2s' }}>
+                                <div className="stat-card-header">
+                                    <div className="stat-card-icon" style={{ background: 'linear-gradient(135deg, #10b981, #34d399)' }}>
+                                        <ChartIcon />
+                                    </div>
+                                </div>
+                                <div className="stat-card-value">{stats.classAverage}%</div>
+                                <div className="stat-card-label">Class Average</div>
+                            </div>
+
+                            <div className="stat-card" style={{ animationDelay: '0.3s' }}>
+                                <div className="stat-card-header">
+                                    <div className="stat-card-icon" style={{ background: 'linear-gradient(135deg, #ef4444, #f87171)' }}>
+                                        <AlertIcon />
+                                    </div>
+                                </div>
+                                <div className="stat-card-value">{stats.atRiskCount}</div>
+                                <div className="stat-card-label">At-Risk Students</div>
+                            </div>
+
+                            <div className="stat-card" style={{ animationDelay: '0.4s' }}>
+                                <div className="stat-card-header">
+                                    <div className="stat-card-icon" style={{ background: 'linear-gradient(135deg, #3b82f6, #60a5fa)' }}>
+                                        <ActivityIcon />
+                                    </div>
+                                </div>
+                                <div className="stat-card-value">{stats.engagementRate}%</div>
+                                <div className="stat-card-label">Engagement Rate</div>
+                            </div>
+                        </section>
+
+                        {/* Tab Navigation */}
+                        <section className="admin-tabs">
+                            <div className="tabs-container">
+                                {TABS.map(tab => (
+                                    <button
+                                        key={tab.id}
+                                        className={`tab-btn ${activeTab === tab.id ? 'active' : ''}`}
+                                        onClick={() => setActiveTab(tab.id)}
+                                    >
+                                        <tab.icon />
+                                        <span>{tab.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </section>
+
+                        {/* Active Tab Content */}
+                        <section className="dashboard-content">
+                            <div className="content-card">
+                                <div className="content-card-body">
+                                    {renderActiveTab()}
                                 </div>
                             </div>
-                            <div className="stat-card-value">{stats.totalStudents}</div>
-                            <div className="stat-card-label">Total Students</div>
-                        </div>
+                        </section>
+                    </main>
 
-                        <div className="stat-card" style={{ animationDelay: '0.2s' }}>
-                            <div className="stat-card-header">
-                                <div className="stat-card-icon" style={{ background: 'linear-gradient(135deg, #10b981, #34d399)' }}>
-                                    <ChartIcon />
-                                </div>
-                            </div>
-                            <div className="stat-card-value">{stats.classAverage}%</div>
-                            <div className="stat-card-label">Class Average</div>
-                        </div>
-
-                        <div className="stat-card" style={{ animationDelay: '0.3s' }}>
-                            <div className="stat-card-header">
-                                <div className="stat-card-icon" style={{ background: 'linear-gradient(135deg, #ef4444, #f87171)' }}>
-                                    <AlertIcon />
-                                </div>
-                            </div>
-                            <div className="stat-card-value">{stats.atRiskCount}</div>
-                            <div className="stat-card-label">At-Risk Students</div>
-                        </div>
-
-                        <div className="stat-card" style={{ animationDelay: '0.4s' }}>
-                            <div className="stat-card-header">
-                                <div className="stat-card-icon" style={{ background: 'linear-gradient(135deg, #3b82f6, #60a5fa)' }}>
-                                    <ActivityIcon />
-                                </div>
-                            </div>
-                            <div className="stat-card-value">{stats.engagementRate}%</div>
-                            <div className="stat-card-label">Engagement Rate</div>
-                        </div>
-                    </section>
-
-                    {/* Tab Navigation */}
-                    <section className="admin-tabs">
-                        <div className="tabs-container">
-                            {TABS.map(tab => (
-                                <button
-                                    key={tab.id}
-                                    className={`tab-btn ${activeTab === tab.id ? 'active' : ''}`}
-                                    onClick={() => setActiveTab(tab.id)}
-                                >
-                                    <tab.icon />
-                                    <span>{tab.label}</span>
-                                </button>
-                            ))}
-                        </div>
-                    </section>
-
-                    {/* Active Tab Content */}
-                    <section className="dashboard-content">
-                        <div className="content-card">
-                            <div className="content-card-body">
-                                {renderActiveTab()}
-                            </div>
-                        </div>
-                    </section>
-                </main>
+                    {/* Right Sidebar */}
+                    <aside className="dashboard-sidebar">
+                        <QuickActionsPanel userRole="admin" />
+                        <ActivityFeed activities={adminActivities} />
+                    </aside>
+                </div>
             </div>
         </>
     )

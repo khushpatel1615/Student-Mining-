@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
 import { useAuth } from './context/AuthContext'
 import LoginPage from './pages/LoginPage'
 import StudentDashboard from './pages/StudentDashboard'
@@ -67,58 +68,89 @@ function AuthRoute({ children }) {
 
 function App() {
     return (
-        <Routes>
-            {/* Public Route - Login */}
-            <Route
-                path="/"
-                element={
-                    <AuthRoute>
-                        <LoginPage />
-                    </AuthRoute>
-                }
+        <>
+            {/* Toast Notifications */}
+            <Toaster
+                position="top-right"
+                toastOptions={{
+                    duration: 3000,
+                    style: {
+                        background: 'var(--bg-glass)',
+                        color: 'var(--text-primary)',
+                        border: '1px solid var(--bg-glass-border)',
+                        backdropFilter: 'blur(20px)',
+                        borderRadius: 'var(--radius-lg)',
+                        boxShadow: 'var(--shadow-xl)',
+                        fontSize: '0.95rem',
+                        fontWeight: '500',
+                    },
+                    success: {
+                        iconTheme: {
+                            primary: '#10b981',
+                            secondary: '#fff',
+                        },
+                    },
+                    error: {
+                        iconTheme: {
+                            primary: '#ef4444',
+                            secondary: '#fff',
+                        },
+                    },
+                }}
             />
+            <Routes>
+                {/* Public Route - Login */}
+                <Route
+                    path="/"
+                    element={
+                        <AuthRoute>
+                            <LoginPage />
+                        </AuthRoute>
+                    }
+                />
 
-            {/* Student Routes */}
-            <Route
-                path="/student/dashboard"
-                element={
-                    <ProtectedRoute allowedRoles={['student']}>
-                        <StudentDashboard />
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/student/subject/:subjectId"
-                element={
-                    <ProtectedRoute allowedRoles={['student']}>
-                        <SubjectDetailPage />
-                    </ProtectedRoute>
-                }
-            />
+                {/* Student Routes */}
+                <Route
+                    path="/student/dashboard"
+                    element={
+                        <ProtectedRoute allowedRoles={['student']}>
+                            <StudentDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/student/subject/:subjectId"
+                    element={
+                        <ProtectedRoute allowedRoles={['student']}>
+                            <SubjectDetailPage />
+                        </ProtectedRoute>
+                    }
+                />
 
-            {/* Admin Routes */}
-            <Route
-                path="/admin/dashboard"
-                element={
-                    <ProtectedRoute allowedRoles={['admin']}>
-                        <AdminDashboard />
-                    </ProtectedRoute>
-                }
-            />
+                {/* Admin Routes */}
+                <Route
+                    path="/admin/dashboard"
+                    element={
+                        <ProtectedRoute allowedRoles={['admin']}>
+                            <AdminDashboard />
+                        </ProtectedRoute>
+                    }
+                />
 
-            {/* Teacher Routes */}
-            <Route
-                path="/teacher/dashboard"
-                element={
-                    <ProtectedRoute allowedRoles={['teacher']}>
-                        <TeacherDashboard />
-                    </ProtectedRoute>
-                }
-            />
+                {/* Teacher Routes */}
+                <Route
+                    path="/teacher/dashboard"
+                    element={
+                        <ProtectedRoute allowedRoles={['teacher']}>
+                            <TeacherDashboard />
+                        </ProtectedRoute>
+                    }
+                />
 
-            {/* Catch-all redirect */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+                {/* Catch-all redirect */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+        </>
     )
 }
 

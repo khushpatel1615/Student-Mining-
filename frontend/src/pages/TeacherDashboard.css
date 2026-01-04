@@ -51,12 +51,21 @@
 /* Main Layout */
 .teacher-dashboard-page .teacher-main {
     display: grid;
-    grid-template-columns: 280px 1fr;
+    grid-template-columns: 280px 1fr 340px;
     gap: 2rem;
     padding: 2rem;
-    max-width: 1400px;
+    max-width: 1600px;
     margin: 0 auto;
     align-items: start;
+}
+
+/* Right Sidebar */
+.teacher-right-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    position: sticky;
+    top: 6rem;
 }
 
 /* Sidebar - Subject List */
@@ -70,6 +79,50 @@
     top: 6rem;
     max-height: calc(100vh - 8rem);
     overflow-y: auto;
+}
+
+/* ... existing styles ... */
+
+/* Responsive */
+@media (max-width: 1280px) {
+    .teacher-dashboard-page .teacher-main {
+        grid-template-columns: 250px 1fr;
+    }
+
+    .teacher-right-sidebar {
+        display: none;
+        /* Hide sidebar or stack it? Stacking better */
+        grid-column: 1 / -1;
+        position: static;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .teacher-right-sidebar>* {
+        flex: 1;
+        min-width: 300px;
+    }
+}
+
+@media (max-width: 900px) {
+    .teacher-dashboard-page .teacher-main {
+        grid-template-columns: 1fr;
+    }
+
+    .teacher-dashboard-page .subjects-sidebar {
+        position: static;
+        max-height: none;
+        margin-bottom: 2rem;
+    }
+
+    .teacher-right-sidebar {
+        flex-direction: column;
+    }
+
+    .teacher-dashboard-page .announcement-content {
+        padding-left: 0;
+        margin-top: 1rem;
+    }
 }
 
 .teacher-dashboard-page .subjects-sidebar h2 {

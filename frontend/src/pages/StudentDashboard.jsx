@@ -1,8 +1,15 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
+import { useCountUp } from '../hooks/useCountUp'
 import LogoutModal from '../components/LogoutModal/LogoutModal'
+import SkeletonCard from '../components/SkeletonCard/SkeletonCard'
+import EmptyState from '../components/EmptyState/EmptyState'
+import PerformanceMetrics from '../components/Charts/PerformanceMetrics'
+import QuickActionsPanel from '../components/QuickActions/QuickActionsPanel'
+import { ActivityFeed } from '../components/ActivityFeed'
 import './Dashboard.css'
 import './StudentDashboard.css'
 
@@ -100,7 +107,9 @@ function StudentDashboard() {
     const { theme, toggleTheme } = useTheme()
     const navigate = useNavigate()
     const [showLogoutModal, setShowLogoutModal] = useState(false)
-    const [activeTab, setActiveTab] = useState('overview')
+    const [searchParams, setSearchParams] = useSearchParams()
+    const activeTab = searchParams.get('tab') || 'overview'
+    const setActiveTab = (tab) => setSearchParams({ tab })
     const [dashboardData, setDashboardData] = useState(null)
     const [loading, setLoading] = useState(true)
     const [refreshing, setRefreshing] = useState(false)
@@ -250,132 +259,160 @@ function StudentDashboard() {
         </div>
     )
 
-    // Academic Summary Cards
-    const SummaryCards = () => (
-        <div className="summary-cards-grid">
-            <div className="summary-card gpa-card">
-                <div className="summary-icon"><ChartIcon /></div>
-                <div className="summary-content">
-                    <span className="summary-label">Current GPA</span>
-                    <span className="summary-value">{dashboardData?.summary?.gpa || '0.00'}</span>
-                    <span className="summary-subtitle">{dashboardData?.summary?.gpa_grade || 'N/A'}</span>
+    // Academic Summary Cards with animated counters
+    const SummaryCards = () => {
+        const gpaValue = useCountUp((dashboardData?.summary?.gpa || 0) * 100, 1500)
+        const attendanceValue = useCountUp(dashboardData?.summary?.overall_attendance || 0, 1200)
+        const subjectsValue = useCountUp(dashboardData?.summary?.subjects_enrolled || 0, 800)
+
+        return (
+            <div className="summary-cards-grid">
+                <div className="summary-card gpa-card">
+                    <div className="summary-icon"><ChartIcon /></div>
+                    <div className="summary-content">
+                        <span className="summary-label">Current GPA</span>
+                        <span className="summary-value count-up">{(gpaValue / 100).toFixed(2)}</span>
+                        <span className="summary-subtitle">{dashboardData?.summary?.gpa_grade || 'N/A'}</span>
+                    </div>
+                </div>
+                <div className="summary-card credits-card">
+                    <div className="summary-icon"><BookIcon /></div>
+                    <div className="summary-content">
+                        <span className="summary-label">Credits</span>
+                        <span className="summary-value">{dashboardData?.summary?.earned_credits || 0} / {dashboardData?.summary?.total_credits || 0}</span>
+                        <span className="summary-subtitle">Earned / Enrolled</span>
+                    </div>
+                </div>
+                <div className={`summary-card attendance-card ${dashboardData?.summary?.attendance_status}`}>
+                    <div className="summary-icon"><CalendarIcon /></div>
+                    <div className="summary-content">
+                        <span className="summary-label">Attendance</span>
+                        <span className="summary-value count-up">{attendanceValue}%</span>
+                        <span className="summary-subtitle">{dashboardData?.summary?.attendance_status === 'good' ? 'On Track' : 'Needs Attention'}</span>
+                    </div>
+                </div>
+                <div className="summary-card subjects-card">
+                    <div className="summary-icon"><ClipboardIcon /></div>
+                    <div className="summary-content">
+                        <span className="summary-label">Subjects</span>
+                        <span className="summary-value count-up">{subjectsValue}</span>
+                        <span className="summary-subtitle">This Semester</span>
+                    </div>
                 </div>
             </div>
-            <div className="summary-card credits-card">
-                <div className="summary-icon"><BookIcon /></div>
-                <div className="summary-content">
-                    <span className="summary-label">Credits</span>
-                    <span className="summary-value">{dashboardData?.summary?.earned_credits || 0} / {dashboardData?.summary?.total_credits || 0}</span>
-                    <span className="summary-subtitle">Earned / Enrolled</span>
-                </div>
-            </div>
-            <div className={`summary-card attendance-card ${dashboardData?.summary?.attendance_status}`}>
-                <div className="summary-icon"><CalendarIcon /></div>
-                <div className="summary-content">
-                    <span className="summary-label">Attendance</span>
-                    <span className="summary-value">{dashboardData?.summary?.overall_attendance || 0}%</span>
-                    <span className="summary-subtitle">{dashboardData?.summary?.attendance_status === 'good' ? 'On Track' : 'Needs Attention'}</span>
-                </div>
-            </div>
-            <div className="summary-card subjects-card">
-                <div className="summary-icon"><ClipboardIcon /></div>
-                <div className="summary-content">
-                    <span className="summary-label">Subjects</span>
-                    <span className="summary-value">{dashboardData?.summary?.subjects_enrolled || 0}</span>
-                    <span className="summary-subtitle">This Semester</span>
-                </div>
-            </div>
+        )
+    }
+
+    // Analytics View
+    const AnalyticsView = () => (
+        <div className="analytics-view">
+            <PerformanceMetrics studentData={dashboardData} />
         </div>
     )
 
     // Overview Tab
     const OverviewView = () => (
-        <div className="overview-view">
-            <div className="overview-fixed-header">
-                <SummaryCards />
+        <div className="overview-layout">
+            <div className="overview-main-content">
+                <div className="overview-fixed-header">
+                    <SummaryCards />
 
-                <div className="section-header">
-                    <h2>{dashboardData?.program?.name} - Semester {dashboardData?.semester}</h2>
-                    <button className="refresh-btn" onClick={handleRefresh} disabled={refreshing}>
-                        <RefreshIcon className={refreshing ? 'spinning' : ''} />
-                        {refreshing ? 'Refreshing...' : 'Refresh'}
-                    </button>
+                    <div className="section-header">
+                        <h2>{dashboardData?.program?.name} - Semester {dashboardData?.semester}</h2>
+                        <button className="refresh-btn" onClick={handleRefresh} disabled={refreshing}>
+                            <RefreshIcon className={refreshing ? 'spinning' : ''} />
+                            {refreshing ? 'Refreshing...' : 'Refresh'}
+                        </button>
+                    </div>
+                </div>
+
+                <div className="scrollable-content">
+                    {loading ? (
+                        <div className="subjects-grid">
+                            {[...Array(6)].map((_, i) => (
+                                <SkeletonCard key={i} />
+                            ))}
+                        </div>
+                    ) : dashboardData?.subjects?.length > 0 ? (
+                        <div className="subjects-grid">
+                            {dashboardData.subjects.map((item, index) => (
+                                <div
+                                    key={index}
+                                    className={`subject-card clickable color-${index % 6}`}
+                                    onClick={() => navigate(`/student/subject/${item.subject.id}`)}
+                                >
+                                    <div className="subject-card-gradient"></div>
+                                    <div className="subject-card-content">
+                                        <div className="subject-card-icon-wrapper">
+                                            <span className="subject-card-icon">
+                                                {item.subject.name.includes('Math') ? '📐' :
+                                                    item.subject.name.includes('Chemistry') ? '🧪' :
+                                                        item.subject.name.includes('Web') ? '🌐' :
+                                                            item.subject.name.includes('Programming') || item.subject.name.includes('Computer') ? '💻' :
+                                                                item.subject.name.includes('Electric') ? '⚡' :
+                                                                    item.subject.subject_type === 'Core' ? '🎯' : '📚'}
+                                            </span>
+                                        </div>
+                                        <div className="subject-card-body">
+                                            <div className="subject-header">
+                                                <div>
+                                                    <h3>{item.subject.name}</h3>
+                                                    <span className="subject-code">{item.subject.code}</span>
+                                                </div>
+                                                <span className={`status-pill ${item.status}`}>
+                                                    {item.status === 'not_enrolled' ? 'Not Enrolled' : item.status}
+                                                </span>
+                                            </div>
+
+                                            <div className="subject-metrics">
+                                                <div className="metric">
+                                                    <span className="label">Credits</span>
+                                                    <span className="value">{item.subject.credits}</span>
+                                                </div>
+                                                <div className="metric">
+                                                    <span className="label">Attendance</span>
+                                                    <span className={`value ${item.attendance?.warning ? 'warning' : 'good'}`}>
+                                                        {item.attendance?.percentage || 0}%
+                                                    </span>
+                                                </div>
+                                                <div className="metric">
+                                                    <span className="label">Grade</span>
+                                                    <span className={`value grade grade-${item.grade_letter || 'none'}`}>
+                                                        {item.grade_letter || '-'}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="evaluations-preview">
+                                                <div className={`progress-bar-container grade-bar-${item.grade_letter || 'none'}`}>
+                                                    <div
+                                                        className="progress-bar-fill"
+                                                        style={{ width: `${item.overall_grade || 0}%` }}
+                                                    />
+                                                </div>
+                                                <span className="progress-label">{item.overall_grade || 0}% Overall</span>
+                                            </div>
+                                        </div>
+                                        <div className="view-course-hint">
+                                            Click to view course details →
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <EmptyState
+                            icon="📚"
+                            title="No Subjects Enrolled"
+                            description="You haven't been enrolled in any subjects this semester. Please contact your advisor to complete your course enrollment."
+                        />
+                    )}
                 </div>
             </div>
 
-            <div className="scrollable-content">
-                {dashboardData?.subjects?.length > 0 ? (
-                    <div className="subjects-grid">
-                        {dashboardData.subjects.map((item, index) => (
-                            <div
-                                key={index}
-                                className={`subject-card clickable color-${index % 6}`}
-                                onClick={() => navigate(`/student/subject/${item.subject.id}`)}
-                            >
-                                <div className="subject-card-gradient"></div>
-                                <div className="subject-card-content">
-                                    <div className="subject-card-icon-wrapper">
-                                        <span className="subject-card-icon">
-                                            {item.subject.name.includes('Math') ? '📐' :
-                                                item.subject.name.includes('Chemistry') ? '🧪' :
-                                                    item.subject.name.includes('Web') ? '🌐' :
-                                                        item.subject.name.includes('Programming') || item.subject.name.includes('Computer') ? '💻' :
-                                                            item.subject.name.includes('Electric') ? '⚡' :
-                                                                item.subject.subject_type === 'Core' ? '🎯' : '📚'}
-                                        </span>
-                                    </div>
-                                    <div className="subject-card-body">
-                                        <div className="subject-header">
-                                            <div>
-                                                <h3>{item.subject.name}</h3>
-                                                <span className="subject-code">{item.subject.code}</span>
-                                            </div>
-                                            <span className={`status-pill ${item.status}`}>
-                                                {item.status === 'not_enrolled' ? 'Not Enrolled' : item.status}
-                                            </span>
-                                        </div>
-
-                                        <div className="subject-metrics">
-                                            <div className="metric">
-                                                <span className="label">Credits</span>
-                                                <span className="value">{item.subject.credits}</span>
-                                            </div>
-                                            <div className="metric">
-                                                <span className="label">Attendance</span>
-                                                <span className={`value ${item.attendance?.warning ? 'warning' : 'good'}`}>
-                                                    {item.attendance?.percentage || 0}%
-                                                </span>
-                                            </div>
-                                            <div className="metric">
-                                                <span className="label">Grade</span>
-                                                <span className={`value grade grade-${item.grade_letter || 'none'}`}>
-                                                    {item.grade_letter || '-'}
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <div className="evaluations-preview">
-                                            <div className={`progress-bar-container grade-bar-${item.grade_letter || 'none'}`}>
-                                                <div
-                                                    className="progress-bar-fill"
-                                                    style={{ width: `${item.overall_grade || 0}%` }}
-                                                />
-                                            </div>
-                                            <span className="progress-label">{item.overall_grade || 0}% Overall</span>
-                                        </div>
-                                    </div>
-                                    <div className="view-course-hint">
-                                        Click to view course details →
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="empty-state">
-                        <p>No subjects found for this semester.</p>
-                    </div>
-                )}
+            <div className="overview-sidebar">
+                <QuickActionsPanel />
+                <ActivityFeed />
             </div>
         </div>
     )
@@ -895,6 +932,8 @@ function StudentDashboard() {
         }
 
         switch (activeTab) {
+            case 'analytics':
+                return <AnalyticsView />
             case 'grades':
                 return <GradesView />
             case 'attendance':
@@ -1018,6 +1057,17 @@ function StudentDashboard() {
                                 onClick={() => setActiveTab('overview')}
                             >
                                 <ChartIcon /> Overview
+                            </button>
+                            <button
+                                className={`tab-btn ${activeTab === 'analytics' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('analytics')}
+                            >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="18" y1="20" x2="18" y2="10" />
+                                    <line x1="12" y1="20" x2="12" y2="4" />
+                                    <line x1="6" y1="20" x2="6" y2="14" />
+                                </svg>
+                                Analytics
                             </button>
                             <button
                                 className={`tab-btn ${activeTab === 'grades' ? 'active' : ''}`}
