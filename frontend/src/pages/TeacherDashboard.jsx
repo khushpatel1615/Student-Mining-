@@ -5,6 +5,8 @@ import { useTheme } from '../context/ThemeContext'
 import './TeacherDashboard.css'
 import QuickActionsPanel from '../components/QuickActions/QuickActionsPanel'
 import ActivityFeed from '../components/ActivityFeed/ActivityFeed'
+import CalendarManagement from '../components/CalendarManagement/CalendarManagement'
+import { Calendar } from 'lucide-react'
 
 const API_BASE = 'http://localhost/StudentDataMining/backend/api'
 
@@ -57,6 +59,9 @@ function TeacherDashboard() {
     const { user, token, logout } = useAuth()
     const { theme, toggleTheme } = useTheme()
 
+    // Tab State: 'overview', 'calendar'
+    const [activeTab, setActiveTab] = useState('overview')
+
     const [subjects, setSubjects] = useState([])
     const [selectedSubject, setSelectedSubject] = useState(null)
     const [announcements, setAnnouncements] = useState([])
@@ -65,37 +70,6 @@ function TeacherDashboard() {
     const [formData, setFormData] = useState({ title: '', content: '', is_pinned: false })
     const [file, setFile] = useState(null)
     const [editingId, setEditingId] = useState(null)
-
-    // Mock Teacher Activities
-    const teacherActivities = [
-        {
-            id: 1,
-            type: 'submission',
-            title: 'New Assignment Submission',
-            description: '5 students submitted "Database Project"',
-            timestamp: new Date(Date.now() - 1000 * 60 * 45), // 45 mins ago
-            icon: '📄',
-            isUnread: true
-        },
-        {
-            id: 2,
-            type: 'alert',
-            title: 'Attendance Alert',
-            description: 'Attendance for "Web Dev" is below 80% today',
-            timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3), // 3 hours ago
-            icon: '⚠️',
-            isUnread: true
-        },
-        {
-            id: 3,
-            type: 'system',
-            title: 'System Maintenance',
-            description: 'Scheduled maintenance this weekend',
-            timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-            icon: '🔧',
-            isUnread: false
-        }
-    ]
 
     useEffect(() => {
         fetchAssignedSubjects()
@@ -146,12 +120,11 @@ function TeacherDashboard() {
 
         try {
             const url = `${API_BASE}/announcements.php`
-            const method = editingId ? 'PUT' : 'POST'
-
+            // If editing, use PUT. If new, use POST with FormData for file.
+            // Simplified for this context to match previous logic
             let response;
 
             if (editingId) {
-                // Editing existing announcement (JSON)
                 const body = { id: editingId, ...formData }
                 response = await fetch(url, {
                     method: 'PUT',
@@ -162,7 +135,6 @@ function TeacherDashboard() {
                     body: JSON.stringify(body)
                 })
             } else {
-                // Creating new announcement (FormData)
                 const data = new FormData()
                 data.append('subject_id', selectedSubject.id)
                 data.append('title', formData.title)
@@ -245,27 +217,14 @@ function TeacherDashboard() {
         )
     }
 
-    return (
-        <div className={`teacher-dashboard-page teacher-dashboard ${theme}`}>
-            {/* Header */}
-            <header className="teacher-header">
-                <h1>
-                    <BookIcon />
-                    Teacher Dashboard
-                </h1>
-                <div className="header-actions">
-                    <span style={{ color: 'var(--text-secondary)' }}>Welcome, {user?.full_name}</span>
-                    <button className="btn btn-secondary btn-sm" onClick={toggleTheme}>
-                        {theme === 'dark' ? '☀️' : '🌙'}
-                    </button>
-                    <button className="btn btn-secondary btn-sm" onClick={logout}>
-                        <LogoutIcon /> Logout
-                    </button>
-                </div>
-            </header>
+    // Main Content Renderer
+    const renderContent = () => {
+        if (activeTab === 'calendar') {
+            return <CalendarManagement role="teacher" />
+        }
 
-            {/* Main Content */}
-            <main className="teacher-main">
+        return (
+            <>
                 {/* Sidebar - Subject List */}
                 <aside className="subjects-sidebar">
                     <h2>My Subjects</h2>
@@ -308,14 +267,10 @@ function TeacherDashboard() {
                                 </button>
                             </div>
 
-                            {/* Announcement Form */}
                             {showForm && (
                                 <form className="announcement-form" onSubmit={handleSubmit}>
                                     <h3>
-                                        <h3>
-                                            <MegaphoneIcon width={24} height={24} />
-                                            {editingId ? 'Edit Announcement' : 'Create Announcement'}
-                                        </h3>
+                                        <MegaphoneIcon width={24} height={24} />
                                         {editingId ? 'Edit Announcement' : 'Create Announcement'}
                                     </h3>
                                     <div className="form-group">
@@ -364,18 +319,14 @@ function TeacherDashboard() {
                                             Pin this announcement
                                         </label>
                                     </div>
+
                                     <div className="form-actions">
-                                        <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>
-                                            Cancel
-                                        </button>
-                                        <button type="submit" className="btn btn-primary">
-                                            {editingId ? 'Update' : 'Post'} Announcement
-                                        </button>
+                                        <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancel</button>
+                                        <button type="submit" className="btn btn-primary">{editingId ? 'Update' : 'Post'} Announcement</button>
                                     </div>
                                 </form>
                             )}
 
-                            {/* Announcements List */}
                             <div className="announcements-list">
                                 {announcements.length === 0 ? (
                                     <div className="empty-state">
@@ -384,10 +335,7 @@ function TeacherDashboard() {
                                     </div>
                                 ) : (
                                     announcements.map(announcement => (
-                                        <div
-                                            key={announcement.id}
-                                            className={`announcement-card ${announcement.is_pinned ? 'pinned' : ''}`}
-                                        >
+                                        <div key={announcement.id} className={`announcement-card ${announcement.is_pinned ? 'pinned' : ''}`}>
                                             <div className="announcement-header">
                                                 <div className="megaphone-icon">
                                                     <MegaphoneIcon />
@@ -403,12 +351,8 @@ function TeacherDashboard() {
                                                 ))}
                                             </div>
                                             <div className="announcement-actions">
-                                                <button onClick={() => handleEdit(announcement)} title="Edit">
-                                                    <EditIcon />
-                                                </button>
-                                                <button className="delete" onClick={() => handleDelete(announcement.id)} title="Delete">
-                                                    <TrashIcon />
-                                                </button>
+                                                <button onClick={() => handleEdit(announcement)} title="Edit"><EditIcon /></button>
+                                                <button className="delete" onClick={() => handleDelete(announcement.id)} title="Delete"><TrashIcon /></button>
                                             </div>
                                         </div>
                                     ))
@@ -418,16 +362,61 @@ function TeacherDashboard() {
                     ) : (
                         <div className="empty-state">
                             <BookIcon />
-                            <p>Select a subject from the sidebar to manage announcements</p>
+                            <p>Select a subject to manage messages</p>
                         </div>
                     )}
                 </section>
 
                 {/* Right Sidebar - Quick Actions & Feed */}
-                <aside className="teacher-right-sidebar">
-                    <QuickActionsPanel userRole="teacher" />
-                    <ActivityFeed activities={teacherActivities} />
-                </aside>
+                <div className="teacher-sidebar-right">
+                    <QuickActionsPanel role="teacher" />
+                    <ActivityFeed activities={[]} title="Recent Activity" />
+                </div>
+            </>
+        )
+    }
+
+    return (
+        <div className={`teacher-dashboard-page teacher-dashboard ${theme}`}>
+            {/* Header */}
+            <header className="teacher-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <h1>
+                        <BookIcon />
+                        Teacher Dashboard
+                    </h1>
+                    <nav className="teacher-nav" style={{ marginLeft: '2rem', display: 'flex', gap: '1rem' }}>
+                        <button
+                            className={`btn btn-link ${activeTab === 'overview' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('overview')}
+                            style={{ color: activeTab === 'overview' ? 'var(--primary)' : 'var(--text-primary)', fontWeight: 'bold' }}
+                        >
+                            Overview
+                        </button>
+                        <button
+                            className={`btn btn-link ${activeTab === 'calendar' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('calendar')}
+                            style={{ color: activeTab === 'calendar' ? 'var(--primary)' : 'var(--text-primary)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                        >
+                            <Calendar size={18} /> Calendar
+                        </button>
+                    </nav>
+                </div>
+
+                <div className="header-actions">
+                    <span style={{ color: 'var(--text-secondary)' }}>Welcome, {user?.full_name}</span>
+                    <button className="btn btn-secondary btn-sm" onClick={toggleTheme}>
+                        {theme === 'dark' ? '☀️' : '🌙'}
+                    </button>
+                    <button className="btn btn-secondary btn-sm" onClick={logout}>
+                        <LogoutIcon /> Logout
+                    </button>
+                </div>
+            </header>
+
+            {/* Main Content */}
+            <main className="teacher-main" style={activeTab === 'calendar' ? { display: 'block' } : {}}>
+                {renderContent()}
             </main>
         </div>
     )

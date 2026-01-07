@@ -1,0 +1,59 @@
+/* ============================================
+   MAIN LAYOUT - Fixed Sidebar + Scrollable Content
+   ============================================ */
+
+.main-layout {
+    min-height: 100vh;
+    background: var(--bg-app);
+}
+
+/* Main content area - offset by sidebar width */
+.layout-content {
+    margin-left: var(--sidebar-width);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    flex: 1;
+    padding: var(--space-xl);
+    overflow-y: auto;
+}
+
+.content-container {
+    max-width: var(--content-max-width);
+    margin: 0 auto;
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* Mobile Overlay */
+.mobile-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 90;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .main-content {
+        padding: var(--space-lg);
+    }
+}
+
+@media (max-width: 768px) {
+    .layout-content {
+        margin-left: 0;
+    }
+
+    .main-content {
+        padding: var(--space-md);
+    }
+
+    .mobile-overlay {
+        display: block;
+    }
+}

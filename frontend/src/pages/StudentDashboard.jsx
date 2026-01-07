@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { useCountUp } from '../hooks/useCountUp'
@@ -10,101 +11,27 @@ import EmptyState from '../components/EmptyState/EmptyState'
 import PerformanceMetrics from '../components/Charts/PerformanceMetrics'
 import QuickActionsPanel from '../components/QuickActions/QuickActionsPanel'
 import { ActivityFeed } from '../components/ActivityFeed'
-import './Dashboard.css'
+import MainLayout from '../components/Layout/MainLayout'
+import { CircularProgress } from '../components/CircularProgress'
+import {
+    TrendingUp,
+    BookOpen,
+    Calendar,
+    Users,
+    ChevronDown,
+    ArrowRight,
+    AlertTriangle,
+    GraduationCap,
+    Award,
+    Clock
+} from 'lucide-react'
 import './StudentDashboard.css'
-
-// Icons
-const BookIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-    </svg>
-)
-
-const BellIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-    </svg>
-)
-
-const CheckIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="20 6 9 17 4 12" />
-    </svg>
-)
-
-const ChartIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="18" y1="20" x2="18" y2="10" />
-        <line x1="12" y1="20" x2="12" y2="4" />
-        <line x1="6" y1="20" x2="6" y2="14" />
-    </svg>
-)
-
-const UserIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-        <circle cx="12" cy="7" r="4" />
-    </svg>
-)
-
-const GraduationIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-        <path d="M6 12v5c3 3 9 3 12 0v-5" />
-    </svg>
-)
-
-const ClipboardIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-        <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-        <path d="M9 14l2 2 4-4" />
-    </svg>
-)
-
-const CalendarIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-        <line x1="16" y1="2" x2="16" y2="6" />
-        <line x1="8" y1="2" x2="8" y2="6" />
-        <line x1="3" y1="10" x2="21" y2="10" />
-    </svg>
-)
-
-const RefreshIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="23 4 23 10 17 10" />
-        <polyline points="1 20 1 14 7 14" />
-        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-    </svg>
-)
-
-const LogoutIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-        <polyline points="16 17 21 12 16 7" />
-        <line x1="21" y1="12" x2="9" y2="12" />
-    </svg>
-)
-
-const SunIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5" /><line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" /><line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" /><line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" /><line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" /></svg>
-const MoonIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg>
-
-const WarningIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-        <line x1="12" y1="9" x2="12" y2="13" />
-        <line x1="12" y1="17" x2="12.01" y2="17" />
-    </svg>
-)
 
 const API_BASE = 'http://localhost/StudentDataMining/backend/api'
 
 function StudentDashboard() {
     const { user, token, logout } = useAuth()
-    const { theme, toggleTheme } = useTheme()
+    const { theme } = useTheme()
     const navigate = useNavigate()
     const [showLogoutModal, setShowLogoutModal] = useState(false)
     const [searchParams, setSearchParams] = useSearchParams()
@@ -154,25 +81,22 @@ function StudentDashboard() {
                 },
                 body: JSON.stringify(body)
             })
-            // Refresh local state
             fetchNotifications()
         } catch (err) {
             console.error('Failed to mark notifications read:', err)
         }
     }
 
-    // Dynamic data fetching - can be called anytime to refresh
+    // Dynamic data fetching
     const fetchDashboardData = useCallback(async (showRefreshIndicator = true) => {
         if (showRefreshIndicator) setRefreshing(true)
         try {
             const semesterQuery = selectedSemester ? `?semester=${selectedSemester}` : ''
-
-            // Parallel fetch
-            const [dashboardRes, calendarRes] = await Promise.all([
+            const [dashboardRes, , calendarRes] = await Promise.all([
                 fetch(`${API_BASE}/student_dashboard.php${semesterQuery}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 }),
-                fetchNotifications(), // Fetch notifications too
+                fetchNotifications(),
                 fetch(`${API_BASE}/calendar.php`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 })
@@ -182,11 +106,6 @@ function StudentDashboard() {
             if (data.success) {
                 setDashboardData(data.data)
                 setLastUpdated(new Date())
-                // Set initial selected semester if not set
-                if (!selectedSemester && data.data.student.current_semester) {
-                    // actually better to keep it null to mean "current", or set it?
-                    // data.data.semester is returned.
-                }
             }
 
             const calendarData = await calendarRes.json()
@@ -201,12 +120,10 @@ function StudentDashboard() {
         }
     }, [token, fetchNotifications, selectedSemester])
 
-    // Initial load
     useEffect(() => {
         fetchDashboardData(false)
     }, [fetchDashboardData])
 
-    // Auto-refresh every 30 seconds for real-time updates
     useEffect(() => {
         const interval = setInterval(() => {
             fetchDashboardData(false)
@@ -239,12 +156,14 @@ function StudentDashboard() {
         })
     }
 
-    // Not Enrolled State
+    // ========== COMPONENTS ==========
+
+    // Not Enrolled View
     const NotEnrolledView = () => (
-        <div className="not-enrolled-state">
+        <div className="not-enrolled-container">
             <div className="not-enrolled-card">
                 <div className="not-enrolled-icon">
-                    <GraduationIcon />
+                    <GraduationCap size={48} />
                 </div>
                 <h2>Not Yet Enrolled</h2>
                 <p>You are not currently enrolled in any program. Please contact the administration to complete your enrollment.</p>
@@ -259,49 +178,252 @@ function StudentDashboard() {
         </div>
     )
 
-    // Academic Summary Cards with animated counters
+    // Summary Cards Component
     const SummaryCards = () => {
         const gpaValue = useCountUp((dashboardData?.summary?.gpa || 0) * 100, 1500)
         const attendanceValue = useCountUp(dashboardData?.summary?.overall_attendance || 0, 1200)
         const subjectsValue = useCountUp(dashboardData?.summary?.subjects_enrolled || 0, 800)
 
+        const cards = [
+            {
+                title: 'Current GPA',
+                value: (gpaValue / 100).toFixed(2),
+                subtitle: dashboardData?.summary?.gpa_grade || 'N/A',
+                icon: TrendingUp,
+                gradient: 'gradient-purple'
+            },
+            {
+                title: 'Credits',
+                value: `${dashboardData?.summary?.earned_credits || 0}/${dashboardData?.summary?.total_credits || 0}`,
+                subtitle: 'Earned / Enrolled',
+                icon: BookOpen,
+                gradient: 'gradient-blue'
+            },
+            {
+                title: 'Attendance',
+                value: `${attendanceValue}%`,
+                subtitle: dashboardData?.summary?.attendance_status === 'good' ? 'On Track' : 'Needs Attention',
+                icon: Calendar,
+                gradient: dashboardData?.summary?.attendance_status === 'warning' ? 'gradient-orange' : 'gradient-green',
+                warning: dashboardData?.summary?.attendance_status === 'warning'
+            },
+            {
+                title: 'Subjects',
+                value: subjectsValue,
+                subtitle: 'This Semester',
+                icon: Users,
+                gradient: 'gradient-pink'
+            }
+        ]
+
+        const containerVariants = {
+            hidden: { opacity: 0 },
+            visible: {
+                opacity: 1,
+                transition: {
+                    staggerChildren: 0.1
+                }
+            }
+        }
+
+        const cardVariants = {
+            hidden: { opacity: 0, y: 20 },
+            visible: {
+                opacity: 1,
+                y: 0,
+                transition: {
+                    type: 'spring',
+                    stiffness: 100,
+                    damping: 15
+                }
+            }
+        }
+
+        const getProgressColor = (gradient) => {
+            switch (gradient) {
+                case 'gradient-purple': return '#6366f1'
+                case 'gradient-blue': return '#3b82f6'
+                case 'gradient-green': return '#22c55e'
+                case 'gradient-orange': return '#f97316'
+                case 'gradient-pink': return '#ec4899'
+                default: return '#6366f1'
+            }
+        }
+
+        const getProgressValue = (card, index) => {
+            switch (index) {
+                case 0: return (dashboardData?.summary?.gpa || 0) / 10 * 100 // GPA out of 10
+                case 1: return ((dashboardData?.summary?.earned_credits || 0) / (dashboardData?.summary?.total_credits || 1)) * 100
+                case 2: return dashboardData?.summary?.overall_attendance || 0
+                case 3: return ((subjectsValue / 8) * 100) // Assuming max 8 subjects
+                default: return 50
+            }
+        }
+
         return (
-            <div className="summary-cards-grid">
-                <div className="summary-card gpa-card">
-                    <div className="summary-icon"><ChartIcon /></div>
-                    <div className="summary-content">
-                        <span className="summary-label">Current GPA</span>
-                        <span className="summary-value count-up">{(gpaValue / 100).toFixed(2)}</span>
-                        <span className="summary-subtitle">{dashboardData?.summary?.gpa_grade || 'N/A'}</span>
+            <motion.div
+                className="stats-grid"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+            >
+                {cards.map((card, index) => {
+                    const Icon = card.icon
+                    return (
+                        <motion.div
+                            key={index}
+                            className={`stat-card ${card.warning ? 'warning' : ''}`}
+                            variants={cardVariants}
+                            whileHover={{
+                                y: -6,
+                                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.12)',
+                                transition: { duration: 0.2 }
+                            }}
+                        >
+                            <div className="stat-progress-ring">
+                                <CircularProgress
+                                    value={getProgressValue(card, index)}
+                                    size={56}
+                                    strokeWidth={6}
+                                    color={getProgressColor(card.gradient)}
+                                    trailColor="rgba(0,0,0,0.05)"
+                                    showValue={false}
+                                />
+                                <div className={`stat-icon-inner ${card.gradient}`}>
+                                    <Icon size={20} />
+                                </div>
+                            </div>
+                            <div className="stat-content">
+                                <span className="stat-title">{card.title}</span>
+                                <span className="stat-value">{card.value}</span>
+                                <div className="stat-footer">
+                                    <span className="stat-subtitle">{card.subtitle}</span>
+                                    {index === 0 && (
+                                        <span className="stat-trend positive">
+                                            <TrendingUp size={12} /> +0.5
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        </motion.div>
+                    )
+                })}
+            </motion.div>
+        )
+    }
+
+    // Subject Card Component
+    const SubjectCard = ({ item, index }) => {
+        const getSubjectEmoji = (name, type) => {
+            if (name.includes('Math')) return '📐'
+            if (name.includes('Chemistry')) return '🧪'
+            if (name.includes('Web')) return '🌐'
+            if (name.includes('Programming') || name.includes('Computer')) return '💻'
+            if (name.includes('Electric')) return '⚡'
+            if (type === 'Core') return '🎯'
+            return '📚'
+        }
+
+        const getGradeColor = (grade) => {
+            if (!grade) return 'gray'
+            if (grade.startsWith('A')) return 'green'
+            if (grade.startsWith('B')) return 'blue'
+            if (grade.startsWith('C')) return 'yellow'
+            if (grade.startsWith('D')) return 'orange'
+            return 'red'
+        }
+
+        return (
+            <div
+                className="subject-card"
+                onClick={() => navigate(`/student/subject/${item.subject.id}`)}
+            >
+                <div className="subject-card-header">
+                    <div className="subject-emoji">
+                        {getSubjectEmoji(item.subject.name, item.subject.subject_type)}
+                    </div>
+                    <span className={`status-badge ${item.status}`}>
+                        {item.status === 'active' ? 'Active' : item.status}
+                    </span>
+                </div>
+
+                <div className="subject-card-body">
+                    <h3 className="subject-name">{item.subject.name}</h3>
+                    <span className="subject-code">{item.subject.code}</span>
+
+                    <div className="subject-stats">
+                        <div className="subject-stat">
+                            <span className="subject-stat-label">Credits</span>
+                            <span className="subject-stat-value">{item.subject.credits}</span>
+                        </div>
+                        <div className="subject-stat">
+                            <span className="subject-stat-label">Attendance</span>
+                            <span className={`subject-stat-value ${item.attendance?.warning ? 'warning' : ''}`}>
+                                {item.attendance?.percentage || 0}%
+                            </span>
+                        </div>
+                        <div className="subject-stat">
+                            <span className="subject-stat-label">Grade</span>
+                            <span className={`subject-stat-value grade-${getGradeColor(item.grade_letter)}`}>
+                                {item.grade_letter || '-'}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="subject-progress">
+                        <div className="progress-bar">
+                            <div
+                                className={`progress-fill grade-${getGradeColor(item.grade_letter)}`}
+                                style={{ width: `${item.overall_grade || 0}%` }}
+                            />
+                        </div>
+                        <span className="progress-label">{item.overall_grade || 0}% Overall</span>
                     </div>
                 </div>
-                <div className="summary-card credits-card">
-                    <div className="summary-icon"><BookIcon /></div>
-                    <div className="summary-content">
-                        <span className="summary-label">Credits</span>
-                        <span className="summary-value">{dashboardData?.summary?.earned_credits || 0} / {dashboardData?.summary?.total_credits || 0}</span>
-                        <span className="summary-subtitle">Earned / Enrolled</span>
-                    </div>
-                </div>
-                <div className={`summary-card attendance-card ${dashboardData?.summary?.attendance_status}`}>
-                    <div className="summary-icon"><CalendarIcon /></div>
-                    <div className="summary-content">
-                        <span className="summary-label">Attendance</span>
-                        <span className="summary-value count-up">{attendanceValue}%</span>
-                        <span className="summary-subtitle">{dashboardData?.summary?.attendance_status === 'good' ? 'On Track' : 'Needs Attention'}</span>
-                    </div>
-                </div>
-                <div className="summary-card subjects-card">
-                    <div className="summary-icon"><ClipboardIcon /></div>
-                    <div className="summary-content">
-                        <span className="summary-label">Subjects</span>
-                        <span className="summary-value count-up">{subjectsValue}</span>
-                        <span className="summary-subtitle">This Semester</span>
-                    </div>
+
+                <div className="subject-card-footer">
+                    <span>View Details</span>
+                    <ArrowRight size={16} />
                 </div>
             </div>
         )
     }
+
+    // Overview View
+    const OverviewView = () => (
+        <div className="overview-layout">
+            <div className="overview-main">
+                <SummaryCards />
+
+                <div className="section-header">
+                    <div>
+                        <h2 className="section-title">{dashboardData?.program?.name}</h2>
+                        <p className="section-subtitle">Semester {dashboardData?.semester} Courses</p>
+                    </div>
+                </div>
+
+                {loading ? (
+                    <div className="subjects-grid">
+                        {[...Array(6)].map((_, i) => (
+                            <SkeletonCard key={i} />
+                        ))}
+                    </div>
+                ) : dashboardData?.subjects?.length > 0 ? (
+                    <div className="subjects-grid">
+                        {dashboardData.subjects.map((item, index) => (
+                            <SubjectCard key={index} item={item} index={index} />
+                        ))}
+                    </div>
+                ) : (
+                    <EmptyState
+                        icon="📚"
+                        title="No Subjects Enrolled"
+                        description="You haven't been enrolled in any subjects this semester."
+                    />
+                )}
+            </div>
+        </div>
+    )
 
     // Analytics View
     const AnalyticsView = () => (
@@ -310,248 +432,84 @@ function StudentDashboard() {
         </div>
     )
 
-    // Overview Tab
-    const OverviewView = () => (
-        <div className="overview-layout">
-            <div className="overview-main-content">
-                <div className="overview-fixed-header">
-                    <SummaryCards />
-
-                    <div className="section-header">
-                        <h2>{dashboardData?.program?.name} - Semester {dashboardData?.semester}</h2>
-                        <button className="refresh-btn" onClick={handleRefresh} disabled={refreshing}>
-                            <RefreshIcon className={refreshing ? 'spinning' : ''} />
-                            {refreshing ? 'Refreshing...' : 'Refresh'}
-                        </button>
-                    </div>
-                </div>
-
-                <div className="scrollable-content">
-                    {loading ? (
-                        <div className="subjects-grid">
-                            {[...Array(6)].map((_, i) => (
-                                <SkeletonCard key={i} />
-                            ))}
-                        </div>
-                    ) : dashboardData?.subjects?.length > 0 ? (
-                        <div className="subjects-grid">
-                            {dashboardData.subjects.map((item, index) => (
-                                <div
-                                    key={index}
-                                    className={`subject-card clickable color-${index % 6}`}
-                                    onClick={() => navigate(`/student/subject/${item.subject.id}`)}
-                                >
-                                    <div className="subject-card-gradient"></div>
-                                    <div className="subject-card-content">
-                                        <div className="subject-card-icon-wrapper">
-                                            <span className="subject-card-icon">
-                                                {item.subject.name.includes('Math') ? '📐' :
-                                                    item.subject.name.includes('Chemistry') ? '🧪' :
-                                                        item.subject.name.includes('Web') ? '🌐' :
-                                                            item.subject.name.includes('Programming') || item.subject.name.includes('Computer') ? '💻' :
-                                                                item.subject.name.includes('Electric') ? '⚡' :
-                                                                    item.subject.subject_type === 'Core' ? '🎯' : '📚'}
-                                            </span>
-                                        </div>
-                                        <div className="subject-card-body">
-                                            <div className="subject-header">
-                                                <div>
-                                                    <h3>{item.subject.name}</h3>
-                                                    <span className="subject-code">{item.subject.code}</span>
-                                                </div>
-                                                <span className={`status-pill ${item.status}`}>
-                                                    {item.status === 'not_enrolled' ? 'Not Enrolled' : item.status}
-                                                </span>
-                                            </div>
-
-                                            <div className="subject-metrics">
-                                                <div className="metric">
-                                                    <span className="label">Credits</span>
-                                                    <span className="value">{item.subject.credits}</span>
-                                                </div>
-                                                <div className="metric">
-                                                    <span className="label">Attendance</span>
-                                                    <span className={`value ${item.attendance?.warning ? 'warning' : 'good'}`}>
-                                                        {item.attendance?.percentage || 0}%
-                                                    </span>
-                                                </div>
-                                                <div className="metric">
-                                                    <span className="label">Grade</span>
-                                                    <span className={`value grade grade-${item.grade_letter || 'none'}`}>
-                                                        {item.grade_letter || '-'}
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            <div className="evaluations-preview">
-                                                <div className={`progress-bar-container grade-bar-${item.grade_letter || 'none'}`}>
-                                                    <div
-                                                        className="progress-bar-fill"
-                                                        style={{ width: `${item.overall_grade || 0}%` }}
-                                                    />
-                                                </div>
-                                                <span className="progress-label">{item.overall_grade || 0}% Overall</span>
-                                            </div>
-                                        </div>
-                                        <div className="view-course-hint">
-                                            Click to view course details →
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <EmptyState
-                            icon="📚"
-                            title="No Subjects Enrolled"
-                            description="You haven't been enrolled in any subjects this semester. Please contact your advisor to complete your course enrollment."
-                        />
-                    )}
-                </div>
-            </div>
-
-            <div className="overview-sidebar">
-                <QuickActionsPanel />
-                <ActivityFeed />
-            </div>
-        </div>
-    )
-
-    // Courses Tab
-    const CoursesView = () => (
-        <div className="courses-view">
-            <div className="section-header">
-                <h2>My Courses - Semester {dashboardData?.semester}</h2>
-                <span className="course-count">{dashboardData?.subjects?.length || 0} Subjects</span>
-            </div>
-
-            <div className="courses-list">
-                {dashboardData?.subjects?.map((item, index) => (
-                    <div key={index} className="course-item">
-                        <div className="course-main">
-                            <div className="course-icon">
-                                <BookIcon />
-                            </div>
-                            <div className="course-details">
-                                <h3>{item.subject.name}</h3>
-                                <div className="course-meta">
-                                    <span className="code">{item.subject.code}</span>
-                                    <span className="type">{item.subject.subject_type}</span>
-                                    <span className="credits">{item.subject.credits} Credits</span>
-                                </div>
-                            </div>
-                            <div className="course-status">
-                                <span className={`status-badge ${item.status}`}>
-                                    {item.status === 'not_enrolled' ? 'Not Enrolled' : item.status}
-                                </span>
-                            </div>
-                        </div>
-                        <div className="course-stats">
-                            <div className="stat">
-                                <span className="stat-label">Grade</span>
-                                <span className="stat-value">{item.grade_letter || '-'}</span>
-                            </div>
-                            <div className="stat">
-                                <span className="stat-label">Score</span>
-                                <span className="stat-value">{item.overall_grade ? `${item.overall_grade}%` : '-'}</span>
-                            </div>
-                            <div className="stat">
-                                <span className="stat-label">Attendance</span>
-                                <span className={`stat-value ${item.attendance?.warning ? 'warning' : ''}`}>
-                                    {item.attendance?.percentage || 0}%
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
-    )
-
-    // Grades Tab - Shows subject cards to navigate to detailed grades
+    // Grades View
     const GradesView = () => (
         <div className="grades-view">
             <div className="section-header">
-                <h2>Grade Report</h2>
-                <div className="gpa-display">
-                    <span className="gpa-label">CGPA:</span>
-                    <span className="gpa-value">{dashboardData?.summary?.gpa || '0.00'}</span>
+                <h2 className="section-title">Grade Report</h2>
+                <div className="gpa-badge">
+                    <Award size={18} />
+                    <span>CGPA: {dashboardData?.summary?.gpa || '0.00'}</span>
                 </div>
             </div>
 
-            <p className="section-description">Click on a subject to view detailed grade breakdown and professor feedback.</p>
+            <p className="section-description">
+                Click on a subject to view detailed grade breakdown and professor feedback.
+            </p>
 
-            <div className="grades-subjects-grid">
+            <div className="grades-grid">
                 {dashboardData?.subjects?.map((item, index) => (
                     <div
                         key={index}
-                        className="grade-subject-card clickable"
+                        className="grade-card"
                         onClick={() => navigate(`/student/subject/${item.subject.id}`)}
                     >
-                        <div className="grade-subject-icon">
-                            {item.subject.subject_type === 'Core' ? '💻' : '📖'}
+                        <div className="grade-card-left">
+                            <div className="grade-icon">
+                                {item.subject.subject_type === 'Core' ? '💻' : '📖'}
+                            </div>
+                            <div className="grade-info">
+                                <h3>{item.subject.name}</h3>
+                                <span className="subject-code">{item.subject.code}</span>
+                            </div>
                         </div>
-                        <div className="grade-subject-info">
-                            <h3>{item.subject.name}</h3>
-                            <span className="subject-code">{item.subject.code}</span>
-                        </div>
-                        <div className="grade-subject-score">
-                            <div className="grade-letter-badge">
+                        <div className="grade-card-right">
+                            <div className={`grade-letter grade-${item.grade_letter?.toLowerCase() || 'none'}`}>
                                 {item.grade_letter || '-'}
                             </div>
                             <span className="grade-percent">
                                 {item.overall_grade ? `${item.overall_grade}%` : 'Not graded'}
                             </span>
                         </div>
-                        <div className="grade-progress-bar">
-                            <div
-                                className="grade-progress-fill"
-                                style={{ width: `${item.overall_grade || 0}%` }}
-                            />
-                        </div>
-                        <div className="view-grades-hint">
-                            View detailed grades →
-                        </div>
                     </div>
                 ))}
             </div>
         </div>
     )
 
-    // Attendance Tab
+    // Attendance View
     const AttendanceView = () => (
         <div className="attendance-view">
             <div className="section-header">
-                <h2>Attendance Report</h2>
-                <div className={`overall-attendance-badge ${dashboardData?.summary?.attendance_status}`}>
+                <h2 className="section-title">Attendance Report</h2>
+                <div className={`attendance-badge ${dashboardData?.summary?.attendance_status}`}>
+                    <Clock size={18} />
                     <span>Overall: {dashboardData?.summary?.overall_attendance || 0}%</span>
                 </div>
             </div>
 
             {dashboardData?.summary?.attendance_status === 'warning' && (
-                <div className="attendance-warning-banner">
-                    <WarningIcon />
-                    <span>Your attendance is below 75%. Please improve your attendance to avoid academic penalties.</span>
+                <div className="warning-banner">
+                    <AlertTriangle size={20} />
+                    <span>Your attendance is below 75%. Please improve to avoid penalties.</span>
                 </div>
             )}
 
             <div className="attendance-grid">
                 {dashboardData?.subjects?.map((item, index) => (
                     <div key={index} className={`attendance-card ${item.attendance?.warning ? 'warning' : ''}`}>
-                        <div className="attendance-header">
+                        <div className="attendance-card-header">
                             <h3>{item.subject.name}</h3>
-                            <span className={`attendance-percentage ${item.attendance?.warning ? 'warning' : 'good'}`}>
+                            <span className={`attendance-percent ${item.attendance?.warning ? 'warning' : 'good'}`}>
                                 {item.attendance?.percentage || 0}%
                             </span>
                         </div>
 
-                        <div className="attendance-progress">
-                            <div className="attendance-bar">
-                                <div
-                                    className={`attendance-bar-fill ${item.attendance?.warning ? 'warning' : ''}`}
-                                    style={{ width: `${item.attendance?.percentage || 0}%` }}
-                                />
-                            </div>
+                        <div className="attendance-bar">
+                            <div
+                                className={`attendance-fill ${item.attendance?.warning ? 'warning' : ''}`}
+                                style={{ width: `${item.attendance?.percentage || 0}%` }}
+                            />
                         </div>
 
                         <div className="attendance-breakdown">
@@ -567,14 +525,10 @@ function StudentDashboard() {
                                 <span className="count">{item.attendance?.late || 0}</span>
                                 <span className="label">Late</span>
                             </div>
-                            <div className="breakdown-item optional">
-                                <span className="count">{item.attendance?.optional || 0}</span>
-                                <span className="label">Optional</span>
-                            </div>
                         </div>
 
                         <div className="total-classes">
-                            Total Classes: {item.attendance?.total_classes || 0}
+                            Total: {item.attendance?.total_classes || 0} classes
                         </div>
                     </div>
                 ))}
@@ -582,41 +536,51 @@ function StudentDashboard() {
         </div>
     )
 
-    // Profile Tab
-    // Calendar Component
+    // Calendar View
     const CalendarView = () => {
-        if (calendarEvents.length === 0) {
-            return (
-                <div className="empty-state">
-                    <h3>No upcoming events</h3>
-                    <p>Check back later for updates.</p>
-                </div>
-            )
-        }
-
         const getEventColor = (type) => {
             switch (type) {
-                case 'exam': return '#ef4444'; // red
-                case 'holiday': return '#10b981'; // green
-                case 'deadline': return '#f59e0b'; // amber
-                default: return '#6366f1'; // indigo
+                case 'exam': return '#ef4444'
+                case 'holiday': return '#10b981'
+                case 'deadline': return '#f59e0b'
+                default: return '#6366f1'
             }
         }
 
+        if (calendarEvents.length === 0) {
+            return (
+                <EmptyState
+                    icon="📅"
+                    title="No Upcoming Events"
+                    description="Check back later for updates."
+                />
+            )
+        }
+
         return (
-            <div className="calendar-container">
+            <div className="calendar-view">
                 <h2 className="section-title">Academic Calendar</h2>
                 <div className="events-grid">
                     {calendarEvents.map(event => (
                         <div key={event.id} className="event-card">
-                            <div className="event-date-badge" style={{ backgroundColor: getEventColor(event.type) }}>
-                                <span className="day">{new Date(event.event_date).getDate()}</span>
-                                <span className="month">{new Date(event.event_date).toLocaleDateString('en-US', { month: 'short' })}</span>
+                            <div
+                                className="event-date"
+                                style={{ background: getEventColor(event.type) }}
+                            >
+                                <span className="event-day">
+                                    {new Date(event.event_date).getDate()}
+                                </span>
+                                <span className="event-month">
+                                    {new Date(event.event_date).toLocaleDateString('en-US', { month: 'short' })}
+                                </span>
                             </div>
-                            <div className="event-details">
+                            <div className="event-info">
                                 <h3>{event.title}</h3>
-                                <p className="event-desc">{event.description}</p>
-                                <span className="event-type-pill" style={{ color: getEventColor(event.type), borderColor: getEventColor(event.type) }}>
+                                <p>{event.description}</p>
+                                <span
+                                    className="event-type"
+                                    style={{ color: getEventColor(event.type) }}
+                                >
                                     {event.type.toUpperCase()}
                                 </span>
                             </div>
@@ -627,6 +591,7 @@ function StudentDashboard() {
         )
     }
 
+    // Profile View
     const ProfileView = () => {
         const [isEditing, setIsEditing] = useState(false)
         const [showPasswordChange, setShowPasswordChange] = useState(false)
@@ -660,7 +625,6 @@ function StudentDashboard() {
                 if (result.success) {
                     setUpdateStatus({ type: 'success', message: 'Profile updated successfully!' })
                     setIsEditing(false)
-                    // Refresh data
                     fetchDashboardData()
                 } else {
                     setUpdateStatus({ type: 'error', message: result.error || 'Failed to update profile' })
@@ -675,13 +639,11 @@ function StudentDashboard() {
         const handlePasswordChange = async (e) => {
             e.preventDefault()
             if (passwordForm.new_password !== passwordForm.confirm_password) {
-                setUpdateStatus({ type: 'error', message: 'New passwords do not match' })
+                setUpdateStatus({ type: 'error', message: 'Passwords do not match' })
                 return
             }
 
             setIsSaving(true)
-            setUpdateStatus({ type: '', message: '' })
-
             try {
                 const response = await fetch(`${API_BASE}/profile.php`, {
                     method: 'PUT',
@@ -697,55 +659,14 @@ function StudentDashboard() {
                 const result = await response.json()
 
                 if (result.success) {
-                    setUpdateStatus({ type: 'success', message: 'Password changed successfully!' })
+                    setUpdateStatus({ type: 'success', message: 'Password changed!' })
                     setShowPasswordChange(false)
                     setPasswordForm({ current_password: '', new_password: '', confirm_password: '' })
                 } else {
                     setUpdateStatus({ type: 'error', message: result.error || 'Failed to change password' })
                 }
             } catch (err) {
-                setUpdateStatus({ type: 'error', message: 'Network error. Please try again.' })
-            } finally {
-                setIsSaving(false)
-            }
-        }
-
-        const handleAvatarUpload = async (e) => {
-            const file = e.target.files[0]
-            if (!file) return
-
-            // Preview
-            const reader = new FileReader()
-            reader.onloadend = () => {
-                // Ideally set a preview state, but for now we'll upload directly then refresh
-            }
-            reader.readAsDataURL(file)
-
-            const formData = new FormData()
-            formData.append('avatar', file)
-
-            setIsSaving(true)
-            setUpdateStatus({ type: '', message: '' })
-
-            try {
-                const response = await fetch(`${API_BASE}/profile.php`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                        // No Content-Type header needed for FormData; browser sets it with boundary
-                    },
-                    body: formData
-                })
-                const result = await response.json()
-
-                if (result.success) {
-                    setUpdateStatus({ type: 'success', message: 'Avatar updated successfully!' })
-                    fetchDashboardData()
-                } else {
-                    setUpdateStatus({ type: 'error', message: result.error || 'Failed to update avatar' })
-                }
-            } catch (err) {
-                setUpdateStatus({ type: 'error', message: 'Network error during upload' })
+                setUpdateStatus({ type: 'error', message: 'Network error' })
             } finally {
                 setIsSaving(false)
             }
@@ -754,68 +675,25 @@ function StudentDashboard() {
         return (
             <div className="profile-view">
                 <div className="profile-header-card">
-                    <div className="profile-avatar-large-wrapper">
-                        <div className="profile-avatar-large">
-                            {dashboardData?.student?.avatar_url ? (
-                                <img
-                                    src={`http://localhost/StudentDataMining${dashboardData.student.avatar_url}`}
-                                    alt="Profile"
-                                    className="avatar-img"
-                                    onError={(e) => e.target.style.display = 'none'}
-                                />
-                            ) : (
-                                dashboardData?.student?.name?.charAt(0) || user?.full_name?.charAt(0)
-                            )}
-                        </div>
-                        {isEditing && (
-                            <label className="avatar-upload-btn">
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleAvatarUpload}
-                                    style={{ display: 'none' }}
-                                />
-                                📷
-                            </label>
+                    <div className="profile-avatar-large">
+                        {dashboardData?.student?.avatar_url ? (
+                            <img src={`http://localhost/StudentDataMining${dashboardData.student.avatar_url}`} alt="Profile" />
+                        ) : (
+                            <span>{(dashboardData?.student?.name || user?.full_name)?.charAt(0)}</span>
                         )}
                     </div>
-                    <div className="profile-info">
-                        {!isEditing ? (
-                            <>
-                                <h2>{dashboardData?.student?.name || user?.full_name}</h2>
-                                <p className="role-badge">Student</p>
-                                <p className="email-text">{dashboardData?.student?.email || user?.email}</p>
-                                <div className="profile-actions">
-                                    <button className="btn-secondary btn-sm" onClick={() => setIsEditing(true)}>
-                                        Edit Profile
-                                    </button>
-                                    <button className="btn-secondary btn-sm" onClick={() => setShowPasswordChange(!showPasswordChange)}>
-                                        Change Password
-                                    </button>
-                                </div>
-                            </>
-                        ) : (
-                            <form onSubmit={handleProfileUpdate} className="profile-edit-form">
-                                <div className="form-group">
-                                    <label>Full Name</label>
-                                    <input
-                                        type="text"
-                                        value={profileForm.full_name}
-                                        onChange={(e) => setProfileForm({ ...profileForm, full_name: e.target.value })}
-                                        required
-                                        minLength="2"
-                                    />
-                                </div>
-                                <div className="edit-actions">
-                                    <button type="submit" className="btn-primary" disabled={isSaving}>
-                                        {isSaving ? 'Saving...' : 'Save Changes'}
-                                    </button>
-                                    <button type="button" className="btn-secondary" onClick={() => setIsEditing(false)}>
-                                        Cancel
-                                    </button>
-                                </div>
-                            </form>
-                        )}
+                    <div className="profile-main-info">
+                        <h2>{dashboardData?.student?.name || user?.full_name}</h2>
+                        <span className="role-badge">Student</span>
+                        <p className="email">{dashboardData?.student?.email || user?.email}</p>
+                        <div className="profile-actions">
+                            <button className="btn-secondary" onClick={() => setIsEditing(!isEditing)}>
+                                Edit Profile
+                            </button>
+                            <button className="btn-secondary" onClick={() => setShowPasswordChange(!showPasswordChange)}>
+                                Change Password
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -825,48 +703,68 @@ function StudentDashboard() {
                     </div>
                 )}
 
+                {isEditing && (
+                    <form onSubmit={handleProfileUpdate} className="profile-edit-form card">
+                        <h3>Edit Profile</h3>
+                        <div className="form-group">
+                            <label>Full Name</label>
+                            <input
+                                type="text"
+                                value={profileForm.full_name}
+                                onChange={(e) => setProfileForm({ ...profileForm, full_name: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="form-actions">
+                            <button type="submit" className="btn-primary" disabled={isSaving}>
+                                {isSaving ? 'Saving...' : 'Save Changes'}
+                            </button>
+                            <button type="button" className="btn-secondary" onClick={() => setIsEditing(false)}>
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                )}
+
                 {showPasswordChange && (
-                    <div className="password-change-section card">
+                    <form onSubmit={handlePasswordChange} className="password-form card">
                         <h3>Change Password</h3>
-                        <form onSubmit={handlePasswordChange} className="password-form">
-                            <div className="form-group">
-                                <label>Current Password</label>
-                                <input
-                                    type="password"
-                                    value={passwordForm.current_password}
-                                    onChange={(e) => setPasswordForm({ ...passwordForm, current_password: e.target.value })}
-                                    required
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>New Password</label>
-                                <input
-                                    type="password"
-                                    value={passwordForm.new_password}
-                                    onChange={(e) => setPasswordForm({ ...passwordForm, new_password: e.target.value })}
-                                    required
-                                    minLength="6"
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>Confirm New Password</label>
-                                <input
-                                    type="password"
-                                    value={passwordForm.confirm_password}
-                                    onChange={(e) => setPasswordForm({ ...passwordForm, confirm_password: e.target.value })}
-                                    required
-                                />
-                            </div>
-                            <div className="form-actions">
-                                <button type="submit" className="btn-primary" disabled={isSaving}>
-                                    {isSaving ? 'Updating...' : 'Update Password'}
-                                </button>
-                                <button type="button" className="btn-secondary" onClick={() => setShowPasswordChange(false)}>
-                                    Cancel
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                        <div className="form-group">
+                            <label>Current Password</label>
+                            <input
+                                type="password"
+                                value={passwordForm.current_password}
+                                onChange={(e) => setPasswordForm({ ...passwordForm, current_password: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>New Password</label>
+                            <input
+                                type="password"
+                                value={passwordForm.new_password}
+                                onChange={(e) => setPasswordForm({ ...passwordForm, new_password: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Confirm Password</label>
+                            <input
+                                type="password"
+                                value={passwordForm.confirm_password}
+                                onChange={(e) => setPasswordForm({ ...passwordForm, confirm_password: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="form-actions">
+                            <button type="submit" className="btn-primary" disabled={isSaving}>
+                                {isSaving ? 'Updating...' : 'Update Password'}
+                            </button>
+                            <button type="button" className="btn-secondary" onClick={() => setShowPasswordChange(false)}>
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
                 )}
 
                 <div className="profile-details-grid">
@@ -879,16 +777,8 @@ function StudentDashboard() {
                         <p>{dashboardData?.program?.name || 'Not Enrolled'}</p>
                     </div>
                     <div className="detail-card">
-                        <label>Program Code</label>
-                        <p>{dashboardData?.program?.code || 'N/A'}</p>
-                    </div>
-                    <div className="detail-card">
                         <label>Current Semester</label>
-                        <p>{dashboardData?.semester ? `Semester ${dashboardData.semester}` : 'N/A'}</p>
-                    </div>
-                    <div className="detail-card">
-                        <label>Program Duration</label>
-                        <p>{dashboardData?.program?.duration ? `${dashboardData.program.duration} Years` : 'N/A'}</p>
+                        <p>Semester {dashboardData?.semester || 'N/A'}</p>
                     </div>
                     <div className="detail-card">
                         <label>Enrollment Date</label>
@@ -896,7 +786,7 @@ function StudentDashboard() {
                     </div>
                 </div>
 
-                <div className="academic-summary-section">
+                <div className="academic-summary card">
                     <h3>Academic Summary</h3>
                     <div className="academic-stats">
                         <div className="academic-stat">
@@ -905,7 +795,7 @@ function StudentDashboard() {
                         </div>
                         <div className="academic-stat">
                             <span className="stat-number">{dashboardData?.summary?.subjects_enrolled || 0}</span>
-                            <span className="stat-label">Enrolled Subjects</span>
+                            <span className="stat-label">Subjects</span>
                         </div>
                         <div className="academic-stat">
                             <span className="stat-number">{dashboardData?.summary?.earned_credits || 0}</span>
@@ -921,7 +811,7 @@ function StudentDashboard() {
         )
     }
 
-    // Render content based on enrollment status
+    // Render content based on active tab
     const renderContent = () => {
         if (loading) {
             return <div className="loading-spinner">Loading your dashboard...</div>
@@ -954,153 +844,43 @@ function StudentDashboard() {
                 onConfirm={confirmLogout}
                 onCancel={() => setShowLogoutModal(false)}
             />
-            <div className="dashboard">
-                <nav className="dashboard-nav">
-                    <div className="dashboard-nav-brand">
-                        <div className="dashboard-nav-logo">
-                            <BookIcon />
-                        </div>
-                        <span className="dashboard-nav-title">Student Portal</span>
-                    </div>
 
-                    <div className="dashboard-nav-actions">
-                        {lastUpdated && (
-                            <span className="last-updated">
-                                Updated: {lastUpdated.toLocaleTimeString()}
-                            </span>
-                        )}
-
-                        {/* Notifications Bell */}
-                        <div className="notification-wrapper">
-                            <button
-                                className="icon-btn notification-btn"
-                                onClick={() => setShowNotifications(!showNotifications)}
-                            >
-                                <BellIcon />
-                                {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
-                            </button>
-
-                            {showNotifications && (
-                                <div className="notification-dropdown">
-                                    <div className="notification-header">
-                                        <h3>Notifications</h3>
-                                        <button className="mark-read-btn" onClick={() => markAsRead(null)}>
-                                            Mark all read
-                                        </button>
-                                    </div>
-                                    <div className="notification-list">
-                                        {notifications.length === 0 ? (
-                                            <div className="no-notifications">No notifications</div>
-                                        ) : (
-                                            notifications.map(n => (
-                                                <div key={n.id} className={`notification-item ${n.is_read ? 'read' : 'unread'}`}>
-                                                    <div className="notification-content">
-                                                        <h4>{n.title}</h4>
-                                                        <p>{n.message}</p>
-                                                        <span className="notification-time">
-                                                            {new Date(n.created_at).toLocaleString()}
-                                                        </span>
-                                                    </div>
-                                                    {!n.is_read && (
-                                                        <button
-                                                            className="mark-read-icon"
-                                                            title="Mark as read"
-                                                            onClick={(e) => { e.stopPropagation(); markAsRead(n.id); }}
-                                                        >
-                                                            <CheckIcon />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            ))
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                        <button className="icon-btn" onClick={toggleTheme}>
-                            {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-                        </button>
-                        <div className="dashboard-nav-user" onClick={() => setActiveTab('profile')}>
-                            <div className="dashboard-nav-avatar">
-                                {user?.full_name?.charAt(0)}
-                            </div>
-                            <span className="dashboard-nav-name">{user?.full_name}</span>
-                        </div>
-                        <button className="icon-btn logout-btn" onClick={() => setShowLogoutModal(true)}>
-                            <LogoutIcon />
-                        </button>
-                    </div>
-                </nav>
-
-                <main className="dashboard-main">
-                    <section className="dashboard-welcome">
+            <MainLayout
+                role="student"
+                lastUpdated={lastUpdated}
+                onRefresh={handleRefresh}
+                refreshing={refreshing}
+                notifications={notifications}
+                unreadCount={unreadCount}
+                showNotifications={showNotifications}
+                setShowNotifications={setShowNotifications}
+                onMarkAsRead={markAsRead}
+                onLogout={() => setShowLogoutModal(true)}
+            >
+                {/* Welcome Banner */}
+                <div className="welcome-banner">
+                    <div className="welcome-content">
                         <h1>{getGreeting()}, {user?.full_name?.split(' ')[0]}! 🚀</h1>
-                        <div className="semester-selector-container">
-                            <p>Track your academic progress for</p>
-                            <select
-                                className="semester-select"
-                                value={selectedSemester || dashboardData?.semester || ''}
-                                onChange={(e) => setSelectedSemester(Number(e.target.value))}
-                            >
-                                {[...Array(dashboardData?.student?.current_semester || dashboardData?.semester || 1)].map((_, i) => (
-                                    <option key={i + 1} value={i + 1}>Semester {i + 1}</option>
-                                ))}
-                            </select>
-                        </div>
-                    </section>
-
-                    {/* Tab Navigation */}
-                    {dashboardData?.enrolled && (
-                        <div className="student-tabs">
-                            <button
-                                className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('overview')}
-                            >
-                                <ChartIcon /> Overview
-                            </button>
-                            <button
-                                className={`tab-btn ${activeTab === 'analytics' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('analytics')}
-                            >
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <line x1="18" y1="20" x2="18" y2="10" />
-                                    <line x1="12" y1="20" x2="12" y2="4" />
-                                    <line x1="6" y1="20" x2="6" y2="14" />
-                                </svg>
-                                Analytics
-                            </button>
-                            <button
-                                className={`tab-btn ${activeTab === 'grades' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('grades')}
-                            >
-                                <ClipboardIcon /> Grades
-                            </button>
-                            <button
-                                className={`tab-btn ${activeTab === 'attendance' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('attendance')}
-                            >
-                                <CalendarIcon /> Attendance
-                            </button>
-                            <button
-                                className={`tab-btn ${activeTab === 'profile' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('profile')}
-                            >
-                                <UserIcon /> Profile
-                            </button>
-                            <button
-                                className={`tab-btn ${activeTab === 'calendar' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('calendar')}
-                            >
-                                Calendar
-                            </button>
-                        </div>
-                    )}
-
-                    <div className="dashboard-content-area">
-                        {renderContent()}
+                        <p>Track your academic progress and stay on top of your courses.</p>
                     </div>
-                </main>
-            </div>
+                    <div className="semester-selector">
+                        <select
+                            value={selectedSemester || dashboardData?.semester || ''}
+                            onChange={(e) => setSelectedSemester(Number(e.target.value))}
+                        >
+                            {[...Array(dashboardData?.student?.current_semester || dashboardData?.semester || 1)].map((_, i) => (
+                                <option key={i + 1} value={i + 1}>Semester {i + 1}</option>
+                            ))}
+                        </select>
+                        <ChevronDown size={18} className="select-icon" />
+                    </div>
+                </div>
+
+                {/* Main Content */}
+                <div className="dashboard-content">
+                    {renderContent()}
+                </div>
+            </MainLayout>
         </>
     )
 }

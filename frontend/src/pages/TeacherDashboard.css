@@ -51,21 +51,12 @@
 /* Main Layout */
 .teacher-dashboard-page .teacher-main {
     display: grid;
-    grid-template-columns: 280px 1fr 340px;
+    grid-template-columns: 280px 1fr;
     gap: 2rem;
     padding: 2rem;
     max-width: 1600px;
     margin: 0 auto;
     align-items: start;
-}
-
-/* Right Sidebar */
-.teacher-right-sidebar {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    position: sticky;
-    top: 6rem;
 }
 
 /* Sidebar - Subject List */
@@ -81,26 +72,10 @@
     overflow-y: auto;
 }
 
-/* ... existing styles ... */
-
 /* Responsive */
 @media (max-width: 1280px) {
     .teacher-dashboard-page .teacher-main {
         grid-template-columns: 250px 1fr;
-    }
-
-    .teacher-right-sidebar {
-        display: none;
-        /* Hide sidebar or stack it? Stacking better */
-        grid-column: 1 / -1;
-        position: static;
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
-
-    .teacher-right-sidebar>* {
-        flex: 1;
-        min-width: 300px;
     }
 }
 

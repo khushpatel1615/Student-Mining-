@@ -1,0 +1,67 @@
+.circular-progress-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.circular-progress-wrapper .CircularProgressbar {
+    width: 100%;
+    height: 100%;
+}
+
+.circular-progress-wrapper .CircularProgressbar .CircularProgressbar-path {
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-value {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.progress-value .value {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.progress-value .label {
+    font-size: 0.5rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-top: 1px;
+}
+
+/* Sizes */
+.circular-progress-wrapper.sm {
+    width: 36px;
+    height: 36px;
+}
+
+.circular-progress-wrapper.md {
+    width: 48px;
+    height: 48px;
+}
+
+.circular-progress-wrapper.lg {
+    width: 64px;
+    height: 64px;
+}
+
+.circular-progress-wrapper.lg .progress-value .value {
+    font-size: 1rem;
+}
+
+.circular-progress-wrapper.lg .progress-value .label {
+    font-size: 0.6rem;
+}
