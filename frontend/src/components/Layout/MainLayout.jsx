@@ -23,6 +23,8 @@ const MainLayout = ({
             <Sidebar
                 role={role}
                 onLogout={onLogout}
+                mobileMenuOpen={mobileMenuOpen}
+                setMobileMenuOpen={setMobileMenuOpen}
             />
 
             <div className="layout-content">

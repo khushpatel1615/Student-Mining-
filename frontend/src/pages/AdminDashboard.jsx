@@ -10,8 +10,9 @@ import SubjectManagement from '../components/SubjectManagement/SubjectManagement
 import EnrollmentManagement from '../components/EnrollmentManagement/EnrollmentManagement'
 import GradeManagement from '../components/GradeManagement/GradeManagement'
 import AttendanceManagement from '../components/AttendanceManagement/AttendanceManagement'
-import TeacherManagement from '../components/TeacherManagement/TeacherManagement'
 import CalendarManagement from '../components/CalendarManagement/CalendarManagement'
+import AdminAnalyticsDashboard from '../components/Analytics/AdminAnalyticsDashboard'
+import CSVImport from '../components/Import/CSVImport'
 // ... (keep other imports)
 
 
@@ -35,9 +36,10 @@ function AdminDashboard() {
     const { theme } = useTheme()
     const [showLogoutModal, setShowLogoutModal] = useState(false)
     const [searchParams, setSearchParams] = useSearchParams()
-    const activeTab = searchParams.get('tab') || 'students'
+    const activeTab = searchParams.get('tab') || 'analytics'
     const setActiveTab = (tab) => setSearchParams({ tab })
     const [lastUpdated, setLastUpdated] = useState(null)
+    const [showImportModal, setShowImportModal] = useState(false)
     const [refreshing, setRefreshing] = useState(false)
 
     // Dashboard stats
@@ -296,6 +298,8 @@ function AdminDashboard() {
 
     const renderActiveTab = () => {
         switch (activeTab) {
+            case 'analytics':
+                return <AdminAnalyticsDashboard />
             case 'students':
                 return <StudentManagement />
             case 'programs':
@@ -308,12 +312,10 @@ function AdminDashboard() {
                 return <GradeManagement />
             case 'attendance':
                 return <AttendanceManagement />
-            case 'teachers':
-                return <TeacherManagement />
             case 'calendar':
                 return <CalendarManagement role="admin" />
             default:
-                return <StudentManagement />
+                return <AdminAnalyticsDashboard />
         }
     }
 
@@ -324,6 +326,16 @@ function AdminDashboard() {
                 onConfirm={confirmLogout}
                 onCancel={() => setShowLogoutModal(false)}
             />
+
+            {showImportModal && (
+                <CSVImport
+                    onClose={() => setShowImportModal(false)}
+                    onSuccess={() => {
+                        setShowImportModal(false)
+                        fetchStats()
+                    }}
+                />
+            )}
 
             <MainLayout
                 role="admin"

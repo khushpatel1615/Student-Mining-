@@ -17,6 +17,8 @@ try {
         handleGet($pdo);
     } elseif ($method === 'POST') {
         handlePost($pdo);
+    } elseif ($method === 'PUT') {
+        handlePut($pdo);
     } elseif ($method === 'DELETE') {
         handleDelete($pdo);
     } else {
@@ -60,54 +62,36 @@ function handleGet($pdo)
     if ($role === 'admin') {
         // No filter needed
         $sql .= " ORDER BY ac.event_date ASC";
-    } elseif ($role === 'teacher') {
-        // Teachers see:
-        // 1. Logic for 'target_audience' = 'teachers' or 'all'
-        // 2. Events targeting a subject assigned to them
-
-        // Fetch assigned subjects
-        $subStmt = $pdo->prepare("SELECT subject_id FROM teacher_subjects WHERE teacher_id = ?");
-        $subStmt->execute([$userId]);
-        $subjectIds = $subStmt->fetchAll(PDO::FETCH_COLUMN);
-
-        $placeholders = '';
-        if (!empty($subjectIds)) {
-            $placeholders = implode(',', array_fill(0, count($subjectIds), '?'));
-        }
-
-        $sql .= " AND (
-            (ac.target_audience IN ('all', 'teachers'))
-            OR 
-            (ac.target_audience = 'subject' AND ac.target_subject_id IN ($placeholders))
-            OR
-            (ac.created_by = ?) 
-        )";
-
-        // Params for subject list + created_by check
-        foreach ($subjectIds as $id)
-            $params[] = $id;
-        $params[] = $userId;
-
-        $sql .= " ORDER BY ac.event_date ASC";
-    }
-    // Students see 'all' + their dept + their program + their semester (approximate logic)
-    // For now, simpler logic: 'all' OR specific targets matching user (if we had full user context here)
-    // Since we don't have full user context in token (only role/id), we'd fetch user details first.
-    // Optimization: Assume frontend filters or just show 'all' + 'students' for now, improving later.
-    elseif ($role === 'student') {
+    } elseif ($role === 'student') {
         $sql .= " AND (ac.target_audience IN ('all', 'students') ";
 
-        // Fetch student details to filter by dept/semester (optional but good)
-        $stmtUser = $pdo->prepare("SELECT department_id, semester FROM students WHERE id = ?");
+        // Fetch student details to filter by program/semester
+        $stmtUser = $pdo->prepare("SELECT program_id, current_semester FROM users WHERE id = ? AND role = 'student'");
         $stmtUser->execute([$userId]);
         $studentData = $stmtUser->fetch(PDO::FETCH_ASSOC);
 
         if ($studentData) {
-            $sql .= " OR (ac.target_audience = 'department' AND ac.target_dept_id = ?) ";
-            $params[] = $studentData['department_id'];
+            // Match department events if the student has a program_id (treating program as department)
+            if ($studentData['program_id']) {
+                $sql .= " OR (ac.target_audience = 'department' AND ac.target_dept_id = ?) ";
+                $params[] = $studentData['program_id'];
 
-            $sql .= " OR (ac.target_audience = 'semester' AND ac.target_semester = ?) ";
-            $params[] = $studentData['semester'];
+                $sql .= " OR (ac.target_audience = 'program' AND ac.target_program_id = ?) ";
+                $params[] = $studentData['program_id'];
+
+                // New: Program + Semester specific
+                if ($studentData['current_semester']) {
+                    $sql .= " OR (ac.target_audience = 'program_semester' AND ac.target_program_id = ? AND ac.target_semester = ?) ";
+                    $params[] = $studentData['program_id'];
+                    $params[] = $studentData['current_semester'];
+                }
+            }
+
+            // Match semester-specific events (Global semester)
+            if ($studentData['current_semester']) {
+                $sql .= " OR (ac.target_audience = 'semester' AND ac.target_semester = ?) ";
+                $params[] = $studentData['current_semester'];
+            }
         }
         $sql .= ")";
         $sql .= " ORDER BY ac.event_date ASC";

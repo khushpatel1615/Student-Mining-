@@ -216,9 +216,16 @@
 
 .delete-event-btn {
     opacity: 0.7;
-    font-size: 14px;
+    font-size: 18px;
+    font-weight: bold;
     line-height: 1;
-    padding: 0 2px;
+    padding: 2px 6px;
+    cursor: pointer;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
 }
 
 .delete-event-btn:hover {
@@ -428,4 +435,27 @@
 .btn-secondary:hover {
     background: var(--bg-hover);
     border-color: var(--border-dark);
+}
+
+/* Nested Filter Styles */
+.program-filters {
+    margin-top: 1rem;
+    padding-left: 1rem;
+    border-left: 2px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.helper-text {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+    display: block;
+}
+
+.label-small {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
 }
