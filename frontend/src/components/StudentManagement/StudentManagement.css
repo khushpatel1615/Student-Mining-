@@ -7,18 +7,19 @@
 }
 
 /* Header with actions */
+/* Header with actions */
 .student-management-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
     flex-wrap: wrap;
     gap: 1rem;
 }
 
 .student-management-title {
-    font-size: 1.25rem;
-    font-weight: 600;
+    font-size: 1.5rem;
+    font-weight: 700;
     color: var(--text-primary);
 }
 
@@ -26,8 +27,9 @@
 .student-filters {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 1rem;
     flex-wrap: wrap;
+    margin-bottom: 1.5rem;
 }
 
 .search-input-wrapper {
@@ -49,12 +51,12 @@
 
 .search-input {
     width: 100%;
-    padding: 0.75rem 1rem 0.75rem 2.75rem;
+    padding: 0.875rem 1rem 0.875rem 2.75rem;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     background: var(--bg-primary);
     color: var(--text-primary);
-    font-size: 0.875rem;
+    font-size: 0.95rem;
     transition: all var(--transition-fast);
 }
 
@@ -69,18 +71,18 @@
 }
 
 .filter-select {
-    padding: 0.75rem 2rem 0.75rem 1rem;
+    padding: 0.875rem 2.5rem 0.875rem 1rem;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     background: var(--bg-primary);
     color: var(--text-primary);
-    font-size: 0.875rem;
+    font-size: 0.95rem;
     cursor: pointer;
     transition: all var(--transition-fast);
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 0.5rem center;
+    background-position: right 0.75rem center;
     background-size: 1.25rem;
 }
 
@@ -94,12 +96,12 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.75rem 1.25rem;
+    padding: 0.875rem 1.5rem;
     background: var(--accent-gradient);
     color: white;
     border: none;
     border-radius: var(--radius-md);
-    font-size: 0.875rem;
+    font-size: 0.95rem;
     font-weight: 500;
     cursor: pointer;
     transition: all var(--transition-fast);
@@ -121,6 +123,7 @@
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     overflow: hidden;
+    box-shadow: var(--shadow-sm);
 }
 
 .students-table {
@@ -130,7 +133,7 @@
 
 .students-table th,
 .students-table td {
-    padding: 1rem 1.25rem;
+    padding: 1.25rem 1.5rem;
     text-align: left;
     border-bottom: 1px solid var(--border-color);
 }
@@ -200,23 +203,55 @@
 }
 
 /* Status Badge */
-.status-badge {
+/* Status Toggle Button */
+.status-toggle {
     display: inline-flex;
     align-items: center;
-    padding: 0.25rem 0.75rem;
-    border-radius: var(--radius-full);
-    font-size: 0.75rem;
-    font-weight: 500;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
 }
 
-.status-badge.active {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
+.status-toggle .status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    transition: all 0.2s;
 }
 
-.status-badge.inactive {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
+.status-toggle.active {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.15) 100%);
+    color: #059669;
+}
+
+.status-toggle.active .status-indicator {
+    background: #10b981;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+}
+
+.status-toggle.active:hover {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(5, 150, 105, 0.25) 100%);
+    transform: translateY(-1px);
+}
+
+.status-toggle.inactive {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.15) 100%);
+    color: #dc2626;
+}
+
+.status-toggle.inactive .status-indicator {
+    background: #ef4444;
+}
+
+.status-toggle.inactive:hover {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(220, 38, 38, 0.25) 100%);
+    transform: translateY(-1px);
 }
 
 /* Role Badge */

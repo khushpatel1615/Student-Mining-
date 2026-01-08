@@ -48,6 +48,8 @@ function handleGet($pdo)
     $userId = $_GET['user_id'] ?? null;
     $enrollmentId = $_GET['enrollment_id'] ?? null;
     $subjectId = $_GET['subject_id'] ?? null;
+    $programId = $_GET['program_id'] ?? null;
+    $semester = $_GET['semester'] ?? null;
 
     // If not admin, can only view own grades
     if ($user['role'] !== 'admin' && $userId && $userId != $user['user_id']) {
@@ -56,7 +58,94 @@ function handleGet($pdo)
         return;
     }
 
-    // Case 1: Fetch all students enrolled in a subject (Admin grading view)
+    // Case 1a: Fetch all students across all subjects for a program/semester (Admin grading view - All Subjects)
+    if ($programId && $semester && $user['role'] === 'admin') {
+        // Get all subjects for this program and semester
+        $subjectsStmt = $pdo->prepare("
+            SELECT id, name, code 
+            FROM subjects 
+            WHERE program_id = ? AND semester = ?
+            ORDER BY name ASC
+        ");
+        $subjectsStmt->execute([$programId, $semester]);
+        $subjects = $subjectsStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if (empty($subjects)) {
+            echo json_encode([
+                'success' => true,
+                'data' => [
+                    'criteria' => [],
+                    'enrollments' => []
+                ]
+            ]);
+            return;
+        }
+
+        $subjectIds = array_column($subjects, 'id');
+        $placeholders = str_repeat('?,', count($subjectIds) - 1) . '?';
+
+        // Get all unique evaluation criteria across these subjects
+        $criteriaStmt = $pdo->prepare("
+            SELECT DISTINCT ec.id, ec.component_name, ec.weight_percentage, ec.max_marks, ec.subject_id,
+                   s.name as subject_name, s.code as subject_code
+            FROM evaluation_criteria ec
+            JOIN subjects s ON ec.subject_id = s.id
+            WHERE ec.subject_id IN ($placeholders)
+            ORDER BY s.name ASC, ec.weight_percentage DESC
+        ");
+        $criteriaStmt->execute($subjectIds);
+        $criteria = $criteriaStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Get all enrollments for these subjects with student info
+        $enrollStmt = $pdo->prepare("
+            SELECT 
+                se.id,
+                se.user_id,
+                se.subject_id,
+                se.status,
+                se.final_percentage,
+                se.final_grade,
+                u.full_name as student_name,
+                u.student_id,
+                u.email,
+                s.name as subject_name,
+                s.code as subject_code
+            FROM student_enrollments se
+            JOIN users u ON se.user_id = u.id
+            JOIN subjects s ON se.subject_id = s.id
+            WHERE se.subject_id IN ($placeholders) AND se.status = 'active'
+            ORDER BY u.full_name ASC, s.name ASC
+        ");
+        $enrollStmt->execute($subjectIds);
+        $enrollments = $enrollStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Get grades for each enrollment
+        foreach ($enrollments as &$enrollment) {
+            $gradeStmt = $pdo->prepare("
+                SELECT 
+                    sg.id as grade_id,
+                    sg.criteria_id,
+                    sg.marks_obtained,
+                    sg.remarks
+                FROM student_grades sg
+                WHERE sg.enrollment_id = ?
+            ");
+            $gradeStmt->execute([$enrollment['id']]);
+            $enrollment['grades'] = $gradeStmt->fetchAll(PDO::FETCH_ASSOC);
+        }
+
+        echo json_encode([
+            'success' => true,
+            'data' => [
+                'criteria' => $criteria,
+                'enrollments' => $enrollments,
+                'subjects' => $subjects
+            ]
+        ]);
+        return;
+    }
+
+    // Case 1b: Fetch all students enrolled in a subject (Admin grading view)
     if ($subjectId && $user['role'] === 'admin') {
         // Get evaluation criteria for the subject
         $criteriaStmt = $pdo->prepare("

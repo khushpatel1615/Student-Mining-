@@ -306,37 +306,9 @@ const StudentDashboard = () => {
                 {/* Welcome Banner */}
                 <div className="welcome-banner">
                     <div className="welcome-content">
-                        <h1>{getGreeting()}, {user?.full_name?.split(' ')[0]}! 👋</h1>
+                        <h1>{getGreeting()}, {user?.full_name}! 👋</h1>
                         <p>Here's your academic summary for the semester.</p>
                     </div>
-                </div>
-
-                {/* Main Tabs */}
-                <div className="dashboard-tabs">
-                    <button
-                        className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('overview')}
-                    >
-                        Overview
-                    </button>
-                    <button
-                        className={`tab-btn ${activeTab === 'analytics' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('analytics')}
-                    >
-                        Analytics
-                    </button>
-                    <button
-                        className={`tab-btn ${activeTab === 'grades' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('grades')}
-                    >
-                        Grades
-                    </button>
-                    <button
-                        className={`tab-btn ${activeTab === 'schedule' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('schedule')}
-                    >
-                        Schedule
-                    </button>
                 </div>
 
                 {/* Tab Content */}
@@ -444,7 +416,7 @@ const StudentDashboard = () => {
                         </div>
                     )}
 
-                    {activeTab === 'schedule' && (
+                    {(activeTab === 'schedule' || activeTab === 'calendar') && (
                         <div className="card">
                             <CalendarManagement role="student" />
                         </div>

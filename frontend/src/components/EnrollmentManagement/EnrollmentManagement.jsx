@@ -52,8 +52,30 @@ function EnrollmentManagement() {
     const [bulkProgram, setBulkProgram] = useState('')
     const [bulkSemester, setBulkSemester] = useState('1')
     const [selectedStudents, setSelectedStudents] = useState([])
-    const [academicYear, setAcademicYear] = useState(new Date().getFullYear() + '-' + (new Date().getFullYear() + 1))
+
+    // Calculate default academic year
+    const getCurrentAcademicYear = () => {
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth(); // 0-11
+        // If June (5) or later, we are in the start of a year (e.g. 2025-2026)
+        // If before June, we are in the second half (e.g. 2024-2025)
+        const startYear = currentMonth >= 5 ? currentYear : currentYear - 1;
+        return `${startYear}-${startYear + 1}`;
+    };
+
+    const [academicYear, setAcademicYear] = useState(getCurrentAcademicYear())
     const [saving, setSaving] = useState(false)
+    const [expandedStudents, setExpandedStudents] = useState([])
+    const [viewStatus, setViewStatus] = useState('active') // 'active' or 'completed'
+
+    const toggleStudentExpand = (studentId) => {
+        setExpandedStudents(prev =>
+            prev.includes(studentId)
+                ? prev.filter(id => id !== studentId)
+                : [...prev, studentId]
+        )
+    }
 
     // Fetch programs
     useEffect(() => {
@@ -77,23 +99,27 @@ function EnrollmentManagement() {
         fetchPrograms()
     }, [token])
 
-    // Fetch students for bulk enrollment
+    // Fetch students for bulk enrollment when bulkProgram changes
     useEffect(() => {
         const fetchStudents = async () => {
+            if (!bulkProgram) return
             try {
-                const response = await fetch(`${API_BASE}/students.php?role=student&limit=100`, {
+                // Fetch students belonging to the selected program
+                const response = await fetch(`${API_BASE}/students.php?role=student&program_id=${bulkProgram}&limit=100`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 })
                 const data = await response.json()
                 if (data.success) {
                     setStudents(data.data)
+                    // Reset selection when program changes
+                    setSelectedStudents([])
                 }
             } catch (err) {
                 console.error('Failed to fetch students:', err)
             }
         }
         fetchStudents()
-    }, [token])
+    }, [token, bulkProgram]) // Dependency on bulkProgram
 
     // Fetch enrollments
     const fetchEnrollments = useCallback(async () => {
@@ -101,7 +127,7 @@ function EnrollmentManagement() {
             setLoading(true)
             setError(null)
 
-            let url = `${API_BASE}/enrollments.php?`
+            let url = `${API_BASE}/enrollments.php?status=${viewStatus}&`
             if (selectedProgram) url += `program_id=${selectedProgram}&`
             if (selectedSemester) url += `semester=${selectedSemester}&`
             if (selectedStudent) url += `user_id=${selectedStudent}&`
@@ -122,7 +148,7 @@ function EnrollmentManagement() {
         } finally {
             setLoading(false)
         }
-    }, [token, selectedProgram, selectedSemester, selectedStudent])
+    }, [token, selectedProgram, selectedSemester, selectedStudent, viewStatus])
 
     useEffect(() => {
         if (selectedProgram) {
@@ -195,7 +221,7 @@ function EnrollmentManagement() {
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    id: enrollmentId,
+                    enrollment_id: enrollmentId,
                     status: newStatus
                 })
             })
@@ -217,10 +243,10 @@ function EnrollmentManagement() {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'completed': return 'active'
-            case 'active': return 'active'
-            case 'dropped': return 'inactive'
-            case 'failed': return 'inactive'
+            case 'completed': return 'status-completed'
+            case 'active': return 'status-active'
+            case 'dropped': return 'status-dropped'
+            case 'failed': return 'status-failed'
             default: return ''
         }
     }
@@ -230,6 +256,17 @@ function EnrollmentManagement() {
             {/* Header */}
             <div className="enrollment-management-header">
                 <h2 className="enrollment-management-title">Enrollment Management</h2>
+                <div className="view-toggle">
+                    {['active', 'completed', 'dropped', 'failed'].map(status => (
+                        <button
+                            key={status}
+                            className={`toggle-btn ${viewStatus === status ? 'active' : ''}`}
+                            onClick={() => setViewStatus(status)}
+                        >
+                            {status.charAt(0).toUpperCase() + status.slice(1)} Subjects
+                        </button>
+                    ))}
+                </div>
                 <button className="btn-add" onClick={() => setShowBulkModal(true)}>
                     <PlusIcon />
                     Bulk Enroll
@@ -277,6 +314,7 @@ function EnrollmentManagement() {
             )}
 
             {/* Enrollments Table */}
+            {/* Enrollments Table */}
             <div className="enrollments-table-container">
                 {loading ? (
                     <div className="loading-overlay">
@@ -303,50 +341,94 @@ function EnrollmentManagement() {
                         <thead>
                             <tr>
                                 <th>Student</th>
-                                <th>Subject</th>
-                                <th>Semester</th>
+                                <th>Student ID</th>
+                                <th>Subjects</th>
                                 <th>Academic Year</th>
-                                <th>Status</th>
-                                <th>Grade</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {enrollments.map(enrollment => (
-                                <tr key={enrollment.id}>
-                                    <td>
-                                        <div className="student-info">
-                                            <span className="student-name">{enrollment.student_name}</span>
-                                            <span className="student-id">{enrollment.student_id}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className="subject-info">
-                                            <span className="subject-name">{enrollment.subject_name}</span>
-                                            <span className="subject-code">{enrollment.subject_code}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span className="semester-badge">{enrollment.semester}</span>
-                                    </td>
-                                    <td>{enrollment.academic_year || '-'}</td>
-                                    <td>
-                                        <select
-                                            className={`status-select ${getStatusColor(enrollment.status)}`}
-                                            value={enrollment.status}
-                                            onChange={(e) => updateEnrollmentStatus(enrollment.id, e.target.value)}
-                                        >
-                                            <option value="active">Active</option>
-                                            <option value="completed">Completed</option>
-                                            <option value="dropped">Dropped</option>
-                                            <option value="failed">Failed</option>
-                                        </select>
-                                    </td>
-                                    <td>
-                                        <span className="grade-display">
-                                            {enrollment.final_percentage ? `${enrollment.final_percentage}%` : '-'}
-                                        </span>
-                                    </td>
-                                </tr>
+                            {Object.values(enrollments.reduce((acc, curr) => {
+                                if (!acc[curr.user_id]) acc[curr.user_id] = { ...curr, subjects: [] }
+                                acc[curr.user_id].subjects.push(curr)
+                                return acc
+                            }, {})).map(student => (
+                                <>
+                                    <tr
+                                        key={student.user_id}
+                                        onClick={() => toggleStudentExpand(student.user_id)}
+                                        style={{ cursor: 'pointer', background: expandedStudents.includes(student.user_id) ? 'var(--bg-tertiary)' : 'inherit' }}
+                                    >
+                                        <td>
+                                            <div className="student-info">
+                                                <span className="student-name">{student.student_name}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span className="student-id">{student.student_id}</span>
+                                        </td>
+                                        <td>
+                                            <span className="badge">
+                                                {student.subjects.length} Subjects
+                                            </span>
+                                        </td>
+                                        <td>{student.academic_year || '-'}</td>
+                                        <td>
+                                            <button className="btn-icon">
+                                                <svg
+                                                    viewBox="0 0 24 24"
+                                                    width="20"
+                                                    height="20"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    style={{ transform: expandedStudents.includes(student.user_id) ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
+                                                >
+                                                    <polyline points="6 9 12 15 18 9" />
+                                                </svg>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {expandedStudents.includes(student.user_id) && (
+                                        <tr className="expanded-row">
+                                            <td colSpan="5" style={{ padding: 0 }}>
+                                                <div style={{ padding: '1rem', background: 'var(--bg-secondary)' }}>
+                                                    <table className="sub-table" style={{ width: '100%' }}>
+                                                        <thead style={{ background: 'transparent' }}>
+                                                            <tr>
+                                                                <th style={{ padding: '0.5rem', fontSize: '0.75rem' }}>Subject</th>
+                                                                <th style={{ padding: '0.5rem', fontSize: '0.75rem' }}>Code</th>
+                                                                <th style={{ padding: '0.5rem', fontSize: '0.75rem' }}>Semester</th>
+                                                                <th style={{ padding: '0.5rem', fontSize: '0.75rem' }}>Status</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {student.subjects.map(subject => (
+                                                                <tr key={subject.enrollment_id || subject.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                                                    <td style={{ padding: '0.5rem' }}>{subject.subject_name}</td>
+                                                                    <td style={{ padding: '0.5rem' }}>{subject.subject_code}</td>
+                                                                    <td style={{ padding: '0.5rem' }}>Semester {subject.semester}</td>
+                                                                    <td style={{ padding: '0.5rem' }}>
+                                                                        <select
+                                                                            className={`status-select ${getStatusColor(subject.status)}`}
+                                                                            value={subject.status}
+                                                                            onClick={(e) => e.stopPropagation()}
+                                                                            onChange={(e) => updateEnrollmentStatus(subject.enrollment_id || subject.id, e.target.value)}
+                                                                        >
+                                                                            <option value="active">Active</option>
+                                                                            <option value="completed">Completed</option>
+                                                                            <option value="dropped">Dropped</option>
+                                                                            <option value="failed">Failed</option>
+                                                                        </select>
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </>
                             ))}
                         </tbody>
                     </table>

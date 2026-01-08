@@ -240,6 +240,7 @@ function ProgramManagement() {
                                 <th>Code</th>
                                 <th>Duration</th>
                                 <th>Subjects</th>
+                                <th>Students</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -266,6 +267,9 @@ function ProgramManagement() {
                                     </td>
                                     <td>
                                         <strong>{program.total_subjects || 0}</strong> subjects
+                                    </td>
+                                    <td>
+                                        <strong>{program.total_students || 0}</strong> students
                                     </td>
                                     <td>
                                         <span className={`status-badge ${program.is_active ? 'active' : 'inactive'}`}>

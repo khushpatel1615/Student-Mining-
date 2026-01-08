@@ -31,12 +31,53 @@
     margin-bottom: 1.5rem;
 }
 
-/* Subjects Table */
-.subjects-table-container {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
+/* Semester Tabs */
+.semester-tabs {
+    display: flex;
+    background: #fff;
+    margin-bottom: 0;
+    /* Tabs sit directly on top of content if needed, but here we have separation */
+    border-bottom: 2px solid #e5e7eb;
+    margin-bottom: 1.5rem;
+    overflow-x: auto;
+}
+
+.semester-tab {
+    padding: 1rem 2rem;
+    background: transparent;
+    border: none;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+.semester-tab.active {
+    background: #ef4444;
+    /* Red color from screenshot */
+    color: white;
+}
+
+/* Custom Syllabus Table Container */
+.subjects-table-container.custom-syllabus-table {
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    background: white;
+    padding: 0;
     overflow: hidden;
+    min-height: 500px;
+    /* Prevent layout shift/scroll jump on loading */
+}
+
+.table-header-title {
+    background: #0d47a1;
+    /* Dark Blue */
+    color: white;
+    padding: 1rem;
+    font-weight: 600;
+    font-size: 1.1rem;
 }
 
 .subjects-table {
@@ -44,32 +85,60 @@
     border-collapse: collapse;
 }
 
-.subjects-table th,
-.subjects-table td {
-    padding: 1rem 1.25rem;
-    text-align: left;
-    border-bottom: 1px solid var(--border-color);
-}
-
 .subjects-table th {
-    background: var(--bg-tertiary);
-    font-size: 0.75rem;
+    background: #1565c0;
+    /* Slightly lighter blue for column headers */
+    color: white;
+    padding: 1rem;
+    text-align: center;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-tertiary);
+    font-size: 0.9rem;
+    border: 1px solid #1e40af;
+    /* Darker border */
 }
 
-.subjects-table tbody tr {
-    transition: background var(--transition-fast);
+.subjects-table td {
+    padding: 1rem;
+    text-align: center;
+    /* Center align by default as per screenshot */
+    border: 1px solid #e5e7eb;
+    color: #374151;
+    font-size: 0.9rem;
 }
 
-.subjects-table tbody tr:hover {
-    background: var(--bg-tertiary);
+.subjects-table tr:hover {
+    background-color: #f9fafb;
 }
 
-.subjects-table tbody tr:last-child td {
-    border-bottom: none;
+/* Cell Styles */
+.subject-name-cell {
+    font-weight: 500;
+    color: #111827;
+}
+
+.subject-code-cell {
+    font-family: monospace;
+}
+
+.comment-cell {
+    color: #4b5563;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+/* Error Message */
+.error-message {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid var(--error);
+    border-radius: var(--radius-md);
+    color: var(--error);
+    font-size: 0.875rem;
 }
 
 /* Subject Info */
@@ -278,6 +347,24 @@
 .btn-add-row svg {
     width: 16px;
     height: 16px;
+}
+
+/* Semester Grouping */
+.semester-group {
+    margin-bottom: 2rem;
+}
+
+.semester-group:last-child {
+    margin-bottom: 0;
+}
+
+.semester-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    padding-left: 0.5rem;
+    border-left: 4px solid var(--accent-primary);
 }
 
 /* Responsive */

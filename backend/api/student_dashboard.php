@@ -149,12 +149,17 @@ function handleGet($pdo)
             }
 
             // Calculate overall percentage (normalize to total graded weight)
-            $overallPercentage = $totalWeight > 0 ? round(($weightedScore / $totalWeight) * 100, 2) : 0;
-            $subjectData['overall_grade'] = $overallPercentage;
+            if ($totalWeight > 0) {
+                $overallPercentage = round(($weightedScore / $totalWeight) * 100, 2);
+                $subjectData['overall_grade'] = $overallPercentage;
 
-            // Calculate Grade Letter and Grade Points
-            $gradeData = calculateGrade($overallPercentage);
-            $subjectData['grade_letter'] = $gradeData['letter'];
+                // Calculate Grade Letter and Grade Points
+                $gradeData = calculateGrade($overallPercentage);
+                $subjectData['grade_letter'] = $gradeData['letter'];
+            } else {
+                $subjectData['overall_grade'] = null;
+                $subjectData['grade_letter'] = null;
+            }
 
             // Count towards GPA if actively enrolled
             if ($enrollment['status'] === 'active' && $totalWeight > 0) {

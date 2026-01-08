@@ -45,7 +45,7 @@ try {
     // === SYSTEM OVERVIEW ===
 
     // Total counts
-    $stmt = $pdo->query("SELECT COUNT(*) as count FROM users WHERE role = 'student' AND is_active = 1");
+    $stmt = $pdo->query("SELECT COUNT(*) as count FROM users WHERE role = 'student'");
     $totalStudents = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
 
     $stmt = $pdo->query("SELECT COUNT(*) as count FROM programs");
@@ -127,9 +127,8 @@ try {
     // === PROGRAM ANALYTICS ===
 
     $stmt = $pdo->query("SELECT p.id, p.name, p.code,
-                                COUNT(DISTINCT u.id) as student_count
+                                (SELECT COUNT(*) FROM users u WHERE u.program_id = p.id AND u.role = 'student') as student_count
                          FROM programs p
-                         LEFT JOIN users u ON p.id = u.program_id AND u.role = 'student' AND u.is_active = 1
                          GROUP BY p.id");
     $programs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

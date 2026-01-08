@@ -65,7 +65,7 @@ function SubjectManagement() {
 
     // Filters
     const [selectedProgram, setSelectedProgram] = useState('')
-    const [selectedSemester, setSelectedSemester] = useState('')
+    const [selectedSemester, setSelectedSemester] = useState('1') // Default to Semester 1
 
     // Modal states
     const [showModal, setShowModal] = useState(false)
@@ -101,6 +101,7 @@ function SubjectManagement() {
                     setPrograms(data.data)
                     if (data.data.length > 0 && !selectedProgram) {
                         setSelectedProgram(data.data[0].id.toString())
+                        setSelectedSemester('1')
                     }
                 }
             } catch (err) {
@@ -112,7 +113,7 @@ function SubjectManagement() {
 
     // Fetch subjects
     const fetchSubjects = useCallback(async () => {
-        if (!selectedProgram) return
+        if (!selectedProgram || !selectedSemester) return
 
         try {
             setLoading(true)
@@ -144,6 +145,19 @@ function SubjectManagement() {
     useEffect(() => {
         fetchSubjects()
     }, [fetchSubjects])
+
+    // Helper for Roman Numerals
+    const toRoman = (num) => {
+        const lookup = { M: 1000, CM: 900, D: 500, CD: 400, C: 100, XC: 90, L: 50, XL: 40, X: 10, IX: 9, V: 5, IV: 4, I: 1 }
+        let roman = '', i
+        for (i in lookup) {
+            while (num >= lookup[i]) {
+                roman += i
+                num -= lookup[i]
+            }
+        }
+        return roman
+    }
 
     const getTotalWeight = () => {
         return criteria.reduce((sum, c) => sum + (parseFloat(c.weight_percentage) || 0), 0)
@@ -299,48 +313,47 @@ function SubjectManagement() {
                 </button>
             </div>
 
-            {/* Filters */}
+            {/* Filters - Program Selection */}
             <div className="subject-filters">
                 <select
                     className="filter-select"
                     value={selectedProgram}
-                    onChange={(e) => { setSelectedProgram(e.target.value); setSelectedSemester('') }}
+                    onChange={(e) => { setSelectedProgram(e.target.value); setSelectedSemester('1') }}
                 >
                     <option value="">Select Program</option>
                     {programs.map(p => (
-                        <option key={p.id} value={p.id}>{p.name} ({p.code})</option>
-                    ))}
-                </select>
-                <select
-                    className="filter-select"
-                    value={selectedSemester}
-                    onChange={(e) => setSelectedSemester(e.target.value)}
-                    disabled={!selectedProgram}
-                >
-                    <option value="">All Semesters</option>
-                    {semesters.map(s => (
-                        <option key={s} value={s}>Semester {s}</option>
+                        <option key={p.id} value={p.id}>{p.name}</option>
                     ))}
                 </select>
             </div>
 
+            {/* Semester Tabs */}
+            {selectedProgram && (
+                <div className="semester-tabs">
+                    {semesters.map(s => (
+                        <button
+                            key={s}
+                            className={`semester-tab ${selectedSemester == s ? 'active' : ''}`}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                setSelectedSemester(s.toString());
+                            }}
+                        >
+                            SEMESTER {toRoman(s)}
+                        </button>
+                    ))}
+                </div>
+            )}
+
             {/* Error Message */}
             {error && (
-                <div style={{
-                    padding: '1rem',
-                    marginBottom: '1rem',
-                    background: 'rgba(239, 68, 68, 0.1)',
-                    border: '1px solid var(--error)',
-                    borderRadius: 'var(--radius-md)',
-                    color: 'var(--error)',
-                    fontSize: '0.875rem'
-                }}>
+                <div className="error-message">
                     {error}
                 </div>
             )}
 
             {/* Table */}
-            <div className="subjects-table-container">
+            <div className="subjects-table-container custom-syllabus-table">
                 {loading ? (
                     <div className="loading-overlay">
                         <div className="spinner"></div>
@@ -351,7 +364,7 @@ function SubjectManagement() {
                             <BookIcon />
                         </div>
                         <h3>Select a Program</h3>
-                        <p>Choose a program from the dropdown to view its subjects.</p>
+                        <p>Choose a program to view its syllabus.</p>
                     </div>
                 ) : subjects.length === 0 ? (
                     <div className="empty-state">
@@ -359,270 +372,260 @@ function SubjectManagement() {
                             <BookIcon />
                         </div>
                         <h3>No subjects found</h3>
-                        <p>Add subjects to this program to get started.</p>
+                        <p>Add subjects to this semester.</p>
                     </div>
                 ) : (
-                    <table className="subjects-table">
-                        <thead>
-                            <tr>
-                                <th>Subject</th>
-                                <th>Semester</th>
-                                <th>Type</th>
-                                <th>Credits</th>
-                                <th>Evaluation</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {subjects.map(subject => (
-                                <tr key={subject.id}>
-                                    <td>
-                                        <div className="subject-info">
-                                            <span className="subject-name">{subject.name}</span>
-                                            <span className="subject-code">{subject.code}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span className="semester-badge">{subject.semester}</span>
-                                    </td>
-                                    <td>
-                                        <span className={`type-badge ${subject.subject_type.toLowerCase()}`}>
-                                            {subject.subject_type}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span className="credits-badge">
-                                            <strong>{subject.credits}</strong> cr
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div className="criteria-tags">
-                                            {subject.evaluation_criteria?.slice(0, 3).map((c, i) => (
-                                                <span key={i} className="criteria-tag">
-                                                    {c.component_name.substring(0, 10)}:
-                                                    <strong>{c.max_marks}</strong>
-                                                </span>
-                                            ))}
-                                            {subject.evaluation_criteria?.length > 3 && (
-                                                <span className="criteria-tag">+{subject.evaluation_criteria.length - 3}</span>
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className="action-buttons">
-                                            <button
-                                                className="btn-action"
-                                                onClick={() => openEditModal(subject)}
-                                                title="Edit"
-                                            >
-                                                <EditIcon />
-                                            </button>
-                                            <button
-                                                className="btn-action delete"
-                                                onClick={() => openDeleteModal(subject)}
-                                                title="Delete"
-                                            >
-                                                <TrashIcon />
-                                            </button>
-                                        </div>
-                                    </td>
+                    <>
+                        <div className="table-header-title">New Syllabus</div>
+                        <table className="subjects-table">
+                            <thead>
+                                <tr>
+                                    <th>Subject Name</th>
+                                    <th>Subject Type</th>
+                                    <th>Subject Code</th>
+                                    <th>Subject Credit</th>
+                                    <th>Subject Comment</th>
+                                    <th>Actions</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {subjects.map(subject => (
+                                    <tr key={subject.id}>
+                                        <td>
+                                            <span className="subject-name-cell">{subject.name}</span>
+                                        </td>
+                                        <td>
+                                            <span className="subject-type-cell">{subject.subject_type}</span>
+                                        </td>
+                                        <td>
+                                            <span className="subject-code-cell">{subject.code}</span>
+                                        </td>
+                                        <td>
+                                            <span className="credits-cell">{subject.credits}</span>
+                                        </td>
+                                        <td>
+                                            <span className="comment-cell">Effective From 2025</span>
+                                        </td>
+                                        <td>
+                                            <div className="action-buttons">
+                                                <button
+                                                    className="btn-action"
+                                                    onClick={() => openEditModal(subject)}
+                                                    title="Edit"
+                                                >
+                                                    <EditIcon />
+                                                </button>
+                                                <button
+                                                    className="btn-action delete"
+                                                    onClick={() => openDeleteModal(subject)}
+                                                    title="Delete"
+                                                >
+                                                    <TrashIcon />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </>
                 )}
             </div>
 
             {/* Add/Edit Modal */}
-            {showModal && (
-                <div className="modal-overlay" onClick={() => setShowModal(false)}>
-                    <div className="modal-content" style={{ maxWidth: '600px' }} onClick={e => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h3 className="modal-title">
-                                {modalMode === 'add' ? 'Add New Subject' : 'Edit Subject'}
-                            </h3>
-                            <button className="modal-close" onClick={() => setShowModal(false)}>
-                                <CloseIcon />
-                            </button>
-                        </div>
-                        <form onSubmit={handleSubmit}>
-                            <div className="modal-body">
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                    <div className="form-group">
-                                        <label className="form-label">Program *</label>
-                                        <select
-                                            className="form-select"
-                                            value={formData.program_id}
-                                            onChange={e => setFormData({ ...formData, program_id: e.target.value })}
-                                            required
-                                        >
-                                            <option value="">Select Program</option>
-                                            {programs.map(p => (
-                                                <option key={p.id} value={p.id}>{p.name}</option>
-                                            ))}
-                                        </select>
+            {
+                showModal && (
+                    <div className="modal-overlay" onClick={() => setShowModal(false)}>
+                        <div className="modal-content" style={{ maxWidth: '600px' }} onClick={e => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h3 className="modal-title">
+                                    {modalMode === 'add' ? 'Add New Subject' : 'Edit Subject'}
+                                </h3>
+                                <button className="modal-close" onClick={() => setShowModal(false)}>
+                                    <CloseIcon />
+                                </button>
+                            </div>
+                            <form onSubmit={handleSubmit}>
+                                <div className="modal-body">
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                        <div className="form-group">
+                                            <label className="form-label">Program *</label>
+                                            <select
+                                                className="form-select"
+                                                value={formData.program_id}
+                                                onChange={e => setFormData({ ...formData, program_id: e.target.value })}
+                                                required
+                                            >
+                                                <option value="">Select Program</option>
+                                                {programs.map(p => (
+                                                    <option key={p.id} value={p.id}>{p.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Semester *</label>
+                                            <select
+                                                className="form-select"
+                                                value={formData.semester}
+                                                onChange={e => setFormData({ ...formData, semester: parseInt(e.target.value) })}
+                                                required
+                                            >
+                                                {[1, 2, 3, 4, 5, 6].map(s => (
+                                                    <option key={s} value={s}>Semester {s}</option>
+                                                ))}
+                                            </select>
+                                        </div>
                                     </div>
                                     <div className="form-group">
-                                        <label className="form-label">Semester *</label>
-                                        <select
-                                            className="form-select"
-                                            value={formData.semester}
-                                            onChange={e => setFormData({ ...formData, semester: parseInt(e.target.value) })}
-                                            required
-                                        >
-                                            {[1, 2, 3, 4, 5, 6].map(s => (
-                                                <option key={s} value={s}>Semester {s}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
-                                <div className="form-group">
-                                    <label className="form-label">Subject Name *</label>
-                                    <input
-                                        type="text"
-                                        className="form-input"
-                                        value={formData.name}
-                                        onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                        placeholder="e.g., Data Structures"
-                                        required
-                                    />
-                                </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
-                                    <div className="form-group">
-                                        <label className="form-label">Code *</label>
+                                        <label className="form-label">Subject Name *</label>
                                         <input
                                             type="text"
                                             className="form-input"
-                                            value={formData.code}
-                                            onChange={e => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                                            placeholder="e.g., CS201"
+                                            value={formData.name}
+                                            onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                            placeholder="e.g., Data Structures"
                                             required
                                         />
                                     </div>
-                                    <div className="form-group">
-                                        <label className="form-label">Type</label>
-                                        <select
-                                            className="form-select"
-                                            value={formData.subject_type}
-                                            onChange={e => setFormData({ ...formData, subject_type: e.target.value })}
-                                        >
-                                            <option value="Core">Core</option>
-                                            <option value="Elective">Elective</option>
-                                            <option value="Open">Open</option>
-                                        </select>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                                        <div className="form-group">
+                                            <label className="form-label">Code *</label>
+                                            <input
+                                                type="text"
+                                                className="form-input"
+                                                value={formData.code}
+                                                onChange={e => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
+                                                placeholder="e.g., CS201"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Type</label>
+                                            <select
+                                                className="form-select"
+                                                value={formData.subject_type}
+                                                onChange={e => setFormData({ ...formData, subject_type: e.target.value })}
+                                            >
+                                                <option value="Core">Core</option>
+                                                <option value="Elective">Elective</option>
+                                                <option value="Open">Open</option>
+                                            </select>
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Credits</label>
+                                            <input
+                                                type="number"
+                                                className="form-input"
+                                                value={formData.credits}
+                                                onChange={e => setFormData({ ...formData, credits: parseInt(e.target.value) || 3 })}
+                                                min="1"
+                                                max="10"
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="form-group">
-                                        <label className="form-label">Credits</label>
-                                        <input
-                                            type="number"
-                                            className="form-input"
-                                            value={formData.credits}
-                                            onChange={e => setFormData({ ...formData, credits: parseInt(e.target.value) || 3 })}
-                                            min="1"
-                                            max="10"
-                                        />
+
+                                    {/* Evaluation Criteria Editor */}
+                                    <div className="evaluation-editor">
+                                        <div className="evaluation-editor-header">
+                                            <span className="evaluation-editor-title">Evaluation Criteria</span>
+                                            <span className={`evaluation-total ${getTotalWeight() === 100 ? 'valid' : 'invalid'}`}>
+                                                Total: {getTotalWeight()}%
+                                            </span>
+                                        </div>
+                                        <div className="evaluation-rows">
+                                            <div className="evaluation-row" style={{ fontWeight: '600', fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
+                                                <span>Component</span>
+                                                <span>Weight %</span>
+                                                <span>Marks</span>
+                                                <span></span>
+                                            </div>
+                                            {criteria.map((c, index) => (
+                                                <div key={index} className="evaluation-row">
+                                                    <input
+                                                        type="text"
+                                                        value={c.component_name}
+                                                        onChange={e => updateCriteria(index, 'component_name', e.target.value)}
+                                                        placeholder="Component name"
+                                                    />
+                                                    <input
+                                                        type="number"
+                                                        value={c.weight_percentage}
+                                                        onChange={e => updateCriteria(index, 'weight_percentage', parseFloat(e.target.value) || 0)}
+                                                        min="0"
+                                                        max="100"
+                                                    />
+                                                    <input
+                                                        type="number"
+                                                        value={c.max_marks}
+                                                        onChange={e => updateCriteria(index, 'max_marks', parseInt(e.target.value) || 0)}
+                                                        min="0"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        className="btn-remove-row"
+                                                        onClick={() => removeCriteriaRow(index)}
+                                                        disabled={criteria.length <= 1}
+                                                    >
+                                                        <CloseIcon />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <button type="button" className="btn-add-row" onClick={addCriteriaRow}>
+                                            <PlusIcon /> Add Component
+                                        </button>
                                     </div>
                                 </div>
-
-                                {/* Evaluation Criteria Editor */}
-                                <div className="evaluation-editor">
-                                    <div className="evaluation-editor-header">
-                                        <span className="evaluation-editor-title">Evaluation Criteria</span>
-                                        <span className={`evaluation-total ${getTotalWeight() === 100 ? 'valid' : 'invalid'}`}>
-                                            Total: {getTotalWeight()}%
-                                        </span>
-                                    </div>
-                                    <div className="evaluation-rows">
-                                        <div className="evaluation-row" style={{ fontWeight: '600', fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
-                                            <span>Component</span>
-                                            <span>Weight %</span>
-                                            <span>Marks</span>
-                                            <span></span>
-                                        </div>
-                                        {criteria.map((c, index) => (
-                                            <div key={index} className="evaluation-row">
-                                                <input
-                                                    type="text"
-                                                    value={c.component_name}
-                                                    onChange={e => updateCriteria(index, 'component_name', e.target.value)}
-                                                    placeholder="Component name"
-                                                />
-                                                <input
-                                                    type="number"
-                                                    value={c.weight_percentage}
-                                                    onChange={e => updateCriteria(index, 'weight_percentage', parseFloat(e.target.value) || 0)}
-                                                    min="0"
-                                                    max="100"
-                                                />
-                                                <input
-                                                    type="number"
-                                                    value={c.max_marks}
-                                                    onChange={e => updateCriteria(index, 'max_marks', parseInt(e.target.value) || 0)}
-                                                    min="0"
-                                                />
-                                                <button
-                                                    type="button"
-                                                    className="btn-remove-row"
-                                                    onClick={() => removeCriteriaRow(index)}
-                                                    disabled={criteria.length <= 1}
-                                                >
-                                                    <CloseIcon />
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <button type="button" className="btn-add-row" onClick={addCriteriaRow}>
-                                        <PlusIcon /> Add Component
+                                <div className="modal-footer">
+                                    <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>
+                                        Cancel
                                     </button>
+                                    <button type="submit" className="btn-primary" disabled={saving || getTotalWeight() !== 100}>
+                                        {saving ? 'Saving...' : (modalMode === 'add' ? 'Add Subject' : 'Save Changes')}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* Delete Confirmation Modal */}
+            {
+                showDeleteModal && deletingSubject && (
+                    <div className="modal-overlay" onClick={() => setShowDeleteModal(false)}>
+                        <div className="modal-content" onClick={e => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h3 className="modal-title">Confirm Deletion</h3>
+                                <button className="modal-close" onClick={() => setShowDeleteModal(false)}>
+                                    <CloseIcon />
+                                </button>
+                            </div>
+                            <div className="modal-body">
+                                <div className="delete-confirmation">
+                                    <div className="delete-confirmation-icon">
+                                        <AlertIcon />
+                                    </div>
+                                    <h3>Delete this subject?</h3>
+                                    <p>
+                                        Are you sure you want to delete <strong>{deletingSubject.name}</strong>?
+                                        This will affect all enrollments and grades for this subject.
+                                    </p>
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>
+                                <button className="btn-secondary" onClick={() => setShowDeleteModal(false)}>
                                     Cancel
                                 </button>
-                                <button type="submit" className="btn-primary" disabled={saving || getTotalWeight() !== 100}>
-                                    {saving ? 'Saving...' : (modalMode === 'add' ? 'Add Subject' : 'Save Changes')}
+                                <button className="btn-danger" onClick={handleDelete} disabled={saving}>
+                                    {saving ? 'Deleting...' : 'Delete Subject'}
                                 </button>
                             </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {/* Delete Confirmation Modal */}
-            {showDeleteModal && deletingSubject && (
-                <div className="modal-overlay" onClick={() => setShowDeleteModal(false)}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h3 className="modal-title">Confirm Deletion</h3>
-                            <button className="modal-close" onClick={() => setShowDeleteModal(false)}>
-                                <CloseIcon />
-                            </button>
-                        </div>
-                        <div className="modal-body">
-                            <div className="delete-confirmation">
-                                <div className="delete-confirmation-icon">
-                                    <AlertIcon />
-                                </div>
-                                <h3>Delete this subject?</h3>
-                                <p>
-                                    Are you sure you want to delete <strong>{deletingSubject.name}</strong>?
-                                    This will affect all enrollments and grades for this subject.
-                                </p>
-                            </div>
-                        </div>
-                        <div className="modal-footer">
-                            <button className="btn-secondary" onClick={() => setShowDeleteModal(false)}>
-                                Cancel
-                            </button>
-                            <button className="btn-danger" onClick={handleDelete} disabled={saving}>
-                                {saving ? 'Deleting...' : 'Delete Subject'}
-                            </button>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     )
 }
 

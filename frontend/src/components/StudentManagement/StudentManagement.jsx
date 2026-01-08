@@ -60,12 +60,23 @@ const API_BASE = 'http://localhost/StudentDataMining/backend/api'
 function StudentManagement() {
     const { token } = useAuth()
     const [students, setStudents] = useState([])
+    const [programs, setPrograms] = useState([]) // Add programs state
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [search, setSearch] = useState('')
     const [roleFilter, setRoleFilter] = useState('')
     const [page, setPage] = useState(1)
     const [pagination, setPagination] = useState({ total: 0, totalPages: 1 })
+    const [debouncedSearch, setDebouncedSearch] = useState('')
+
+    // Debounce search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(search)
+            setPage(1)
+        }, 500)
+        return () => clearTimeout(timer)
+    }, [search])
 
     // Modal states
     const [showModal, setShowModal] = useState(false)
@@ -81,6 +92,9 @@ function StudentManagement() {
         email: '',
         student_id: '',
         role: 'student',
+        student_id: '',
+        role: 'student',
+        program_id: '', // Add program_id to form data
         password: ''
     })
 
@@ -94,7 +108,7 @@ function StudentManagement() {
                 limit: '20'
             })
 
-            if (search) params.append('search', search)
+            if (debouncedSearch) params.append('search', debouncedSearch)
             if (roleFilter) params.append('role', roleFilter)
 
             const response = await fetch(`${API_BASE}/students.php?${params}`, {
@@ -116,19 +130,30 @@ function StudentManagement() {
         } finally {
             setLoading(false)
         }
-    }, [token, page, search, roleFilter])
+    }, [token, page, debouncedSearch, roleFilter])
 
     useEffect(() => {
         fetchStudents()
+        fetchPrograms() // Fetch programs when component mounts
     }, [fetchStudents])
 
-    // Debounce search
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setPage(1)
-        }, 300)
-        return () => clearTimeout(timer)
-    }, [search])
+    const fetchPrograms = async () => {
+        try {
+            const response = await fetch(`${API_BASE}/programs.php?active=true`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            const data = await response.json()
+            if (data.success) {
+                setPrograms(data.data)
+            }
+        } catch (err) {
+            console.error('Failed to fetch programs:', err)
+        }
+    }
+
+
 
     const getInitials = (name) => {
         return name
@@ -154,6 +179,9 @@ function StudentManagement() {
             email: '',
             student_id: '',
             role: 'student',
+            student_id: '',
+            role: 'student',
+            program_id: '',
             password: ''
         })
         setModalMode('add')
@@ -167,6 +195,9 @@ function StudentManagement() {
             email: student.email,
             student_id: student.student_id || '',
             role: student.role,
+            student_id: student.student_id || '',
+            role: student.role,
+            program_id: student.program_id || '', // Populate program_id for editing
             password: ''
         })
         setModalMode('edit')
@@ -176,6 +207,42 @@ function StudentManagement() {
     const openDeleteModal = (student) => {
         setDeletingStudent(student)
         setShowDeleteModal(true)
+    }
+
+    const handleToggleStatus = async (student) => {
+        const newStatus = !student.is_active
+        const confirmMessage = newStatus
+            ? `Activate ${student.full_name}? They will be able to log in.`
+            : `Deactivate ${student.full_name}? They will not be able to log in.`
+
+        if (!window.confirm(confirmMessage)) return
+
+        try {
+            const response = await fetch(`${API_BASE}/students.php`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    id: student.id,
+                    is_active: newStatus
+                })
+            })
+
+            const data = await response.json()
+
+            if (data.success) {
+                // Update local state optimistically
+                setStudents(prev => prev.map(s =>
+                    s.id === student.id ? { ...s, is_active: newStatus } : s
+                ))
+            } else {
+                setError(data.error || 'Failed to update student status')
+            }
+        } catch (err) {
+            setError('Network error. Please try again.')
+        }
     }
 
     const handleSubmit = async (e) => {
@@ -316,6 +383,7 @@ function StudentManagement() {
                                     <th>Student</th>
                                     <th>Student ID</th>
                                     <th>Role</th>
+                                    <th>Dept.</th>
                                     <th>Status</th>
                                     <th>Last Login</th>
                                     <th>Actions</th>
@@ -346,9 +414,19 @@ function StudentManagement() {
                                             </span>
                                         </td>
                                         <td>
-                                            <span className={`status-badge ${student.is_active ? 'active' : 'inactive'}`}>
-                                                {student.is_active ? 'Active' : 'Inactive'}
+                                            <span style={{ fontWeight: '500', color: 'var(--text-secondary)' }}>
+                                                {student.program_code || '-'}
                                             </span>
+                                        </td>
+                                        <td>
+                                            <button
+                                                className={`status-toggle ${student.is_active ? 'active' : 'inactive'}`}
+                                                onClick={() => handleToggleStatus(student)}
+                                                title={student.is_active ? 'Click to deactivate' : 'Click to activate'}
+                                            >
+                                                <span className="status-indicator"></span>
+                                                {student.is_active ? 'Active' : 'Inactive'}
+                                            </button>
                                         </td>
                                         <td>{formatDate(student.last_login)}</td>
                                         <td>
@@ -445,6 +523,21 @@ function StudentManagement() {
                                         onChange={e => setFormData({ ...formData, student_id: e.target.value })}
                                         placeholder="Enter student ID (optional)"
                                     />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Department (Program)</label>
+                                    <select
+                                        className="form-select"
+                                        value={formData.program_id}
+                                        onChange={e => setFormData({ ...formData, program_id: e.target.value })}
+                                    >
+                                        <option value="">Select Department</option>
+                                        {programs.map(prog => (
+                                            <option key={prog.id} value={prog.id}>
+                                                {prog.name} ({prog.code})
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <div className="form-group">
                                     <label className="form-label">Role</label>

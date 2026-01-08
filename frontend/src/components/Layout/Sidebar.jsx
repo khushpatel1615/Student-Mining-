@@ -9,7 +9,14 @@ import {
     User,
     CalendarDays,
     LogOut,
-    ChevronRight
+    ChevronRight,
+    Users,
+    BookOpen,
+    CheckSquare,
+    ClipboardList,
+    Layers,
+    FileText,
+    Settings
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -17,7 +24,7 @@ const Sidebar = ({ role = 'student', onLogout }) => {
     const { user } = useAuth();
     const location = useLocation();
     const [searchParams] = useSearchParams();
-    const activeTab = searchParams.get('tab') || 'overview';
+    const activeTab = searchParams.get('tab') || (role === 'admin' ? 'analytics' : 'overview');
 
     const studentMenuItems = [
         { id: 'overview', label: 'Overview', icon: LayoutDashboard, tab: 'overview' },
@@ -28,7 +35,18 @@ const Sidebar = ({ role = 'student', onLogout }) => {
         { id: 'calendar', label: 'Calendar', icon: CalendarDays, tab: 'calendar' }
     ];
 
-    const menuItems = studentMenuItems;
+    const adminMenuItems = [
+        { id: 'analytics', label: 'Overview', icon: LayoutDashboard, tab: 'analytics' },
+        { id: 'students', label: 'Students', icon: Users, tab: 'students' },
+        { id: 'programs', label: 'Programs', icon: Layers, tab: 'programs' },
+        { id: 'subjects', label: 'Subjects', icon: BookOpen, tab: 'subjects' },
+        { id: 'enrollments', label: 'Enrollments', icon: ClipboardList, tab: 'enrollments' },
+        { id: 'grades', label: 'Grades', icon: GraduationCap, tab: 'grades' },
+        { id: 'attendance', label: 'Attendance', icon: CheckSquare, tab: 'attendance' },
+        { id: 'calendar', label: 'Calendar', icon: CalendarDays, tab: 'calendar' }
+    ];
+
+    const menuItems = role === 'admin' ? adminMenuItems : studentMenuItems;
 
     const getInitials = (name) => {
         if (!name) return '?';

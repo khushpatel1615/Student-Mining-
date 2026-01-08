@@ -99,6 +99,13 @@ function handleGet($pdo)
             $params[] = $activeOnly ? 1 : 0;
         }
 
+        // Program filter
+        $programId = $_GET['program_id'] ?? null;
+        if (!empty($programId)) {
+            $conditions[] = "program_id = ?";
+            $params[] = $programId;
+        }
+
         $whereClause = count($conditions) > 0 ? 'WHERE ' . implode(' AND ', $conditions) : '';
 
         // Get total count
@@ -109,11 +116,13 @@ function handleGet($pdo)
 
         // Get students
         $sql = "
-            SELECT id, email, student_id, full_name, role, avatar_url, 
-                   is_active, created_at, updated_at, last_login
-            FROM users 
+            SELECT u.id, u.email, u.student_id, u.full_name, u.role, u.avatar_url, 
+                   u.is_active, u.created_at, u.updated_at, u.last_login,
+                   p.code as program_code
+            FROM users u
+            LEFT JOIN programs p ON u.program_id = p.id
             $whereClause
-            ORDER BY created_at DESC
+            ORDER BY u.created_at DESC
             LIMIT ? OFFSET ?
         ";
 
@@ -192,8 +201,8 @@ function handlePost($pdo)
     $role = in_array($data['role'] ?? 'student', ['student', 'admin']) ? ($data['role'] ?? 'student') : 'student';
 
     $stmt = $pdo->prepare("
-        INSERT INTO users (email, student_id, password_hash, full_name, role, is_active)
-        VALUES (?, ?, ?, ?, ?, TRUE)
+        INSERT INTO users (email, student_id, password_hash, full_name, role, is_active, program_id)
+        VALUES (?, ?, ?, ?, ?, TRUE, ?)
     ");
 
     $stmt->execute([
@@ -201,7 +210,8 @@ function handlePost($pdo)
         $data['student_id'] ?? null,
         $passwordHash,
         $data['full_name'],
-        $role
+        $role,
+        $data['program_id'] ?? null
     ]);
 
     $newId = $pdo->lastInsertId();
@@ -297,6 +307,11 @@ function handlePut($pdo)
     if (isset($data['password']) && !empty($data['password'])) {
         $fields[] = 'password_hash = ?';
         $params[] = password_hash($data['password'], PASSWORD_DEFAULT);
+    }
+
+    if (isset($data['program_id'])) {
+        $fields[] = 'program_id = ?';
+        $params[] = $data['program_id'] ?: null;
     }
 
     if (empty($fields)) {

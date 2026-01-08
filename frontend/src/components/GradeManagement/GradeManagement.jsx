@@ -36,6 +36,7 @@ function GradeManagement() {
     const [selectedProgram, setSelectedProgram] = useState('')
     const [selectedSemester, setSelectedSemester] = useState('')
     const [selectedSubject, setSelectedSubject] = useState('')
+    const [searchQuery, setSearchQuery] = useState('')
 
     // Fetch programs
     useEffect(() => {
@@ -90,7 +91,12 @@ function GradeManagement() {
             setLoading(true)
             setError(null)
 
-            const response = await fetch(`${API_BASE}/grades.php?subject_id=${selectedSubject}`, {
+            // Handle "All Subjects" option
+            const url = selectedSubject === 'all'
+                ? `${API_BASE}/grades.php?program_id=${selectedProgram}&semester=${selectedSemester}`
+                : `${API_BASE}/grades.php?subject_id=${selectedSubject}`
+
+            const response = await fetch(url, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             const data = await response.json()
@@ -117,7 +123,7 @@ function GradeManagement() {
         } finally {
             setLoading(false)
         }
-    }, [token, selectedSubject])
+    }, [token, selectedSubject, selectedProgram, selectedSemester])
 
     useEffect(() => {
         fetchGrades()
@@ -231,19 +237,45 @@ function GradeManagement() {
                     disabled={!selectedProgram}
                 >
                     <option value="">Select Subject</option>
+                    {selectedProgram && selectedSemester && (
+                        <option value="all">📚 All Subjects</option>
+                    )}
                     {subjects.map(s => (
                         <option key={s.id} value={s.id}>{s.name} ({s.code})</option>
                     ))}
                 </select>
+                <div className="search-wrapper" style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
+                    <input
+                        type="text"
+                        className="filter-input"
+                        placeholder="Search student..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        disabled={!selectedSubject}
+                        style={{
+                            width: '100%',
+                            padding: '0.5rem 0.75rem',
+                            border: '1px solid var(--border-color)',
+                            borderRadius: 'var(--radius-md)',
+                            background: 'var(--bg-primary)',
+                            color: 'var(--text-primary)',
+                            fontSize: '0.875rem'
+                        }}
+                    />
+                </div>
             </div>
 
             {/* Messages */}
-            {error && (
-                <div className="message error">{error}</div>
-            )}
-            {success && (
-                <div className="message success">{success}</div>
-            )}
+            {
+                error && (
+                    <div className="message error">{error}</div>
+                )
+            }
+            {
+                success && (
+                    <div className="message success">{success}</div>
+                )
+            }
 
             {/* Grades Table */}
             <div className="grades-table-container">
@@ -267,7 +299,97 @@ function GradeManagement() {
                         <h3>No enrollments found</h3>
                         <p>No students are enrolled in this subject yet.</p>
                     </div>
+                ) : selectedSubject === 'all' ? (
+                    // Grouped view for All Subjects
+                    <div className="all-subjects-view">
+                        {(() => {
+                            // Group enrollments by student
+                            const studentGroups = {}
+                            enrollments.forEach(enrollment => {
+                                const key = enrollment.student_id
+                                if (!studentGroups[key]) {
+                                    studentGroups[key] = {
+                                        student_name: enrollment.student_name,
+                                        student_id: enrollment.student_id,
+                                        subjects: []
+                                    }
+                                }
+                                studentGroups[key].subjects.push(enrollment)
+                            })
+
+                            // Filter by search
+                            const filteredStudents = Object.values(studentGroups).filter(student => {
+                                if (!searchQuery) return true
+                                const query = searchQuery.toLowerCase()
+                                return (
+                                    student.student_name.toLowerCase().includes(query) ||
+                                    String(student.student_id).toLowerCase().includes(query)
+                                )
+                            })
+
+                            return filteredStudents.map(student => (
+                                <div key={student.student_id} className="student-subjects-card">
+                                    <div className="student-card-header">
+                                        <div className="student-info-large">
+                                            <h3>{student.student_name}</h3>
+                                            <span className="student-id-badge">{student.student_id}</span>
+                                        </div>
+                                        <span className="subjects-count">{student.subjects.length} Subjects</span>
+                                    </div>
+                                    <div className="subjects-grid">
+                                        {student.subjects.map(enrollment => {
+                                            const subjectCriteria = criteria.filter(c => c.subject_id === enrollment.subject_id)
+                                            const total = subjectCriteria.reduce((sum, c) => {
+                                                const mark = grades[enrollment.id]?.[c.id]
+                                                return sum + (mark ? parseFloat(mark) : 0)
+                                            }, 0)
+                                            const maxTotal = subjectCriteria.reduce((sum, c) => sum + c.max_marks, 0)
+                                            const percentage = maxTotal > 0 ? ((total / maxTotal) * 100).toFixed(1) : 0
+
+                                            return (
+                                                <div key={enrollment.id} className="subject-grade-card">
+                                                    <div className="subject-card-header">
+                                                        <span className="subject-name">{enrollment.subject_name}</span>
+                                                        <span className="subject-code-tag">{enrollment.subject_code}</span>
+                                                    </div>
+                                                    <div className="criteria-grades">
+                                                        {subjectCriteria.map(c => (
+                                                            <div key={c.id} className="criteria-row">
+                                                                <label className="criteria-label">
+                                                                    {c.component_name}
+                                                                    <span className="max-marks">/{c.max_marks}</span>
+                                                                </label>
+                                                                <input
+                                                                    type="number"
+                                                                    className="grade-input-compact"
+                                                                    value={grades[enrollment.id]?.[c.id] || ''}
+                                                                    onChange={(e) => updateGrade(enrollment.id, c.id, e.target.value)}
+                                                                    min="0"
+                                                                    max={c.max_marks}
+                                                                    placeholder="0"
+                                                                />
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <div className="subject-card-footer">
+                                                        <div className="total-display">
+                                                            <span className="label">Total:</span>
+                                                            <span className="value">{total}/{maxTotal}</span>
+                                                        </div>
+                                                        <div className={`percentage-display ${percentage >= 40 ? 'pass' : 'fail'}`}>
+                                                            {percentage}%
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                            ))
+                        })()}
+                    </div>
                 ) : (
+                    // Standard table view for single subject
                     <div className="grades-table-wrapper">
                         <table className="grades-table">
                             <thead>
@@ -286,49 +408,58 @@ function GradeManagement() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {enrollments.map(enrollment => {
-                                    const total = calculateTotal(enrollment.id)
-                                    const maxTotal = criteria.reduce((sum, c) => sum + c.max_marks, 0)
-                                    const percentage = maxTotal > 0 ? ((total / maxTotal) * 100).toFixed(1) : 0
+                                {enrollments
+                                    .filter(enrollment => {
+                                        if (!searchQuery) return true
+                                        const query = searchQuery.toLowerCase()
+                                        return (
+                                            enrollment.student_name.toLowerCase().includes(query) ||
+                                            String(enrollment.student_id).toLowerCase().includes(query)
+                                        )
+                                    })
+                                    .map(enrollment => {
+                                        const total = calculateTotal(enrollment.id)
+                                        const maxTotal = criteria.reduce((sum, c) => sum + c.max_marks, 0)
+                                        const percentage = maxTotal > 0 ? ((total / maxTotal) * 100).toFixed(1) : 0
 
-                                    return (
-                                        <tr key={enrollment.id}>
-                                            <td className="sticky-col">
-                                                <div className="student-info">
-                                                    <span className="student-name">{enrollment.student_name}</span>
-                                                    <span className="student-id">{enrollment.student_id}</span>
-                                                </div>
-                                            </td>
-                                            {criteria.map(c => (
-                                                <td key={c.id}>
-                                                    <input
-                                                        type="number"
-                                                        className="grade-input"
-                                                        value={grades[enrollment.id]?.[c.id] || ''}
-                                                        onChange={(e) => updateGrade(enrollment.id, c.id, e.target.value)}
-                                                        min="0"
-                                                        max={c.max_marks}
-                                                        placeholder="-"
-                                                    />
+                                        return (
+                                            <tr key={enrollment.id}>
+                                                <td className="sticky-col">
+                                                    <div className="student-info">
+                                                        <span className="student-name">{enrollment.student_name}</span>
+                                                        <span className="student-id">{enrollment.student_id}</span>
+                                                    </div>
                                                 </td>
-                                            ))}
-                                            <td>
-                                                <span className="total-marks">{total}</span>
-                                            </td>
-                                            <td>
-                                                <span className={`percentage ${percentage >= 40 ? 'pass' : 'fail'}`}>
-                                                    {percentage}%
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    )
-                                })}
+                                                {criteria.map(c => (
+                                                    <td key={c.id}>
+                                                        <input
+                                                            type="number"
+                                                            className="grade-input"
+                                                            value={grades[enrollment.id]?.[c.id] || ''}
+                                                            onChange={(e) => updateGrade(enrollment.id, c.id, e.target.value)}
+                                                            min="0"
+                                                            max={c.max_marks}
+                                                            placeholder="-"
+                                                        />
+                                                    </td>
+                                                ))}
+                                                <td>
+                                                    <span className="total-marks">{total}</span>
+                                                </td>
+                                                <td>
+                                                    <span className={`percentage ${percentage >= 40 ? 'pass' : 'fail'}`}>
+                                                        {percentage}%
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        )
+                                    })}
                             </tbody>
                         </table>
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     )
 }
 

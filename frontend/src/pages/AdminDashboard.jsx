@@ -357,8 +357,7 @@ function AdminDashboard() {
                     </div>
                 </div>
 
-                {/* Stats Cards */}
-                <StatsCards />
+                {/* Stats Cards removed - AdminAnalyticsDashboard has its own overview cards */}
 
                 {/* Main Content with Sidebar */}
                 <div className="admin-layout">

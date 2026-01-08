@@ -98,9 +98,16 @@ function handleGet($pdo)
             JOIN users u ON se.user_id = u.id
             JOIN subjects s ON se.subject_id = s.id
             JOIN programs p ON s.program_id = p.id
-            WHERE u.role = 'student' AND se.status = 'active'
+            WHERE u.role = 'student'
         ";
         $params = [];
+
+        // Status filter (default to active if not specified)
+        $status = $_GET['status'] ?? 'active';
+        if ($status !== 'all') {
+            $sql .= " AND se.status = ?";
+            $params[] = $status;
+        }
 
         if ($programId) {
             $sql .= " AND s.program_id = ?";

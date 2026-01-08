@@ -70,7 +70,8 @@ function handleGet($pdo)
 
         $sql = "
             SELECT p.*, 
-                   COUNT(DISTINCT s.id) as total_subjects
+                   COUNT(DISTINCT s.id) as total_subjects,
+                   (SELECT COUNT(*) FROM users u WHERE u.program_id = p.id AND u.role = 'student') as total_students
             FROM programs p
             LEFT JOIN subjects s ON p.id = s.program_id AND s.is_active = TRUE
         ";

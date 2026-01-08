@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, X, Trash2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { createPortal } from 'react-dom'
 import './CalendarManagement.css'
 
 const API_BASE = 'http://localhost/StudentDataMining/backend/api'
@@ -27,6 +28,8 @@ const CalendarManagement = ({ role: propRole }) => {
     })
     const [submitting, setSubmitting] = useState(false)
     const [selectedEvent, setSelectedEvent] = useState(null)
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+    const [itemToDelete, setItemToDelete] = useState(null)
 
     useEffect(() => {
         fetchEvents()
@@ -127,24 +130,35 @@ const CalendarManagement = ({ role: propRole }) => {
         }
     }
 
-    const handleDelete = async (id, e) => {
-        e.stopPropagation(); // Prevent opening edit modal
-        if (!window.confirm('Are you sure?')) return
+    const handleDeleteClick = (id, e) => {
+        e.stopPropagation()
+        setItemToDelete(id)
+        setShowDeleteConfirm(true)
+    }
 
+    const confirmDelete = async () => {
+        if (!itemToDelete) return
+        setSubmitting(true)
         try {
-            const response = await fetch(`${API_BASE}/calendar.php?id=${id}`, {
+            const response = await fetch(`${API_BASE}/calendar.php?id=${itemToDelete}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             const data = await response.json()
             if (data.success) {
                 fetchEvents()
-                if (selectedEvent && selectedEvent.id === id) closeModal()
+                if (selectedEvent && selectedEvent.id === itemToDelete) {
+                    closeModal()
+                }
+                setShowDeleteConfirm(false)
+                setItemToDelete(null)
             } else {
                 alert(data.error || 'Failed to delete')
             }
         } catch (err) {
             alert('Error deleting event')
+        } finally {
+            setSubmitting(false)
         }
     }
 
@@ -241,7 +255,7 @@ const CalendarManagement = ({ role: propRole }) => {
                                 {(role === 'admin' || ev.created_by == user?.id) && (
                                     <span
                                         className="delete-event-btn"
-                                        onClick={(e) => handleDelete(ev.id, e)}
+                                        onClick={(e) => handleDeleteClick(ev.id, e)}
                                     >
                                         <Trash2 size={14} />
                                     </span>
@@ -291,202 +305,246 @@ const CalendarManagement = ({ role: propRole }) => {
                 {renderCalendarDays()}
             </div>
 
-            {/* Event Modal - Unchanged section */}
-            <AnimatePresence>
-                {showModal && (
-                    <div className="modal-overlay" onClick={closeModal}>
-                        <motion.div
-                            className="modal-content calendar-modal"
-                            initial={{ scale: 0.95, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.95, opacity: 0 }}
-                            onClick={e => e.stopPropagation()}
-                        >
-                            <div className="modal-header">
-                                <h3>{selectedEvent ? 'Edit Event' : 'Add New Event'}</h3>
-                                <button className="close-btn" onClick={closeModal}>
-                                    <X size={20} />
-                                </button>
-                            </div>
-                            <form onSubmit={handleCreateOrUpdate}>
-                                <div className="form-group">
-                                    <label>Event Title</label>
-                                    <input
-                                        type="text"
-                                        className="form-input"
-                                        required
-                                        value={formData.title}
-                                        onChange={e => setFormData({ ...formData, title: e.target.value })}
-                                        placeholder="e.g. Mid-Term Exam"
-                                    />
-                                </div>
-
-                                <div className="form-row">
-                                    <div className="form-group">
-                                        <label>Date</label>
-                                        <input
-                                            type="date"
-                                            className="form-input"
-                                            required
-                                            value={formData.event_date}
-                                            onChange={e => setFormData({ ...formData, event_date: e.target.value })}
-                                        />
+            {/* Event Modal */}
+            {createPortal(
+                <AnimatePresence>
+                    {showModal && (
+                        <div className="calendar-modal-portal">
+                            <div className="modal-overlay" onClick={closeModal}>
+                                <motion.div
+                                    className="modal-content calendar-modal"
+                                    initial={{ scale: 0.95, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    exit={{ scale: 0.95, opacity: 0 }}
+                                    onClick={e => e.stopPropagation()}
+                                >
+                                    <div className="modal-header">
+                                        <h3>{selectedEvent ? 'Edit Event' : 'Add New Event'}</h3>
+                                        <button className="close-btn" onClick={closeModal}>
+                                            <X size={20} />
+                                        </button>
                                     </div>
-                                    <div className="form-group">
-                                        <label>Type</label>
-                                        <select
-                                            className="form-select"
-                                            value={formData.type}
-                                            onChange={e => setFormData({ ...formData, type: e.target.value })}
-                                        >
-                                            {role === 'admin' ? (
-                                                <>
-                                                    <option value="event">Event</option>
-                                                    <option value="exam">Exam</option>
-                                                    <option value="holiday">Holiday</option>
-                                                    <option value="deadline">Deadline</option>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <option value="assignment">Assignment</option>
-                                                    <option value="event">Event</option>
-                                                </>
-                                            )}
-                                        </select>
-                                    </div>
-                                </div>
+                                    <form onSubmit={handleCreateOrUpdate}>
+                                        <div className="form-group">
+                                            <label>Event Title</label>
+                                            <input
+                                                type="text"
+                                                className="form-input"
+                                                required
+                                                value={formData.title}
+                                                onChange={e => setFormData({ ...formData, title: e.target.value })}
+                                                placeholder="e.g. Mid-Term Exam"
+                                            />
+                                        </div>
 
-                                <div className="form-group">
-                                    <label>Description</label>
-                                    <textarea
-                                        className="form-textarea"
-                                        value={formData.description}
-                                        onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                        placeholder="Optional details..."
-                                    />
-                                </div>
-
-                                {/* Dynamic Target Audience */}
-                                <div className="form-group">
-                                    <label>Target Audience</label>
-
-                                    {role === 'admin' ? (
-                                        <div className="target-selection">
-                                            <div className="radio-group">
-                                                <label className="radio-label">
-                                                    <input
-                                                        type="radio"
-                                                        name="target"
-                                                        value="all"
-                                                        checked={formData.target_audience === 'all'}
-                                                        onChange={() => setFormData({
-                                                            ...formData,
-                                                            target_audience: 'all',
-                                                            target_program_id: '',
-                                                            target_semester: ''
-                                                        })}
-                                                    /> All Students
-                                                </label>
-                                                <label className="radio-label">
-                                                    <input
-                                                        type="radio"
-                                                        name="target"
-                                                        value="program"
-                                                        checked={['program', 'program_semester', 'semester'].includes(formData.target_audience)}
-                                                        onChange={() => setFormData({
-                                                            ...formData,
-                                                            target_audience: 'program',
-                                                            target_program_id: '', // Reset
-                                                            target_semester: ''
-                                                        })}
-                                                    /> Specific Program
-                                                </label>
+                                        <div className="form-row">
+                                            <div className="form-group">
+                                                <label>Date</label>
+                                                <input
+                                                    type="date"
+                                                    className="form-input"
+                                                    required
+                                                    value={formData.event_date}
+                                                    onChange={e => setFormData({ ...formData, event_date: e.target.value })}
+                                                />
                                             </div>
+                                            <div className="form-group">
+                                                <label>Type</label>
+                                                <select
+                                                    className="form-select"
+                                                    value={formData.type}
+                                                    onChange={e => setFormData({ ...formData, type: e.target.value })}
+                                                >
+                                                    {role === 'admin' ? (
+                                                        <>
+                                                            <option value="event">Event</option>
+                                                            <option value="exam">Exam</option>
+                                                            <option value="holiday">Holiday</option>
+                                                            <option value="deadline">Deadline</option>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <option value="assignment">Assignment</option>
+                                                            <option value="event">Event</option>
+                                                        </>
+                                                    )}
+                                                </select>
+                                            </div>
+                                        </div>
 
-                                            {['program', 'program_semester', 'semester'].includes(formData.target_audience) && (
-                                                <div className="program-filters">
-                                                    <div className="form-group">
-                                                        <label className="label-small">Program / Department</label>
-                                                        <select
-                                                            className="form-select"
-                                                            required
-                                                            value={formData.target_program_id}
-                                                            onChange={e => setFormData({ ...formData, target_program_id: e.target.value })}
-                                                        >
-                                                            <option value="">Select Program</option>
-                                                            {programs.map(p => (
-                                                                <option key={p.id} value={p.id}>{p.name} ({p.code})</option>
-                                                            ))}
-                                                        </select>
-                                                    </div>
+                                        <div className="form-group">
+                                            <label>Description</label>
+                                            <textarea
+                                                className="form-textarea"
+                                                value={formData.description}
+                                                onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                                placeholder="Optional details..."
+                                            />
+                                        </div>
 
-                                                    <div className="form-group">
-                                                        <label className="label-small">Semester (Optional)</label>
-                                                        <select
-                                                            className="form-select"
-                                                            value={formData.target_semester}
-                                                            onChange={e => {
-                                                                const sem = e.target.value;
-                                                                setFormData({
+                                        {/* Dynamic Target Audience */}
+                                        <div className="form-group">
+                                            <label>Target Audience</label>
+
+                                            {role === 'admin' ? (
+                                                <div className="target-selection">
+                                                    <div className="radio-group">
+                                                        <label className="radio-label">
+                                                            <input
+                                                                type="radio"
+                                                                name="target"
+                                                                value="all"
+                                                                checked={formData.target_audience === 'all'}
+                                                                onChange={() => setFormData({
                                                                     ...formData,
-                                                                    target_semester: sem,
-                                                                    // Update audience type based on selection
-                                                                    target_audience: sem ? 'program_semester' : 'program'
-                                                                })
-                                                            }}
-                                                        >
-                                                            <option value="">All Semesters</option>
-                                                            {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
-                                                                <option key={s} value={s}>Semester {s}</option>
-                                                            ))}
-                                                        </select>
-                                                        <small className="helper-text">Leave "All Semesters" for the entire department</small>
+                                                                    target_audience: 'all',
+                                                                    target_program_id: '',
+                                                                    target_semester: ''
+                                                                })}
+                                                            /> All Students
+                                                        </label>
+                                                        <label className="radio-label">
+                                                            <input
+                                                                type="radio"
+                                                                name="target"
+                                                                value="program"
+                                                                checked={['program', 'program_semester', 'semester'].includes(formData.target_audience)}
+                                                                onChange={() => setFormData({
+                                                                    ...formData,
+                                                                    target_audience: 'program',
+                                                                    target_program_id: '', // Reset
+                                                                    target_semester: ''
+                                                                })}
+                                                            /> Specific Program
+                                                        </label>
                                                     </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <div className="teacher-view">
-                                            {role === 'teacher' && (
-                                                <div className="form-group mt-2">
-                                                    <label>Select Subject</label>
-                                                    <select
-                                                        className="form-select"
-                                                        required
-                                                        value={formData.target_subject_id}
-                                                        onChange={e => setFormData({
-                                                            ...formData,
-                                                            target_audience: 'subject',
-                                                            target_subject_id: e.target.value
-                                                        })}
-                                                    >
-                                                        <option value="">-- Choose Subject --</option>
-                                                        {mySubjects.map(sub => (
-                                                            <option key={sub.id} value={sub.id}>
-                                                                {sub.name} ({sub.code})
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
 
-                                <div className="modal-actions">
-                                    <button type="button" className="btn-secondary" onClick={closeModal}>Cancel</button>
-                                    <button type="submit" className="btn-primary" disabled={submitting}>
-                                        {submitting ? 'Saving...' : (selectedEvent ? 'Update Event' : 'Add Event')}
+                                                    {['program', 'program_semester', 'semester'].includes(formData.target_audience) && (
+                                                        <div className="program-filters">
+                                                            <div className="form-group">
+                                                                <label className="label-small">Program / Department</label>
+                                                                <select
+                                                                    className="form-select"
+                                                                    required
+                                                                    value={formData.target_program_id}
+                                                                    onChange={e => setFormData({ ...formData, target_program_id: e.target.value })}
+                                                                >
+                                                                    <option value="">Select Program</option>
+                                                                    {programs.map(p => (
+                                                                        <option key={p.id} value={p.id}>{p.name} ({p.code})</option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
+
+                                                            <div className="form-group">
+                                                                <label className="label-small">Semester (Optional)</label>
+                                                                <select
+                                                                    className="form-select"
+                                                                    value={formData.target_semester}
+                                                                    onChange={e => {
+                                                                        const sem = e.target.value;
+                                                                        setFormData({
+                                                                            ...formData,
+                                                                            target_semester: sem,
+                                                                            // Update audience type based on selection
+                                                                            target_audience: sem ? 'program_semester' : 'program'
+                                                                        })
+                                                                    }}
+                                                                >
+                                                                    <option value="">All Semesters</option>
+                                                                    {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
+                                                                        <option key={s} value={s}>Semester {s}</option>
+                                                                    ))}
+                                                                </select>
+                                                                <small className="helper-text">Leave "All Semesters" for the entire department</small>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <div className="teacher-view">
+                                                    {role === 'teacher' && (
+                                                        <div className="form-group mt-2">
+                                                            <label>Select Subject</label>
+                                                            <select
+                                                                className="form-select"
+                                                                required
+                                                                value={formData.target_subject_id}
+                                                                onChange={e => setFormData({
+                                                                    ...formData,
+                                                                    target_audience: 'subject',
+                                                                    target_subject_id: e.target.value
+                                                                })}
+                                                            >
+                                                                <option value="">-- Choose Subject --</option>
+                                                                {mySubjects.map(sub => (
+                                                                    <option key={sub.id} value={sub.id}>
+                                                                        {sub.name} ({sub.code})
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="modal-actions">
+                                            <button type="button" className="btn-secondary" onClick={closeModal}>Cancel</button>
+                                            <button type="submit" className="btn-primary" disabled={submitting}>
+                                                {submitting ? 'Saving...' : (selectedEvent ? 'Update Event' : 'Add Event')}
+                                            </button>
+                                        </div>
+                                    </form>
+                                </motion.div>
+                            </div>
+                        </div>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {createPortal(
+                <AnimatePresence>
+                    {showDeleteConfirm && (
+                        <div className="modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
+                            <motion.div
+                                className="modal-content"
+                                initial={{ scale: 0.95, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.95, opacity: 0 }}
+                                onClick={e => e.stopPropagation()}
+                                style={{ maxWidth: '400px', padding: '2rem', textAlign: 'center' }}
+                            >
+                                <div style={{ marginBottom: '1.5rem', color: '#ef4444' }}>
+                                    <Trash2 size={48} style={{ margin: '0 auto', display: 'block' }} />
+                                </div>
+                                <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem' }}>Delete Event?</h3>
+                                <p style={{ color: '#4b5563', marginBottom: '2rem' }}>
+                                    Are you sure you want to delete this event? This action cannot be undone.
+                                </p>
+                                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                                    <button className="btn-secondary" onClick={() => setShowDeleteConfirm(false)}>
+                                        Cancel
+                                    </button>
+                                    <button
+                                        className="btn-primary"
+                                        onClick={confirmDelete}
+                                        style={{ background: '#ef4444', borderColor: '#ef4444' }}
+                                        disabled={submitting}
+                                    >
+                                        {submitting ? 'Deleting...' : 'Delete Event'}
                                     </button>
                                 </div>
-                            </form>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
         </div>
     )
-    // ... existing code ...
 }
 
 export default CalendarManagement

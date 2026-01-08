@@ -33,17 +33,26 @@ if (empty($studentId) || empty($password)) {
 try {
     $pdo = getDBConnection();
 
-    // Look up user by student_id or email
+    // First, check if user exists (regardless of active status)
     $stmt = $pdo->prepare("
-        SELECT id, email, student_id, password_hash, full_name, role, avatar_url 
+        SELECT id, email, student_id, password_hash, full_name, role, avatar_url, is_active 
         FROM users 
-        WHERE (student_id = :identifier1 OR email = :identifier2) AND is_active = 1
+        WHERE (student_id = :identifier1 OR email = :identifier2)
     ");
     $stmt->execute(['identifier1' => $studentId, 'identifier2' => $studentId]);
     $user = $stmt->fetch();
 
     if (!$user) {
         jsonResponse(['success' => false, 'error' => 'Account not found. Please check your credentials.'], 401);
+    }
+
+    // Check if account is inactive
+    if (!$user['is_active']) {
+        jsonResponse([
+            'success' => false,
+            'error' => 'Your account has been deactivated. Please contact the administrator for assistance.',
+            'accountInactive' => true
+        ], 403);
     }
 
     // Check if user has a password set (might be OAuth-only user)
