@@ -14,9 +14,44 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Environment
+# Environment files
 .env
+.env.local
+.env.*.local
+*.env
 
 # Build
 dist/
 build/
+
+# ===========================================
+# SENSITIVE FILES - DO NOT COMMIT
+# ===========================================
+
+# Database configuration (contains credentials)
+backend/config/database.php
+
+# Utility scripts with hardcoded credentials
+backend/api/reset_pass.php
+
+# Data files that may contain personal information
+*.xlsx
+*.xls
+*.csv
+
+# Log files
+*.log
+logs/
+
+# Cache files
+*.cache
+.cache/
+
+# Backup files
+*.bak
+*.backup
+*.sql
+
+# OS-specific
+Desktop.ini
+ehthumbs.db

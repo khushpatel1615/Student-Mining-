@@ -37310,3 +37310,143 @@
     "user": "admin@college.edu"
 }
 ----------------------------------------
+[2026-01-08 17:00:31] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc2Nzg4NzM3MywiZXhwIjoxNzY3OTczNzczLCJ1c2VyX2lkIjoxLCJlbWFpbCI6ImFkbWluQGNvbGxlZ2UuZWR1Iiwicm9sZSI6ImFkbWluIiwiZnVsbF9uYW1lIjoiU3lzdGVtIEFkbWluaXN0cmF0b3IifQ.8-VmjXoCIJ2QhsYGvdESDmXMF6wO-d-jJ4adtUnCWl4",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/143.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-01-08 17:00:31] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-01-08 17:00:31] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "admin@college.edu"
+}
+----------------------------------------
+[2026-01-08 17:00:31] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc2Nzg4NzM3MywiZXhwIjoxNzY3OTczNzczLCJ1c2VyX2lkIjoxLCJlbWFpbCI6ImFkbWluQGNvbGxlZ2UuZWR1Iiwicm9sZSI6ImFkbWluIiwiZnVsbF9uYW1lIjoiU3lzdGVtIEFkbWluaXN0cmF0b3IifQ.8-VmjXoCIJ2QhsYGvdESDmXMF6wO-d-jJ4adtUnCWl4",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/143.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-01-08 17:00:31] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-01-08 17:00:31] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "admin@college.edu"
+}
+----------------------------------------
+[2026-01-08 17:00:42] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc2Nzg4NzM3MywiZXhwIjoxNzY3OTczNzczLCJ1c2VyX2lkIjoxLCJlbWFpbCI6ImFkbWluQGNvbGxlZ2UuZWR1Iiwicm9sZSI6ImFkbWluIiwiZnVsbF9uYW1lIjoiU3lzdGVtIEFkbWluaXN0cmF0b3IifQ.8-VmjXoCIJ2QhsYGvdESDmXMF6wO-d-jJ4adtUnCWl4",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/143.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-01-08 17:00:42] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-01-08 17:00:42] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "admin@college.edu"
+}
+----------------------------------------
+[2026-01-08 17:00:42] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc2Nzg4NzM3MywiZXhwIjoxNzY3OTczNzczLCJ1c2VyX2lkIjoxLCJlbWFpbCI6ImFkbWluQGNvbGxlZ2UuZWR1Iiwicm9sZSI6ImFkbWluIiwiZnVsbF9uYW1lIjoiU3lzdGVtIEFkbWluaXN0cmF0b3IifQ.8-VmjXoCIJ2QhsYGvdESDmXMF6wO-d-jJ4adtUnCWl4",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/143.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-01-08 17:00:42] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-01-08 17:00:42] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "admin@college.edu"
+}
+----------------------------------------

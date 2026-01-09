@@ -1,29 +1,35 @@
 <?php
 /**
- * Database Configuration
+ * Database Configuration Template
  * StudentDataMining - Unified Login System
+ * 
+ * INSTRUCTIONS:
+ * 1. Copy this file to 'database.php' in the same directory
+ * 2. Fill in your actual credentials below
+ * 3. Never commit the actual database.php file to version control
  */
 
 // Error reporting for development
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
-// Database credentials
+// Database credentials - FILL IN YOUR OWN VALUES
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'student_data_mining');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_USER', 'your_database_username');
+define('DB_PASS', 'your_database_password');
 define('DB_CHARSET', 'utf8mb4');
 
-// JWT Configuration
-define('JWT_SECRET', 'student-data-mining-secret-key-2024-change-in-production');
+// JWT Configuration - CHANGE THIS TO A SECURE RANDOM STRING
+define('JWT_SECRET', 'generate-a-secure-random-string-here');
 define('JWT_EXPIRY', 86400); // 24 hours in seconds
 
-// Google OAuth Configuration
-define('GOOGLE_CLIENT_ID', '558182958130-dd2vsg1k4vrgheuua9oe1h0534586ps5.apps.googleusercontent.com');
-define('GOOGLE_CLIENT_SECRET', 'YOUR_GOOGLE_CLIENT_SECRET');
+// Google OAuth Configuration - Get these from Google Cloud Console
+// https://console.cloud.google.com/apis/credentials
+define('GOOGLE_CLIENT_ID', 'your-google-client-id.apps.googleusercontent.com');
+define('GOOGLE_CLIENT_SECRET', 'your-google-client-secret');
 
-// CORS Configuration
+// CORS Configuration - Update for your frontend URL
 define('ALLOWED_ORIGIN', 'http://localhost:5173');
 
 // PDO Database Connection
