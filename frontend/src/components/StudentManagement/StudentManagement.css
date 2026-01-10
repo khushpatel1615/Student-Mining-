@@ -662,3 +662,83 @@
         text-align: center;
     }
 }
+
+/* Status Toggle Confirmation Modal */
+.status-confirmation {
+    text-align: center;
+    padding: 1rem 0;
+}
+
+.status-confirmation-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.status-confirmation-icon svg {
+    width: 32px;
+    height: 32px;
+}
+
+.status-confirmation h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.status-confirmation p {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.status-confirmation p strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* Deactivate variant (red) */
+.status-confirmation.deactivate .status-confirmation-icon {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.status-confirmation.deactivate .status-confirmation-icon svg {
+    color: var(--error);
+}
+
+/* Activate variant (green) */
+.status-confirmation.activate .status-confirmation-icon {
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.status-confirmation.activate .status-confirmation-icon svg {
+    color: #10b981;
+}
+
+/* Success Button */
+.btn-success {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.btn-success:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.btn-success:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

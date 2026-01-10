@@ -45,15 +45,43 @@ function handleGet($pdo)
         return;
     }
 
-    $userId = $_GET['user_id'] ?? $user['sub'];
+    $userId = $_GET['user_id'] ?? $user['user_id'];
     $enrollmentId = $_GET['enrollment_id'] ?? null;
     $subjectId = $_GET['subject_id'] ?? null;
+    $date = $_GET['date'] ?? null;
     $month = $_GET['month'] ?? null; // Format: YYYY-MM
 
     // If not admin, can only view own attendance
-    if ($user['role'] !== 'admin' && $userId != $user['sub']) {
+    if ($user['role'] !== 'admin' && $userId != $user['user_id']) {
         http_response_code(403);
         echo json_encode(['error' => 'Access denied']);
+        return;
+    }
+
+    // 3. Admin/Teacher: Fetch all students for a specific subject and date
+    if (in_array($user['role'], ['admin', 'teacher']) && $subjectId && $date) {
+        $stmt = $pdo->prepare("
+            SELECT 
+                se.id,
+                u.full_name as student_name,
+                u.student_id as student_code,
+                sa.status as attendance_status,
+                sa.remarks
+            FROM student_enrollments se
+            JOIN users u ON se.user_id = u.id
+            LEFT JOIN student_attendance sa ON se.id = sa.enrollment_id AND sa.attendance_date = ?
+            WHERE se.subject_id = ?
+            ORDER BY u.full_name ASC
+        ");
+        $stmt->execute([$date, $subjectId]);
+        $enrollments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        echo json_encode([
+            'success' => true,
+            'data' => [
+                'enrollments' => $enrollments
+            ]
+        ]);
         return;
     }
 
@@ -156,10 +184,150 @@ function handleGet($pdo)
  */
 function handlePost($pdo)
 {
-    $user = verifyAdminToken();
+    $user = getAuthUser();
     if (!$user) {
         http_response_code(401);
-        echo json_encode(['error' => 'Unauthorized. Admin access required.']);
+        echo json_encode(['error' => 'Unauthorized']);
+        return;
+    }
+
+    $data = json_decode(file_get_contents('php://input'), true);
+    $action = $data['action'] ?? null;
+
+    // 1. Start Smart Session (Teacher/Admin)
+    if ($action === 'start_session') {
+        if (!in_array($user['role'], ['admin', 'teacher'])) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Forbidden']);
+            return;
+        }
+
+        if (empty($data['subject_id'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Subject ID required']);
+            return;
+        }
+
+        $sessionCode = strtoupper(substr(md5(uniqid()), 0, 6));
+        $expiry = date('Y-m-d H:i:s', strtotime('+15 minutes'));
+        $authorizedIp = $_SERVER['REMOTE_ADDR'];
+
+        $stmt = $pdo->prepare("
+            INSERT INTO attendance_sessions (subject_id, teacher_id, authorized_ip, session_code, expires_at)
+            VALUES (?, ?, ?, ?, ?)
+        ");
+        $stmt->execute([
+            $data['subject_id'],
+            $user['user_id'],
+            $authorizedIp,
+            $sessionCode,
+            $expiry
+        ]);
+
+        echo json_encode([
+            'success' => true,
+            'data' => [
+                'session_id' => $pdo->lastInsertId(),
+                'session_code' => $sessionCode,
+                'expires_at' => $expiry,
+                'authorized_ip' => $authorizedIp
+            ]
+        ]);
+        return;
+    }
+
+    // 2. Mark Attendance via QR/WiFi (Student)
+    if ($action === 'mark_self') {
+        if ($user['role'] !== 'student') {
+            http_response_code(403);
+            echo json_encode(['error' => 'Only students can mark their own attendance']);
+            return;
+        }
+
+        if (empty($data['session_code'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Session code required']);
+            return;
+        }
+
+        // Find active session
+        $stmt = $pdo->prepare("
+            SELECT * FROM attendance_sessions 
+            WHERE session_code = ? AND expires_at > NOW() AND is_active = 1
+            LIMIT 1
+        ");
+        $stmt->execute([$data['session_code']]);
+        $session = $stmt->fetch();
+
+        if (!$session) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Invalid or expired session code']);
+            return;
+        }
+
+        $studentIp = $_SERVER['REMOTE_ADDR'];
+
+        // 🛡️ WiFi Check: Must match Teacher's IP
+        if ($studentIp !== $session['authorized_ip']) {
+            http_response_code(403);
+            echo json_encode([
+                'error' => 'WiFi Network Mismatch',
+                'details' => 'You must be connected to the same classroom WiFi as the teacher.'
+            ]);
+            return;
+        }
+
+        // 🛡️ Proxy Check: One IP per Session
+        $stmt = $pdo->prepare("
+            SELECT id FROM student_attendance 
+            WHERE session_id = ? AND ip_address = ?
+        ");
+        $stmt->execute([$session['id'], $studentIp]);
+        if ($stmt->fetch()) {
+            http_response_code(409);
+            echo json_encode(['error' => 'Device already used. One device per student is enforced.']);
+            return;
+        }
+
+        // Get Enrollment
+        $stmt = $pdo->prepare("
+            SELECT id FROM student_enrollments 
+            WHERE user_id = ? AND subject_id = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$user['user_id'], $session['subject_id']]);
+        $enrollment = $stmt->fetch();
+
+        if (!$enrollment) {
+            http_response_code(403);
+            echo json_encode(['error' => 'You are not enrolled in this subject']);
+            return;
+        }
+
+        // Mark Attendance
+        $stmt = $pdo->prepare("
+            INSERT INTO student_attendance (enrollment_id, attendance_date, status, marked_by, session_id, ip_address)
+            VALUES (?, CURDATE(), 'present', ?, ?, ?)
+            ON DUPLICATE KEY UPDATE status = 'present', marked_by = ?, session_id = ?, ip_address = ?
+        ");
+        $stmt->execute([
+            $enrollment['id'],
+            $user['user_id'],
+            $session['id'],
+            $studentIp,
+            $user['user_id'],
+            $session['id'],
+            $studentIp
+        ]);
+
+        echo json_encode(['success' => true, 'message' => 'Attendance verified & recorded!']);
+        return;
+    }
+
+    // --- FALLBACK TO ADMIN ACTIONS ---
+    if ($user['role'] !== 'admin') {
+        http_response_code(403);
+        echo json_encode(['error' => 'Admin access required for manual marking']);
         return;
     }
 
@@ -181,10 +349,10 @@ function handlePost($pdo)
             $data['date'],
             $status,
             $remarks,
-            $user['sub'],
+            $user['user_id'],
             $status,
             $remarks,
-            $user['sub']
+            $user['user_id']
         ]);
 
         // Notify if absent or late
@@ -239,12 +407,12 @@ function handlePost($pdo)
                     $data['date'],
                     $status,
                     $remarks,
-                    $user['sub'],
+                    $user['user_id'],
                     $student['user_id'],
                     $data['subject_id'],
                     $status,
                     $remarks,
-                    $user['sub']
+                    $user['user_id']
                 ]);
                 $markedCount++;
 
@@ -319,7 +487,7 @@ function handlePut($pdo)
     }
 
     $fields[] = 'marked_by = ?';
-    $params[] = $user['sub'];
+    $params[] = $user['user_id'];
     $params[] = $data['id'];
 
     $stmt = $pdo->prepare("UPDATE student_attendance SET " . implode(', ', $fields) . " WHERE id = ?");

@@ -17,6 +17,9 @@ try {
         case 'GET':
             handleGet($pdo);
             break;
+        case 'POST':
+            handlePost($pdo);
+            break;
         case 'PUT':
             handlePut($pdo);
             break;
@@ -110,4 +113,54 @@ function handlePut($pdo)
 
     http_response_code(400);
     echo json_encode(['error' => 'Invalid request']);
+}
+
+/**
+ * POST - Create a new notification
+ */
+function handlePost($pdo)
+{
+    $user = getAuthUser();
+    if (!$user) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Unauthorized']);
+        return;
+    }
+
+    // Only admins and teachers can create notifications
+    if (!in_array($user['role'], ['admin', 'teacher'])) {
+        http_response_code(403);
+        echo json_encode(['error' => 'Permission denied']);
+        return;
+    }
+
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    // Validate required fields
+    if (!isset($data['user_id']) || !isset($data['title']) || !isset($data['message'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Missing required fields: user_id, title, message']);
+        return;
+    }
+
+    $userId = intval($data['user_id']);
+    $title = trim($data['title']);
+    $message = trim($data['message']);
+    $type = isset($data['type']) ? trim($data['type']) : 'general';
+    $relatedId = isset($data['related_id']) ? intval($data['related_id']) : null;
+
+    // Insert the notification
+    $stmt = $pdo->prepare("
+        INSERT INTO notifications (user_id, type, title, message, related_id, is_read, created_at)
+        VALUES (?, ?, ?, ?, ?, FALSE, NOW())
+    ");
+    $stmt->execute([$userId, $type, $title, $message, $relatedId]);
+
+    $notificationId = $pdo->lastInsertId();
+
+    echo json_encode([
+        'success' => true,
+        'message' => 'Notification created successfully',
+        'notification_id' => $notificationId
+    ]);
 }

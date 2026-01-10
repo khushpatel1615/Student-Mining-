@@ -10,6 +10,8 @@ import {
     CalendarDays,
     LogOut,
     ChevronRight,
+    ChevronsLeft,
+    ChevronsRight,
     Users,
     BookOpen,
     CheckSquare,
@@ -20,11 +22,11 @@ import {
 } from 'lucide-react';
 import './Sidebar.css';
 
-const Sidebar = ({ role = 'student', onLogout }) => {
+const Sidebar = ({ role = 'student', onLogout, collapsed, mobileMenuOpen, onToggle = () => { } }) => {
     const { user } = useAuth();
     const location = useLocation();
     const [searchParams] = useSearchParams();
-    const activeTab = searchParams.get('tab') || (role === 'admin' ? 'analytics' : 'overview');
+    const activeTab = searchParams.get('tab') || 'overview';
 
     const studentMenuItems = [
         { id: 'overview', label: 'Overview', icon: LayoutDashboard, tab: 'overview' },
@@ -36,7 +38,7 @@ const Sidebar = ({ role = 'student', onLogout }) => {
     ];
 
     const adminMenuItems = [
-        { id: 'analytics', label: 'Overview', icon: LayoutDashboard, tab: 'analytics' },
+        { id: 'overview', label: 'Overview', icon: LayoutDashboard, tab: 'overview' },
         { id: 'students', label: 'Students', icon: Users, tab: 'students' },
         { id: 'programs', label: 'Programs', icon: Layers, tab: 'programs' },
         { id: 'subjects', label: 'Subjects', icon: BookOpen, tab: 'subjects' },
@@ -54,34 +56,61 @@ const Sidebar = ({ role = 'student', onLogout }) => {
     };
 
     return (
-        <aside className="sidebar">
+        <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileMenuOpen ? 'open' : ''}`}>
             {/* Logo */}
-            <div className="sidebar-header">
-                <div className="sidebar-logo">
+            <div className="sidebar-header" style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: collapsed ? 'center' : 'space-between',
+                flexDirection: collapsed ? 'column' : 'row',
+                gap: collapsed ? '12px' : '0'
+            }}>
+                <div className="sidebar-logo" style={{ justifyContent: collapsed ? 'center' : 'flex-start' }}>
                     <div className="logo-icon">
                         <GraduationCap size={24} />
                     </div>
-                    <span className="logo-text">EduPortal</span>
+                    {!collapsed && <span className="logo-text">EduPortal</span>}
                 </div>
+
+                <button
+                    onClick={onToggle}
+                    style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: 'var(--text-muted)',
+                        cursor: 'pointer',
+                        padding: '4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '6px'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                    onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                >
+                    {collapsed ? <ChevronsRight size={20} /> : <ChevronsLeft size={20} />}
+                </button>
             </div>
 
             {/* Navigation */}
             <nav className="sidebar-nav">
                 <div className="nav-section">
-                    <span className="nav-section-title">Main Menu</span>
-                    <ul className="nav-list">
+                    {!collapsed && <span className="nav-section-title">Main Menu</span>}
+                    <ul className="nav-list" style={{ alignItems: collapsed ? 'center' : 'stretch' }}>
                         {menuItems.map((item) => {
                             const Icon = item.icon;
                             const isActive = activeTab === item.tab;
                             return (
-                                <li key={item.id}>
+                                <li key={item.id} style={{ width: collapsed ? 'auto' : '100%' }}>
                                     <Link
                                         to={`?tab=${item.tab}`}
                                         className={`nav-item ${isActive ? 'active' : ''}`}
+                                        title={collapsed ? item.label : ''}
+                                        style={{ justifyContent: collapsed ? 'center' : 'flex-start', padding: collapsed ? '12px' : '12px 16px' }}
                                     >
                                         <Icon size={20} className="nav-icon" />
-                                        <span className="nav-label">{item.label}</span>
-                                        {isActive && <ChevronRight size={16} className="nav-indicator" />}
+                                        {!collapsed && <span className="nav-label">{item.label}</span>}
+                                        {!collapsed && isActive && <ChevronRight size={16} className="nav-indicator" />}
                                     </Link>
                                 </li>
                             );
@@ -92,7 +121,7 @@ const Sidebar = ({ role = 'student', onLogout }) => {
 
             {/* User Profile Footer */}
             <div className="sidebar-footer">
-                <div className="user-card">
+                <div className="user-card" style={{ justifyContent: collapsed ? 'center' : 'flex-start', padding: collapsed ? '8px' : 'var(--space-md)' }}>
                     <div className="user-avatar">
                         {user?.avatar_url ? (
                             <img src={user.avatar_url} alt={user.full_name} />
@@ -100,13 +129,17 @@ const Sidebar = ({ role = 'student', onLogout }) => {
                             <span>{getInitials(user?.full_name)}</span>
                         )}
                     </div>
-                    <div className="user-info">
-                        <span className="user-name">{user?.full_name || 'Student'}</span>
-                        <span className="user-role">Student</span>
-                    </div>
-                    <button className="logout-btn" onClick={onLogout} title="Logout">
-                        <LogOut size={18} />
-                    </button>
+                    {!collapsed && (
+                        <div className="user-info">
+                            <span className="user-name">{user?.full_name || 'Student'}</span>
+                            <span className="user-role">Student</span>
+                        </div>
+                    )}
+                    {!collapsed && (
+                        <button className="logout-btn" onClick={onLogout} title="Logout">
+                            <LogOut size={18} />
+                        </button>
+                    )}
                 </div>
             </div>
         </aside>

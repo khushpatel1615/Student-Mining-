@@ -1,0 +1,622 @@
+/* ============================================
+   STUDENT PROFILE PAGE
+   All styles scoped to .student-profile-page
+   ============================================ */
+
+.student-profile-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem;
+}
+
+/* Loading & Error States */
+.student-profile-page .loading-container,
+.student-profile-page .error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    color: white;
+    gap: 1rem;
+}
+
+.student-profile-page .loading-container .spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: studentProfileSpin 1s linear infinite;
+}
+
+@keyframes studentProfileSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.student-profile-page .error-container svg {
+    color: #fbbf24;
+}
+
+/* Header */
+.student-profile-page .profile-page-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.student-profile-page .profile-page-header h1 {
+    color: white;
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.student-profile-page .btn-back {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.student-profile-page .btn-back:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateX(-3px);
+}
+
+/* Student Info Card */
+.student-profile-page .student-info-card {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.student-profile-page .student-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+}
+
+.student-profile-page .student-details h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.student-profile-page .student-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.student-profile-page .student-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.student-profile-page .student-meta svg {
+    color: #9ca3af;
+}
+
+.student-profile-page .student-badges {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.student-profile-page .student-badges .badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.student-profile-page .student-badges .badge.good {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.student-profile-page .student-badges .badge.at-risk {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.student-profile-page .student-badges .badge.warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+/* Stats Grid */
+.student-profile-page .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.student-profile-page .stat-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.student-profile-page .stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.student-profile-page .stat-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.student-profile-page .stat-icon.gpa {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.student-profile-page .stat-icon.percentage {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+}
+
+.student-profile-page .stat-icon.subjects {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.student-profile-page .stat-icon.pass {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.student-profile-page .stat-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.student-profile-page .stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.student-profile-page .stat-label {
+    font-size: 0.8rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Enrollments Section */
+.student-profile-page .enrollments-section {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.student-profile-page .enrollments-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 0 1.5rem 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.student-profile-page .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    color: #9ca3af;
+    gap: 1rem;
+}
+
+.student-profile-page .enrollments-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+}
+
+.student-profile-page .enrollment-card {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    overflow: hidden;
+    transition: all 0.2s;
+}
+
+.student-profile-page .enrollment-card:hover {
+    border-color: #6366f1;
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15);
+}
+
+.student-profile-page .enrollment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.student-profile-page .enrollment-header h4 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.student-profile-page .subject-code {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    background: #e0e7ff;
+    color: #4f46e5;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+.student-profile-page .enrollment-body {
+    padding: 1rem 1.25rem;
+}
+
+.student-profile-page .grade-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.student-profile-page .grade-display .percentage {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.student-profile-page .status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.student-profile-page .status-badge.excellent {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.student-profile-page .status-badge.good {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.student-profile-page .status-badge.average {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+.student-profile-page .status-badge.pass {
+    background: rgba(156, 163, 175, 0.2);
+    color: #6b7280;
+}
+
+.student-profile-page .status-badge.fail {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.student-profile-page .grade-details {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+.student-profile-page .enrollment-progress {
+    height: 4px;
+    background: #e5e7eb;
+    position: relative;
+}
+
+.student-profile-page .progress-bar {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s ease;
+}
+
+.student-profile-page .progress-bar.excellent {
+    background: #10b981;
+}
+
+.student-profile-page .progress-bar.good {
+    background: #3b82f6;
+}
+
+.student-profile-page .progress-bar.average {
+    background: #f59e0b;
+}
+
+.student-profile-page .progress-bar.pass {
+    background: #9ca3af;
+}
+
+.student-profile-page .progress-bar.fail {
+    background: #ef4444;
+}
+
+/* Quick Actions */
+.student-profile-page .quick-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.student-profile-page .action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.student-profile-page .action-btn.primary {
+    background: white;
+    color: #667eea;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.student-profile-page .action-btn.primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+}
+
+.student-profile-page .action-btn.secondary {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.student-profile-page .action-btn.secondary:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .student-profile-page .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .student-profile-page {
+        padding: 1rem;
+    }
+
+    .student-profile-page .student-info-card {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .student-profile-page .student-meta {
+        justify-content: center;
+    }
+
+    .student-profile-page .student-badges {
+        justify-content: center;
+    }
+
+    .student-profile-page .stats-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .student-profile-page .enrollments-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .student-profile-page .quick-actions {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .student-profile-page .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Meeting Modal Scoped Styles */
+.student-profile-page .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.student-profile-page .modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.student-profile-page .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.student-profile-page .modal-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+}
+
+.student-profile-page .close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #6b7280;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.student-profile-page .close-btn:hover {
+    background: #f3f4f6;
+    color: #ef4444;
+}
+
+.student-profile-page .meeting-form .form-group {
+    margin-bottom: 1.25rem;
+}
+
+.student-profile-page .meeting-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.student-profile-page .meeting-form input,
+.student-profile-page .meeting-form select,
+.student-profile-page .meeting-form textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+}
+
+.student-profile-page .meeting-form input:focus,
+.student-profile-page .meeting-form select:focus,
+.student-profile-page .meeting-form textarea:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.student-profile-page .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.student-profile-page .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.student-profile-page .btn-cancel {
+    padding: 0.75rem 1.5rem;
+    border: 1px solid #e5e7eb;
+    background: white;
+    color: #374151;
+    border-radius: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.student-profile-page .btn-cancel:hover {
+    background: #f9fafb;
+}
+
+.student-profile-page .btn-submit {
+    padding: 0.75rem 1.5rem;
+    background: #6366f1;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.student-profile-page .btn-submit:hover {
+    background: #4f46e5;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
+}
+
+.student-profile-page .btn-submit:disabled {
+    background: #a5b4fc;
+    cursor: not-allowed;
+    transform: none;
+}

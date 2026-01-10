@@ -70,7 +70,7 @@ try {
     // === PERFORMANCE DISTRIBUTION ===
 
     // Get students with their average performance
-    $stmt = $pdo->query("SELECT u.id, u.full_name, 
+    $stmt = $pdo->query("SELECT u.id, u.full_name, u.email, u.program_id, u.current_semester,
                                 AVG(se.final_percentage) as avg_grade
                          FROM users u
                          LEFT JOIN student_enrollments se ON u.id = se.user_id
@@ -228,7 +228,11 @@ try {
         'at_risk_students' => array_map(function ($s) {
             return [
                 'id' => $s['id'],
+                'user_id' => $s['id'],
                 'name' => $s['full_name'],
+                'email' => $s['email'] ?? null,
+                'program_id' => $s['program_id'] ?? null,
+                'current_semester' => $s['current_semester'] ?? null,
                 'gpa' => $s['gpa'],
                 'tier' => $s['performance_tier']
             ];

@@ -17,14 +17,25 @@ const MainLayout = ({
     onLogout
 }) => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [collapsed, setCollapsed] = useState(false);
+
+    const handleToggleSidebar = () => {
+        if (window.innerWidth <= 768) {
+            setMobileMenuOpen(!mobileMenuOpen);
+        } else {
+            setCollapsed(!collapsed);
+        }
+    };
 
     return (
-        <div className="main-layout">
+        <div className={`main-layout ${collapsed ? 'collapsed' : ''}`}>
             <Sidebar
                 role={role}
                 onLogout={onLogout}
                 mobileMenuOpen={mobileMenuOpen}
                 setMobileMenuOpen={setMobileMenuOpen}
+                collapsed={collapsed}
+                onToggle={handleToggleSidebar}
             />
 
             <div className="layout-content">
@@ -37,7 +48,7 @@ const MainLayout = ({
                     showNotifications={showNotifications}
                     setShowNotifications={setShowNotifications}
                     onMarkAsRead={onMarkAsRead}
-                    onMobileMenuClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    onMobileMenuClick={handleToggleSidebar} // Reusing this prop name for generic toggle
                 />
 
                 <main className="main-content">

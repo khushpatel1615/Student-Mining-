@@ -12,6 +12,7 @@ import GradeManagement from '../components/GradeManagement/GradeManagement'
 import AttendanceManagement from '../components/AttendanceManagement/AttendanceManagement'
 import CalendarManagement from '../components/CalendarManagement/CalendarManagement'
 import AdminAnalyticsDashboard from '../components/Analytics/AdminAnalyticsDashboard'
+import AdminOverview from '../components/Overview/AdminOverview'
 import CSVImport from '../components/Import/CSVImport'
 // ... (keep other imports)
 
@@ -36,7 +37,7 @@ function AdminDashboard() {
     const { theme } = useTheme()
     const [showLogoutModal, setShowLogoutModal] = useState(false)
     const [searchParams, setSearchParams] = useSearchParams()
-    const activeTab = searchParams.get('tab') || 'analytics'
+    const activeTab = searchParams.get('tab') || 'overview'
     const setActiveTab = (tab) => setSearchParams({ tab })
     const [lastUpdated, setLastUpdated] = useState(null)
     const [showImportModal, setShowImportModal] = useState(false)
@@ -298,6 +299,8 @@ function AdminDashboard() {
 
     const renderActiveTab = () => {
         switch (activeTab) {
+            case 'overview':
+                return <AdminOverview />
             case 'analytics':
                 return <AdminAnalyticsDashboard />
             case 'students':
@@ -315,7 +318,7 @@ function AdminDashboard() {
             case 'calendar':
                 return <CalendarManagement role="admin" />
             default:
-                return <AdminAnalyticsDashboard />
+                return <AdminOverview />
         }
     }
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import './StudentManagement.css'
 
@@ -55,11 +56,170 @@ const AlertIcon = () => (
     </svg>
 )
 
+const CheckCircleIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+        <polyline points="22 4 12 14.01 9 11.01" />
+    </svg>
+)
+
+const UploadIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        <polyline points="17 8 12 3 7 8" />
+        <line x1="12" y1="3" x2="12" y2="15" />
+    </svg>
+)
+
+import * as XLSX from 'xlsx'
+
 const API_BASE = 'http://localhost/StudentDataMining/backend/api'
 
 function StudentManagement() {
     const { token } = useAuth()
+    const [searchParams, setSearchParams] = useSearchParams()
     const [students, setStudents] = useState([])
+
+    const [showImportModal, setShowImportModal] = useState(false)
+    const [importing, setImporting] = useState(false)
+    const [importStats, setImportStats] = useState(null)
+
+    // Check for quick actions
+    useEffect(() => {
+        const action = searchParams.get('action')
+        if (action === 'add') {
+            openAddModal()
+            setSearchParams(params => { params.delete('action'); return params })
+        } else if (action === 'import') {
+            setShowImportModal(true)
+            setSearchParams(params => { params.delete('action'); return params })
+        }
+    }, [searchParams])
+
+    const handleFileUpload = async (e) => {
+        const file = e.target.files[0]
+        if (!file) return
+
+        setImporting(true)
+        setError(null)
+        setImportStats(null)
+
+        try {
+            const buffer = await file.arrayBuffer()
+            const workbook = XLSX.read(buffer, { type: 'array' })
+
+            let studentsToImport = []
+            let sheetName = workbook.SheetNames[0]
+
+            // Check for specific "5th" sheet as per legacy import
+            if (workbook.SheetNames.includes('5th')) {
+                sheetName = '5th'
+                const worksheet = workbook.Sheets[sheetName]
+                const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 })
+
+                // Legacy logic: Header at row 1 (index 1), data starts index 2
+                // Columns: 0=Batch, 1=Class, 2=Enrollment, 3=Name, 4=Coordinator, 5=Mobile1, 6=Mobile2
+                for (let i = 2; i < data.length; i++) {
+                    const row = data[i]
+                    if (!row || !row[2]) continue
+
+                    const enrollment = row[2]?.toString()
+                    if (!enrollment) continue
+
+                    studentsToImport.push({
+                        batch: row[0] || 1,
+                        class: row[1] || 'A',
+                        enrollment: enrollment,
+                        name: row[3] || 'Unknown',
+                        coordinator: row[4] || null,
+                        mobile1: row[5] || null,
+                        mobile2: row[6] || null
+                    })
+                }
+            } else {
+                // Fallback to generic parsing
+                const worksheet = workbook.Sheets[sheetName]
+                const jsonData = XLSX.utils.sheet_to_json(worksheet)
+
+                const normalizedData = jsonData.map(row => {
+                    const newRow = {}
+                    Object.keys(row).forEach(key => {
+                        newRow[key.toLowerCase().trim()] = row[key]
+                    })
+                    return newRow
+                })
+
+                studentsToImport = normalizedData.map(row => ({
+                    enrollment: row['enrollment no.'] || row['enrollment'] || row['id'] || row['student id'] || row['roll no'],
+                    name: row['student name'] || row['name'] || row['full name'] || row['student_name'],
+                    batch: row['batch'] || '2023',
+                    class: row['class'] || 'BCA-5',
+                    coordinator: row['coordinator'] || '',
+                    mobile1: row['mobile'] || row['phone'] || row['contact'] || '',
+                    mobile2: row['mobile 2'] || row['alternate mobile'] || ''
+                })).filter(s => s.enrollment && s.name)
+            }
+
+            if (studentsToImport.length === 0) {
+                setError('No valid student records found. Please check file format.')
+                setImporting(false)
+                return
+            }
+
+            // 1. Import Students
+            const response = await fetch(`${API_BASE}/import_students_backend.php`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    action: 'import_students',
+                    data: studentsToImport
+                })
+            })
+
+            const result = await response.json()
+            if (!result.success) throw new Error(result.error)
+
+            // 2. Import Enrollments (Legacy Logic)
+            if (sheetName === '5th') {
+                const subjects = ['CPT', 'NS', 'PHP-CGM', 'JAVA', 'PYTHON', 'PRO', 'INE']
+                const enrollments = []
+                studentsToImport.forEach(student => {
+                    subjects.forEach(subjectCode => {
+                        enrollments.push({
+                            enrollment: student.enrollment,
+                            subjectCode: subjectCode
+                        })
+                    })
+                })
+
+                await fetch(`${API_BASE}/import_students_backend.php`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        action: 'import_enrollments',
+                        data: enrollments
+                    })
+                })
+                // Merge stats? defaulting to student import stats for display
+            }
+
+            setImportStats(result)
+            fetchStudents()
+
+        } catch (err) {
+            console.error(err)
+            setError('Failed to process file: ' + err.message)
+        } finally {
+            setImporting(false)
+            e.target.value = ''
+        }
+    }
     const [programs, setPrograms] = useState([]) // Add programs state
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -84,6 +244,8 @@ function StudentManagement() {
     const [editingStudent, setEditingStudent] = useState(null)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
     const [deletingStudent, setDeletingStudent] = useState(null)
+    const [showStatusModal, setShowStatusModal] = useState(false)
+    const [statusTogglingStudent, setStatusTogglingStudent] = useState(null)
     const [saving, setSaving] = useState(false)
 
     // Form state
@@ -209,13 +371,16 @@ function StudentManagement() {
         setShowDeleteModal(true)
     }
 
-    const handleToggleStatus = async (student) => {
-        const newStatus = !student.is_active
-        const confirmMessage = newStatus
-            ? `Activate ${student.full_name}? They will be able to log in.`
-            : `Deactivate ${student.full_name}? They will not be able to log in.`
+    const handleToggleStatus = (student) => {
+        setStatusTogglingStudent(student)
+        setShowStatusModal(true)
+    }
 
-        if (!window.confirm(confirmMessage)) return
+    const handleConfirmStatusToggle = async () => {
+        if (!statusTogglingStudent) return
+
+        const newStatus = !statusTogglingStudent.is_active
+        setSaving(true)
 
         try {
             const response = await fetch(`${API_BASE}/students.php`, {
@@ -225,7 +390,7 @@ function StudentManagement() {
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    id: student.id,
+                    id: statusTogglingStudent.id,
                     is_active: newStatus
                 })
             })
@@ -235,13 +400,17 @@ function StudentManagement() {
             if (data.success) {
                 // Update local state optimistically
                 setStudents(prev => prev.map(s =>
-                    s.id === student.id ? { ...s, is_active: newStatus } : s
+                    s.id === statusTogglingStudent.id ? { ...s, is_active: newStatus } : s
                 ))
+                setShowStatusModal(false)
+                setStatusTogglingStudent(null)
             } else {
                 setError(data.error || 'Failed to update student status')
             }
         } catch (err) {
             setError('Network error. Please try again.')
+        } finally {
+            setSaving(false)
         }
     }
 
@@ -604,6 +773,120 @@ function StudentManagement() {
                             </button>
                             <button className="btn-danger" onClick={handleDelete} disabled={saving}>
                                 {saving ? 'Deactivating...' : 'Deactivate'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Import Modal */}
+            {showImportModal && (
+                <div className="modal-overlay" onClick={() => setShowImportModal(false)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3 className="modal-title">Batch Import Students</h3>
+                            <button className="modal-close" onClick={() => setShowImportModal(false)}>
+                                <CloseIcon />
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            {!importStats ? (
+                                <div className="import-area" style={{ textAlign: 'center', padding: '2rem' }}>
+                                    <div style={{ marginBottom: '1.5rem', color: 'var(--primary)', transform: 'scale(1.5)', display: 'inline-block' }}>
+                                        <UploadIcon />
+                                    </div>
+                                    <h3 style={{ marginBottom: '1rem' }}>Upload Excel/CSV File</h3>
+                                    <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
+                                        Supported formats: .xlsx, .xls, .csv <br />
+                                        Required columns: "Enrollment No.", "Student Name", "Mobile"
+                                    </p>
+
+                                    <input
+                                        type="file"
+                                        accept=".xlsx, .xls, .csv"
+                                        id="file-upload"
+                                        style={{ display: 'none' }}
+                                        onChange={handleFileUpload}
+                                        disabled={importing}
+                                    />
+                                    <label
+                                        htmlFor="file-upload"
+                                        className="btn-primary"
+                                        style={{ cursor: importing ? 'wait' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+                                    >
+                                        {importing ? (
+                                            <>Converting & Uploading...</>
+                                        ) : (
+                                            <><span style={{ display: 'inline-block', width: '18px' }}><UploadIcon /></span> Select File</>
+                                        )}
+                                    </label>
+                                </div>
+                            ) : (
+                                <div className="import-success">
+                                    <div className="status-confirmation activate">
+                                        <div className="status-confirmation-icon">
+                                            <CheckCircleIcon />
+                                        </div>
+                                        <h3>Import Complete!</h3>
+                                        <p>Successfully processed {importStats.total} records.</p>
+                                        <ul style={{ textAlign: 'left', marginTop: '1rem', background: '#f3f4f6', padding: '1rem', borderRadius: '8px', listStyle: 'none' }}>
+                                            <li>Imported/Updated: <strong>{importStats.imported}</strong></li>
+                                            <li>Errors: <strong>{importStats.errors?.length || 0}</strong></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn-secondary" onClick={() => setShowImportModal(false)}>
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Status Toggle Confirmation Modal */}
+            {showStatusModal && statusTogglingStudent && (
+                <div className="modal-overlay" onClick={() => { setShowStatusModal(false); setStatusTogglingStudent(null); }}>
+                    <div className="modal-content status-confirmation-modal" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3 className="modal-title">
+                                {statusTogglingStudent.is_active ? 'Deactivate User' : 'Activate User'}
+                            </h3>
+                            <button className="modal-close" onClick={() => { setShowStatusModal(false); setStatusTogglingStudent(null); }}>
+                                <CloseIcon />
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <div className={`status-confirmation ${statusTogglingStudent.is_active ? 'deactivate' : 'activate'}`}>
+                                <div className="status-confirmation-icon">
+                                    {statusTogglingStudent.is_active ? <AlertIcon /> : <CheckCircleIcon />}
+                                </div>
+                                <h3>
+                                    {statusTogglingStudent.is_active
+                                        ? 'Deactivate this user?'
+                                        : 'Activate this user?'}
+                                </h3>
+                                <p>
+                                    {statusTogglingStudent.is_active
+                                        ? <>Are you sure you want to deactivate <strong>{statusTogglingStudent.full_name}</strong>? They will no longer be able to log in.</>
+                                        : <>Are you sure you want to activate <strong>{statusTogglingStudent.full_name}</strong>? They will be able to log in again.</>}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn-secondary" onClick={() => { setShowStatusModal(false); setStatusTogglingStudent(null); }}>
+                                Cancel
+                            </button>
+                            <button
+                                className={statusTogglingStudent.is_active ? 'btn-danger' : 'btn-success'}
+                                onClick={handleConfirmStatusToggle}
+                                disabled={saving}
+                            >
+                                {saving
+                                    ? (statusTogglingStudent.is_active ? 'Deactivating...' : 'Activating...')
+                                    : (statusTogglingStudent.is_active ? 'Deactivate' : 'Activate')}
                             </button>
                         </div>
                     </div>

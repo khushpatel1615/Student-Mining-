@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage'
 import StudentDashboard from './pages/StudentDashboard'
 import SubjectDetailPage from './pages/SubjectDetailPage'
 import AdminDashboard from './pages/AdminDashboard'
+import StudentProfilePage from './pages/StudentProfilePage'
 import './App.css'
 
 // Protected Route Component
@@ -130,6 +131,14 @@ function App() {
                     element={
                         <ProtectedRoute allowedRoles={['admin']}>
                             <AdminDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/admin/student/:studentId"
+                    element={
+                        <ProtectedRoute allowedRoles={['admin']}>
+                            <StudentProfilePage />
                         </ProtectedRoute>
                     }
                 />

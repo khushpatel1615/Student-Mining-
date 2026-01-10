@@ -2,6 +2,10 @@
    SIDEBAR - Modern SaaS Style
    ============================================ */
 
+.sidebar.collapsed {
+    width: 80px;
+}
+
 .sidebar {
     width: var(--sidebar-width);
     height: 100vh;
@@ -13,7 +17,7 @@
     display: flex;
     flex-direction: column;
     z-index: 100;
-    transition: transform var(--transition-normal);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform var(--transition-normal);
 }
 
 /* Logo Header */
@@ -155,6 +159,62 @@
 
 .nav-item.active .nav-indicator {
     opacity: 1;
+}
+
+/* Sub-menu Styles */
+.nav-item-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.nav-sub-list {
+    list-style: none;
+    padding: 0;
+    margin: 4px 0 8px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.nav-sub-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.nav-sub-item:hover {
+    background: rgba(99, 102, 241, 0.05);
+    color: var(--primary);
+}
+
+.nav-sub-item.active {
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.sub-menu-toggle {
+    margin-left: auto;
+    transition: transform 0.3s ease;
+    opacity: 0.5;
+}
+
+.nav-item-container.open .sub-menu-toggle {
+    transform: rotate(180deg);
+}
+
+.sidebar.collapsed .nav-sub-list {
+    display: none;
 }
 
 /* User Card Footer */

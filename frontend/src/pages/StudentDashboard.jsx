@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import MainLayout from '../components/Layout/MainLayout'
 import { useAuth } from '../context/AuthContext'
 import StudentAnalyticsDashboard from '../components/Analytics/StudentAnalyticsDashboard'
@@ -17,7 +17,10 @@ import {
     Calendar as CalendarIcon,
     AlertCircle,
     CheckCircle,
-    XCircle
+    XCircle,
+    Wifi,
+    Fingerprint,
+    QrCode
 } from 'lucide-react'
 
 const API_BASE = 'http://localhost/StudentDataMining/backend/api'
@@ -38,6 +41,11 @@ const StudentDashboard = () => {
     const [notifications, setNotifications] = useState([])
     const [unreadCount, setUnreadCount] = useState(0)
     const [showNotifications, setShowNotifications] = useState(false)
+
+    // WiFi/QR Attendance State
+    const [sessionCode, setSessionCode] = useState('')
+    const [markingStatus, setMarkingStatus] = useState({ state: 'idle', message: '' })
+    const [isAutoMarking, setIsAutoMarking] = useState(false)
 
     // Dashboard Data
     const [dashboardData, setDashboardData] = useState({
@@ -85,13 +93,11 @@ const StudentDashboard = () => {
     const fetchDashboardData = useCallback(async () => {
         setRefreshing(true)
         try {
-            // 1. Fetch Dashboard Overview (GPA, Subjects, etc.)
             const dashRes = await fetch(`${API_BASE}/student_dashboard.php`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const dashData = await dashRes.json();
 
-            // 2. Fetch Calendar Events for "Upcoming Assignments"
             const calRes = await fetch(`${API_BASE}/calendar.php`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -101,7 +107,6 @@ const StudentDashboard = () => {
                 const summary = dashData.data.summary;
                 const subjects = dashData.data.subjects;
 
-                // Process Calendar Data for Upcoming Assignments (next 7 days)
                 let upcoming = [];
                 if (calData.success) {
                     const today = new Date();
@@ -109,19 +114,17 @@ const StudentDashboard = () => {
                         const evDate = new Date(ev.event_date);
                         const diffTime = evDate - today;
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        // Show items from today and future (up to 14 days?)
                         return diffDays >= 0 && diffDays <= 14;
                     }).sort((a, b) => new Date(a.event_date) - new Date(b.event_date))
-                        .slice(0, 5); // Take top 5
+                        .slice(0, 5);
                 }
 
-                // Construct Courses Array
                 const courses = subjects.map(sub => ({
                     id: sub.subject.id,
                     name: sub.subject.name,
                     code: sub.subject.code,
                     grade: sub.grade_letter || 'N/A',
-                    progress: sub.status === 'completed' ? 100 : (sub.attendance.percentage || 0), // Use attendance or semester progress
+                    progress: sub.status === 'completed' ? 100 : (sub.attendance.percentage || 0),
                     attendance: sub.attendance,
                     overall_score: sub.overall_grade,
                     credits: sub.subject.credits,
@@ -132,13 +135,13 @@ const StudentDashboard = () => {
                     gpa: summary.gpa,
                     attendance: summary.overall_attendance,
                     credits: summary.earned_credits,
-                    total_credits: summary.total_credits, // if needed
+                    total_credits: summary.total_credits,
                     courses: courses,
                     upcoming_assignments: upcoming.map(ev => ({
                         id: ev.id,
                         title: ev.title,
                         due: new Date(ev.event_date).toLocaleDateString(),
-                        status: ev.type, // 'assignment', 'exam', etc.
+                        status: ev.type,
                         days_left: Math.ceil((new Date(ev.event_date) - new Date()) / (1000 * 60 * 60 * 24))
                     }))
                 })
@@ -153,9 +156,58 @@ const StudentDashboard = () => {
         }
     }, [token, fetchNotifications])
 
+    const handleMarkSelfAttendance = useCallback(async (code) => {
+        const finalCode = code || sessionCode;
+        if (!finalCode || finalCode.length !== 6) return
+
+        setMarkingStatus({ state: 'loading', message: code ? 'Auto-verifying WiFi network...' : 'Verifying network & scanning...' })
+        try {
+            const response = await fetch(`${API_BASE}/attendance.php`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    action: 'mark_self',
+                    session_code: finalCode
+                })
+            })
+            const data = await response.json()
+            if (data.success) {
+                setMarkingStatus({ state: 'success', message: data.message })
+                setSessionCode('')
+                // Remove param from URL
+                if (searchParams.has('attendance_code')) {
+                    searchParams.delete('attendance_code')
+                    setSearchParams(searchParams)
+                }
+                setTimeout(() => {
+                    fetchDashboardData()
+                    setMarkingStatus({ state: 'idle', message: '' })
+                    setIsAutoMarking(false)
+                }, 3000)
+            } else {
+                setMarkingStatus({ state: 'error', message: data.error })
+                setIsAutoMarking(false)
+            }
+        } catch (err) {
+            setMarkingStatus({ state: 'error', message: 'Connection failed' })
+            setIsAutoMarking(false)
+        }
+    }, [token, sessionCode, fetchDashboardData, searchParams, setSearchParams])
+
     useEffect(() => {
         fetchDashboardData()
-    }, [fetchDashboardData])
+
+        // Handle QR Scan via URL param
+        const scanCode = searchParams.get('attendance_code')
+        if (scanCode && scanCode.length === 6) {
+            setSessionCode(scanCode)
+            setIsAutoMarking(true)
+            handleMarkSelfAttendance(scanCode)
+        }
+    }, [fetchDashboardData, searchParams, handleMarkSelfAttendance])
 
     // Stats Cards Component
     const StatsCards = () => {
@@ -183,8 +235,8 @@ const StudentDashboard = () => {
                 subtitle: 'Cumulative Grade Point',
                 icon: GraduationCap,
                 gradient: 'gradient-purple',
-                progress: (dashboardData.gpa / 4.0) * 100, // Assuming 4.0 scale, adjust if 10.0
-                trend: 'Latest Semester', // Could calculate diff if available
+                progress: (dashboardData.gpa / 4.0) * 100,
+                trend: 'Latest Semester',
                 trendUp: true
             },
             {
@@ -315,7 +367,66 @@ const StudentDashboard = () => {
                 <div className="tab-content">
                     {activeTab === 'overview' && (
                         <>
-                            <StatsCards />
+                            <div className="top-row-flex" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                                <StatsCards />
+
+                                {/* QR Attendance Panel */}
+                                <motion.div
+                                    className={`smart-attendance-card ${isAutoMarking ? 'auto-marking' : ''}`}
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                >
+                                    <div className="card-header">
+                                        <div className="icon-wrapper">
+                                            {isAutoMarking ? <QrCode size={20} className="pulse-icon" /> : <Wifi size={20} />}
+                                        </div>
+                                        <div>
+                                            <h4>{isAutoMarking ? 'QR Scan Detected' : 'Smart Attendance'}</h4>
+                                            <p>{isAutoMarking ? 'Verifying location...' : 'Mark presence via QR/WiFi'}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="card-body">
+                                        {!isAutoMarking && (
+                                            <div className="code-input-wrapper">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Enter Code"
+                                                    maxLength={6}
+                                                    value={sessionCode}
+                                                    onChange={(e) => setSessionCode(e.target.value.toUpperCase())}
+                                                    className="session-code-input"
+                                                />
+                                                <Fingerprint className="input-icon" size={18} />
+                                            </div>
+                                        )}
+
+                                        <button
+                                            className="btn-mark-attendance"
+                                            disabled={(!isAutoMarking && sessionCode.length !== 6) || markingStatus.state === 'loading'}
+                                            onClick={() => handleMarkSelfAttendance()}
+                                        >
+                                            {markingStatus.state === 'loading' ? 'Verifying...' : 'Submit Attendance'}
+                                        </button>
+
+                                        <AnimatePresence>
+                                            {markingStatus.message && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    className={`status-message ${markingStatus.state}`}
+                                                >
+                                                    {markingStatus.state === 'error' ? <AlertCircle size={14} /> : <CheckCircle size={14} />}
+                                                    {markingStatus.message}
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+                                    <div className="card-footer">
+                                        <small><AlertCircle size={12} /> Same-WiFi restricted</small>
+                                    </div>
+                                </motion.div>
+                            </div>
 
                             <div className="content-grid">
                                 <div className="card">

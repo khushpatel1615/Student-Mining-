@@ -59,15 +59,19 @@ function handleGet($pdo)
     }
 
     // Case 1a: Fetch all students across all subjects for a program/semester (Admin grading view - All Subjects)
-    if ($programId && $semester && $user['role'] === 'admin') {
-        // Get all subjects for this program and semester
-        $subjectsStmt = $pdo->prepare("
-            SELECT id, name, code 
-            FROM subjects 
-            WHERE program_id = ? AND semester = ?
-            ORDER BY name ASC
-        ");
-        $subjectsStmt->execute([$programId, $semester]);
+    if ($programId && $user['role'] === 'admin') {
+        // Get all subjects for this program (and optional semester)
+        $sql = "SELECT id, name, code FROM subjects WHERE program_id = ?";
+        $params = [$programId];
+
+        if (!empty($semester)) {
+            $sql .= " AND semester = ?";
+            $params[] = $semester;
+        }
+        $sql .= " ORDER BY name ASC";
+
+        $subjectsStmt = $pdo->prepare($sql);
+        $subjectsStmt->execute($params);
         $subjects = $subjectsStmt->fetchAll(PDO::FETCH_ASSOC);
 
         if (empty($subjects)) {
@@ -113,25 +117,49 @@ function handleGet($pdo)
             FROM student_enrollments se
             JOIN users u ON se.user_id = u.id
             JOIN subjects s ON se.subject_id = s.id
-            WHERE se.subject_id IN ($placeholders) AND se.status = 'active'
+            WHERE se.subject_id IN ($placeholders)
             ORDER BY u.full_name ASC, s.name ASC
         ");
         $enrollStmt->execute($subjectIds);
         $enrollments = $enrollStmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Get grades for each enrollment
-        foreach ($enrollments as &$enrollment) {
-            $gradeStmt = $pdo->prepare("
-                SELECT 
-                    sg.id as grade_id,
-                    sg.criteria_id,
-                    sg.marks_obtained,
-                    sg.remarks
-                FROM student_grades sg
-                WHERE sg.enrollment_id = ?
-            ");
-            $gradeStmt->execute([$enrollment['id']]);
-            $enrollment['grades'] = $gradeStmt->fetchAll(PDO::FETCH_ASSOC);
+        // Bulk fetch grades for all enrollments (Optimized + Chunked)
+        if (!empty($enrollments)) {
+            $eIds = array_column($enrollments, 'id');
+            $gradesGrouped = [];
+
+            // Process in chunks of 500 to safe-guard against placeholder limits
+            $chunks = array_chunk($eIds, 500);
+
+            foreach ($chunks as $chunk) {
+                if (empty($chunk))
+                    continue;
+
+                $p = str_repeat('?,', count($chunk) - 1) . '?';
+                $chunkStmt = $pdo->prepare("
+                    SELECT 
+                        sg.id as grade_id,
+                        sg.criteria_id,
+                        sg.marks_obtained,
+                        sg.remarks,
+                        sg.enrollment_id
+                    FROM student_grades sg
+                    WHERE sg.enrollment_id IN ($p)
+                ");
+                $chunkStmt->execute($chunk);
+                $chunkGrades = $chunkStmt->fetchAll(PDO::FETCH_ASSOC);
+
+                foreach ($chunkGrades as $g) {
+                    $eid = $g['enrollment_id'];
+                    unset($g['enrollment_id']); // Cleanup
+                    $gradesGrouped[$eid][] = $g;
+                }
+            }
+
+            // Attach to enrollments
+            foreach ($enrollments as &$e) {
+                $e['grades'] = $gradesGrouped[$e['id']] ?? [];
+            }
         }
 
         echo json_encode([
@@ -318,21 +346,7 @@ function handleGet($pdo)
             s.credits,
             se.status,
             se.final_percentage,
-            se.final_grade,
-            (
-                SELECT JSON_ARRAYAGG(
-                    JSON_OBJECT(
-                        'id', sg2.id,
-                        'component_name', ec2.component_name,
-                        'marks_obtained', sg2.marks_obtained,
-                        'max_marks', ec2.max_marks,
-                        'weight_percentage', ec2.weight_percentage
-                    )
-                )
-                FROM student_grades sg2
-                JOIN evaluation_criteria ec2 ON sg2.criteria_id = ec2.id
-                WHERE sg2.enrollment_id = se.id
-            ) as grades
+            se.final_grade
         FROM student_enrollments se
         JOIN subjects s ON se.subject_id = s.id
         WHERE se.user_id = ?
@@ -350,9 +364,47 @@ function handleGet($pdo)
     $stmt->execute($params);
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Parse JSON grades
-    foreach ($results as &$result) {
-        $result['grades'] = $result['grades'] ? json_decode($result['grades'], true) : [];
+    // Manual grade fetching for MariaDB compatibility (replacing JSON_ARRAYAGG)
+    if (!empty($results)) {
+        $enrollmentIds = array_column($results, 'enrollment_id');
+
+        if (!empty($enrollmentIds)) {
+            $placeholders = str_repeat('?,', count($enrollmentIds) - 1) . '?';
+
+            $gradesSql = "
+                SELECT 
+                    sg.enrollment_id,
+                    sg.id,
+                    sg.marks_obtained,
+                    ec.component_name,
+                    ec.max_marks,
+                    ec.weight_percentage
+                FROM student_grades sg
+                JOIN evaluation_criteria ec ON sg.criteria_id = ec.id
+                WHERE sg.enrollment_id IN ($placeholders)
+            ";
+
+            $gradesStmt = $pdo->prepare($gradesSql);
+            $gradesStmt->execute($enrollmentIds);
+            $allGrades = $gradesStmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Group by enrollment_id
+            $gradesGrouped = [];
+            foreach ($allGrades as $grade) {
+                $eid = $grade['enrollment_id'];
+                $gradesGrouped[$eid][] = $grade;
+            }
+
+            // Attach grouped grades to results
+            foreach ($results as &$result) {
+                $eid = $result['enrollment_id'];
+                $result['grades'] = $gradesGrouped[$eid] ?? [];
+            }
+        } else {
+            foreach ($results as &$result) {
+                $result['grades'] = [];
+            }
+        }
     }
 
     echo json_encode(['success' => true, 'data' => $results]);

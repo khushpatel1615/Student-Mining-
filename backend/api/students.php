@@ -52,10 +52,12 @@ function handleGet($pdo)
     if ($studentId) {
         // Get single student
         $stmt = $pdo->prepare("
-            SELECT id, email, student_id, full_name, role, avatar_url, 
-                   is_active, created_at, updated_at, last_login
-            FROM users 
-            WHERE id = ?
+            SELECT u.id, u.email, u.student_id, u.full_name, u.role, u.avatar_url, 
+                   u.is_active, u.created_at, u.updated_at, u.last_login,
+                   u.program_id, u.current_semester, p.name as program_name
+            FROM users u
+            LEFT JOIN programs p ON u.program_id = p.id
+            WHERE u.id = ?
         ");
         $stmt->execute([$studentId]);
         $student = $stmt->fetch(PDO::FETCH_ASSOC);

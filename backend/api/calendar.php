@@ -21,6 +21,9 @@ try {
         handlePut($pdo);
     } elseif ($method === 'DELETE') {
         handleDelete($pdo);
+    } elseif ($method === 'OPTIONS') {
+        http_response_code(200);
+        exit();
     } else {
         http_response_code(405);
         echo json_encode(['error' => 'Method not allowed']);

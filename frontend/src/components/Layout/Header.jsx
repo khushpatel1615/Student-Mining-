@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, Sun, Moon, RefreshCw, Search, Menu } from 'lucide-react';
+import { Bell, Sun, Moon, RefreshCw, Menu } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import './Header.css';
 
@@ -22,15 +22,6 @@ const Header = ({
                 <button className="mobile-menu-btn" onClick={onMobileMenuClick}>
                     <Menu size={24} />
                 </button>
-                <div className="search-container">
-                    <Search size={18} className="search-icon" />
-                    <input
-                        type="text"
-                        placeholder="Search courses, grades..."
-                        className="search-input"
-                    />
-                    <kbd className="search-shortcut">⌘K</kbd>
-                </div>
             </div>
 
             <div className="header-right">

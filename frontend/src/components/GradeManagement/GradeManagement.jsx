@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import './GradeManagement.css'
 
@@ -22,6 +23,7 @@ const API_BASE = 'http://localhost/StudentDataMining/backend/api'
 
 function GradeManagement() {
     const { token } = useAuth()
+    const [searchParams] = useSearchParams()
     const [programs, setPrograms] = useState([])
     const [subjects, setSubjects] = useState([])
     const [enrollments, setEnrollments] = useState([])
@@ -38,6 +40,39 @@ function GradeManagement() {
     const [selectedSubject, setSelectedSubject] = useState('')
     const [searchQuery, setSearchQuery] = useState('')
 
+    // Sync state with URL params
+    useEffect(() => {
+        const urlProgramId = searchParams.get('program_id');
+        const urlSemester = searchParams.get('semester');
+        const urlStudentName = searchParams.get('student_name');
+        const urlSubject = searchParams.get('subject');
+
+        // Update Program if present in URL
+        if (urlProgramId && urlProgramId !== selectedProgram) {
+            setSelectedProgram(urlProgramId);
+        }
+
+        // Update Semester if present in URL (handle empty string as All Semesters)
+        if (urlSemester !== null && urlSemester !== selectedSemester) {
+            setSelectedSemester(urlSemester);
+        }
+
+        // Update Search Query if present in URL
+        if (urlStudentName) {
+            const decodedName = decodeURIComponent(urlStudentName);
+            if (decodedName !== searchQuery) {
+                setSearchQuery(decodedName);
+            }
+        }
+
+        // Auto-select "All Subjects" if requested or searching for specific student
+        if (urlSubject === 'all' || urlStudentName) {
+            if (selectedSubject !== 'all') {
+                setSelectedSubject('all');
+            }
+        }
+    }, [searchParams, selectedProgram, selectedSemester, selectedSubject, searchQuery]);
+
     // Fetch programs
     useEffect(() => {
         const fetchPrograms = async () => {
@@ -48,7 +83,10 @@ function GradeManagement() {
                 const data = await response.json()
                 if (data.success) {
                     setPrograms(data.data)
-                    if (data.data.length > 0) {
+
+                    // Set default program if no URL param and no selection
+                    const urlProgramId = searchParams.get('program_id')
+                    if (!urlProgramId && data.data.length > 0 && !selectedProgram) {
                         setSelectedProgram(data.data[0].id.toString())
                     }
                 }
@@ -57,7 +95,7 @@ function GradeManagement() {
             }
         }
         fetchPrograms()
-    }, [token])
+    }, [token, searchParams, selectedProgram])
 
     // Fetch subjects when program/semester changes
     useEffect(() => {
@@ -74,14 +112,23 @@ function GradeManagement() {
                 const data = await response.json()
                 if (data.success) {
                     setSubjects(data.data)
-                    setSelectedSubject('')
+
+                    // Check if we should auto-select "All Subjects" from URL params
+                    const urlSubject = searchParams.get('subject')
+                    const urlStudentName = searchParams.get('student_name')
+
+                    if (urlSubject === 'all' || urlStudentName) {
+                        setSelectedSubject('all')
+                    } else {
+                        setSelectedSubject('')
+                    }
                 }
             } catch (err) {
                 console.error('Failed to fetch subjects:', err)
             }
         }
         fetchSubjects()
-    }, [token, selectedProgram, selectedSemester])
+    }, [token, selectedProgram, selectedSemester, searchParams])
 
     // Fetch grades when subject changes
     const fetchGrades = useCallback(async () => {
@@ -237,7 +284,7 @@ function GradeManagement() {
                     disabled={!selectedProgram}
                 >
                     <option value="">Select Subject</option>
-                    {selectedProgram && selectedSemester && (
+                    {selectedProgram && (
                         <option value="all">📚 All Subjects</option>
                     )}
                     {subjects.map(s => (
@@ -426,7 +473,18 @@ function GradeManagement() {
                                             <tr key={enrollment.id}>
                                                 <td className="sticky-col">
                                                     <div className="student-info">
-                                                        <span className="student-name">{enrollment.student_name}</span>
+                                                        <span
+                                                            className="student-name"
+                                                            style={{ cursor: 'pointer', color: 'var(--primary)', fontWeight: '600' }}
+                                                            onClick={() => {
+                                                                setSelectedSemester('')
+                                                                setSelectedSubject('all')
+                                                                setSearchQuery(enrollment.student_name)
+                                                            }}
+                                                            title="View all grades for this student"
+                                                        >
+                                                            {enrollment.student_name}
+                                                        </span>
                                                         <span className="student-id">{enrollment.student_id}</span>
                                                     </div>
                                                 </td>
