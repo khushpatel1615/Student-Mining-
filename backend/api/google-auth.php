@@ -41,7 +41,7 @@ try {
 
     // Check if user exists by Google ID or email
     $stmt = $pdo->prepare("
-        SELECT id, email, student_id, full_name, role, avatar_url, google_id, password_hash 
+        SELECT id, email, student_id, full_name, role, avatar_url, google_id, password_hash, current_semester 
         FROM users 
         WHERE (google_id = :google_id OR email = :email) AND is_active = 1
     ");
@@ -95,6 +95,7 @@ try {
             'full_name' => $user['full_name'],
             'role' => $user['role'],
             'avatar_url' => $user['avatar_url'] ?? $googleUser['picture'],
+            'current_semester' => $user['current_semester'],
             'hasPassword' => !empty($user['password_hash'])
         ]
     ]);

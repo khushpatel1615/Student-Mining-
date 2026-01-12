@@ -35,7 +35,7 @@ try {
 
     // First, check if user exists (regardless of active status)
     $stmt = $pdo->prepare("
-        SELECT id, email, student_id, password_hash, full_name, role, avatar_url, is_active 
+        SELECT id, email, student_id, password_hash, full_name, role, avatar_url, is_active, current_semester 
         FROM users 
         WHERE (student_id = :identifier1 OR email = :identifier2)
     ");
@@ -88,6 +88,7 @@ try {
             'full_name' => $user['full_name'],
             'role' => $user['role'],
             'avatar_url' => $user['avatar_url'],
+            'current_semester' => $user['current_semester'],
             'hasPassword' => true  // If they're logging in with password, they obviously have one
         ]
     ]);

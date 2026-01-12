@@ -143,9 +143,7 @@ function App() {
                     }
                 />
 
-
-
-                {/* Catch-all redirect */}
+                {/* Fallback */}
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
         </>
