@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext'
 import StudentAnalyticsDashboard from '../components/Analytics/StudentAnalyticsDashboard'
 import CalendarManagement from '../components/CalendarManagement/CalendarManagement'
 import { CircularProgress } from '../components/CircularProgress'
+import GradesTab from '../components/Student/Grades/GradesTab'
 import './StudentDashboard.css'
 import {
     BookOpen,
@@ -488,42 +489,7 @@ const StudentDashboard = () => {
 
                     {activeTab === 'grades' && (
                         <div className="card">
-                            <h3>My Grades Detail</h3>
-                            <div style={{ overflowX: 'auto' }}>
-                                <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
-                                    <thead>
-                                        <tr style={{ borderBottom: '2px solid #eee', textAlign: 'left' }}>
-                                            <th style={{ padding: '12px' }}>Subject</th>
-                                            <th style={{ padding: '12px' }}>Code</th>
-                                            <th style={{ padding: '12px' }}>Credits</th>
-                                            <th style={{ padding: '12px' }}>Attendance</th>
-                                            <th style={{ padding: '12px' }}>Final Grade</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {dashboardData.courses.map(course => (
-                                            <tr key={course.id} style={{ borderBottom: '1px solid #f5f5f5' }}>
-                                                <td style={{ padding: '12px', fontWeight: '500' }}>{course.name}</td>
-                                                <td style={{ padding: '12px', color: '#666' }}>{course.code}</td>
-                                                <td style={{ padding: '12px' }}>{course.credits}</td>
-                                                <td style={{ padding: '12px' }}>
-                                                    <span style={{
-                                                        color: course.attendance?.percentage < 75 ? 'red' : 'green',
-                                                        fontWeight: 'bold'
-                                                    }}>
-                                                        {course.attendance?.percentage}%
-                                                    </span>
-                                                </td>
-                                                <td style={{ padding: '12px' }}>
-                                                    <span className="badge pending" style={{ fontSize: '0.9rem' }}>
-                                                        {course.grade}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                            <GradesTab />
                         </div>
                     )}
 

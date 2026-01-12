@@ -416,3 +416,67 @@
         flex-direction: column;
     }
 }
+
+/* Remarks Update */
+.grade-cell-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    align-items: center;
+}
+
+.remark-input-mini {
+    width: 60px;
+    /* Match grade input */
+    padding: 0.2rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: 0.7rem;
+    text-align: center;
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+}
+
+.remark-input-mini:focus {
+    outline: none;
+    border-color: 764ba2;
+    /* Accent */
+    color: var(--text-primary);
+    width: 140px;
+    /* Expand on focus */
+    position: relative;
+    z-index: 5;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.criteria-row {
+    flex-wrap: wrap;
+}
+
+.criteria-main {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    align-items: center;
+}
+
+.remark-input-compact {
+    width: 100%;
+    margin-top: 0.5rem;
+    padding: 0.4rem;
+    border: 1px dashed var(--border-color);
+    border-radius: 4px;
+    font-size: 0.8rem;
+    background: transparent;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+}
+
+.remark-input-compact:focus {
+    background: var(--bg-primary);
+    border-style: solid;
+    border-color: #764ba2;
+    outline: none;
+    color: var(--text-primary);
+}

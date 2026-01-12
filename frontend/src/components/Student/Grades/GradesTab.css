@@ -1,0 +1,918 @@
+/* Container */
+.grades-tab-container {
+    padding: 0;
+}
+
+/* Header */
+.grades-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.grades-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+}
+
+.grades-header p {
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+/* Calculator Panel */
+.calculator-panel {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    color: white;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.3);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.panel-header h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.calculator-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1.5rem;
+    align-items: flex-end;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.input-group input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 0.5rem;
+    padding: 0.6rem 0.75rem;
+    color: white;
+    font-size: 1rem;
+    outline: none;
+    transition: background 0.2s;
+}
+
+.input-group input:focus {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.input-hint {
+    display: block;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 0.25rem;
+}
+
+.result-box {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    text-align: center;
+    backdrop-filter: blur(10px);
+}
+
+.result-box.impossible {
+    background: rgba(239, 68, 68, 0.3);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.result-box.easy {
+    background: rgba(16, 185, 129, 0.3);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.result-label {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.result-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    margin: 0.25rem 0;
+}
+
+.result-note {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.2;
+}
+
+/* Semester Lists */
+.semester-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.semester-group {
+    background: white;
+    /* Removed border to merge better with card if needed, or kept clean */
+    /* border: 1px solid #e5e7eb; */
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.semester-header {
+    /* Merged Header Layout */
+    background-color: transparent;
+    padding: 0.5rem 0 1.5rem 0;
+    border-bottom: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.semester-header h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.subject-count {
+    font-size: 0.75rem;
+    color: #6b7280;
+    background: #f3f4f6;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-weight: 500;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid #e5e7eb;
+    background-color: white;
+    color: #374151;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.action-btn:hover {
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+    color: #111827;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.action-btn:active {
+    transform: translateY(0);
+}
+
+.action-btn.active {
+    background-color: #4f46e5;
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.action-btn.active:hover {
+    background-color: #4338ca;
+}
+
+.action-btn.secondary {
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    color: #4b5563;
+}
+
+.action-btn.small {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+}
+
+/* Subject List Container */
+.subject-list {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background: white;
+}
+
+/* Subject Row */
+.subject-row-container {
+    border-bottom: 1px solid #f3f4f6;
+    transition: background-color 0.2s;
+}
+
+.subject-row-container:last-child {
+    border-bottom: none;
+}
+
+.subject-row-container:hover {
+    background-color: #f9fafb;
+}
+
+.subject-row-main {
+    padding: 1.25rem 1.5rem;
+    /* Taller padding for breathing room */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+
+/* Make rows more dense? User said "solve these" and it looked too spaced out vertically?
+   Actually, the screenshot showed very TALL rows. Let's reduce padding.
+*/
+.subject-row-main {
+    padding: 1rem 1.25rem;
+}
+
+.subject-info {
+    flex: 1;
+}
+
+.subject-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.35rem;
+}
+
+.subject-name {
+    font-weight: 600;
+    color: #111827;
+    font-size: 0.95rem;
+}
+
+.subject-code {
+    font-size: 0.7rem;
+    padding: 0.1rem 0.4rem;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.25rem;
+    color: #6b7280;
+    font-family: monospace;
+}
+
+.subject-meta {
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+.subject-grades-summary {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.score-stack {
+    text-align: right;
+    min-width: 60px;
+}
+
+.score-val {
+    display: block;
+    font-weight: 700;
+    color: #1f2937;
+    font-size: 0.9rem;
+}
+
+.score-label {
+    display: block;
+    font-size: 0.7rem;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.grade-circle {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.grade-a {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.grade-b {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.grade-c {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.grade-f {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.grade-default {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+.toggle-btn {
+    color: #9ca3af;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 0.25rem;
+    border-radius: 50%;
+}
+
+.toggle-btn:hover {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+.subject-row-container.expanded .toggle-btn {
+    transform: rotate(180deg);
+    background: #e5e7eb;
+}
+
+/* Expanded Details */
+.subject-details-wrapper {
+    background-color: #f9fafb;
+    overflow: hidden;
+    border-top: 1px solid #f3f4f6;
+}
+
+.subject-details-content {
+    padding: 1rem 1.5rem;
+}
+
+.breakdown-table {
+    width: 100%;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.85rem;
+}
+
+.breakdown-table th {
+    background: #f9fafb;
+    padding: 0.6rem 1rem;
+    font-weight: 600;
+    color: #4b5563;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.7rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.breakdown-table td {
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.breakdown-table tr:last-child td {
+    border-bottom: none;
+}
+
+.component-name {
+    font-weight: 500;
+    color: #374151;
+}
+
+.highlight {
+    color: #6b7280;
+    font-family: monospace;
+}
+
+.obtained {
+    font-weight: 600;
+    color: #111827;
+}
+
+.max {
+    color: #9ca3af;
+    font-size: 0.75rem;
+}
+
+.remarks-cell {
+    color: #6b7280;
+    font-style: italic;
+    max-width: 250px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #9ca3af;
+}
+
+.empty-state svg {
+    margin-bottom: 0.75rem;
+    color: #d1d5db;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .semester-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .header-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .subject-row-main {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .subject-grades-summary {
+        width: 100%;
+        justify-content: space-between;
+        gap: 0;
+    }
+}
+
+/* Simulator V2 Styles */
+.sim-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.sim-subject-select {
+    margin-bottom: 1rem;
+}
+
+.sim-subject-select label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+}
+
+.sim-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.sim-select:hover,
+.sim-select:focus {
+    background: rgba(255, 255, 255, 0.25);
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.sim-select option {
+    background: #4f46e5;
+    color: white;
+    padding: 10px;
+}
+
+.sim-dynamic-inputs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.sim-input-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sim-input-row label {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: space-between;
+}
+
+.input-max {
+    opacity: 0.6;
+    font-size: 0.75rem;
+}
+
+.sim-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid transparent;
+    border-radius: 0.5rem;
+    padding: 0.6rem;
+    color: #1f2937;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.sim-input:focus {
+    outline: none;
+    border-color: #818cf8;
+    box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.3);
+}
+
+.sim-results-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding-top: 1.5rem;
+}
+
+.sim-result-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    backdrop-filter: blur(5px);
+}
+
+.sim-result-card.primary {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.sim-result-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1;
+    margin: 0.5rem 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sim-result-label {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    opacity: 0.8;
+    font-weight: 600;
+}
+
+.sim-result-sub {
+    font-size: 0.85rem;
+    opacity: 0.9;
+    margin-top: 0.5rem;
+}
+
+.sim-shift {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.2);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+@media (max-width: 640px) {
+    .sim-results-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Simulator Light V3 Styles (Clean & Readable) */
+.calculator-panel {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 1rem;
+    padding: 1.25rem;
+    color: #1f2937;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    margin-bottom: 2rem;
+    overflow: visible;
+}
+
+/* Compact Header */
+.compact-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.header-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #4f46e5;
+    /* Brand color for icon/title */
+}
+
+.header-title h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+    color: #111827;
+}
+
+/* Inline Select */
+.sim-select-inline {
+    background: #f9fafb;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    padding: 0.4rem 0.75rem;
+    color: #374151;
+    font-size: 0.9rem;
+    cursor: pointer;
+    min-width: 200px;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.sim-select-inline:hover {
+    border-color: #9ca3af;
+    background: #f3f4f6;
+}
+
+.sim-select-inline:focus {
+    border-color: #4f46e5;
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
+
+/* Inputs Section */
+.sim-inputs-section {
+    margin-bottom: 1.5rem;
+}
+
+.section-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6b7280;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+}
+
+.sim-grid-inputs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 1rem;
+}
+
+.sim-input-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    transition: all 0.2s;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.sim-input-card:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.sim-input-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    gap: 0.5rem;
+    /* Add gap between label and badge */
+}
+
+.label-text {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #374151;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* Remove fixed max-width to allow flex to handle it, or increase it */
+    flex: 1;
+    min-width: 0;
+    /* Allow truncation */
+}
+
+.max-badge {
+    font-size: 0.75rem;
+    color: #6b7280;
+    background: #f3f4f6;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-weight: 500;
+}
+
+.sim-input-glass {
+    width: 100%;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    color: #111827;
+    font-weight: 700;
+    font-size: 1rem;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.sim-input-glass:focus {
+    outline: none;
+    border-color: #4f46e5;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.sim-input-glass::placeholder {
+    color: #d1d5db;
+}
+
+.empty-sim-state {
+    padding: 1.5rem;
+    background: #f9fafb;
+    border: 1px dashed #d1d5db;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin-bottom: 1.5rem;
+}
+
+/* Results Footer */
+.sim-results-footer {
+    display: flex;
+    align-items: center;
+    background: #f8fafc;
+    /* Slate 50 */
+    border: 1px solid #f1f5f9;
+    border-radius: 0.75rem;
+    padding: 1.25rem 1.5rem;
+    gap: 2rem;
+}
+
+.sim-mini-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.mini-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.mini-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    line-height: 1;
+    color: #4f46e5;
+    /* Brand color */
+}
+
+/* Removed text-glow for clean look */
+.text-glow {
+    text-shadow: none;
+}
+
+.vertical-divider {
+    width: 1px;
+    height: 40px;
+    background: #e5e7eb;
+}
+
+.mini-value-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 700;
+    font-size: 1.25rem;
+}
+
+.curr {
+    color: #6b7280;
+    font-size: 1rem;
+}
+
+.new {
+    color: #111827;
+}
+
+.arrow-icon {
+    color: #9ca3af;
+}
+
+.sim-status-badge {
+    margin-left: auto;
+}
+
+.delta {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.delta.positive {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.delta.negative {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+@media (max-width: 640px) {
+    .sim-results-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.25rem;
+    }
+
+    .sim-status-badge {
+        margin-left: 0;
+    }
+
+    .compact-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .header-select {
+        width: 100%;
+    }
+
+    .sim-select-inline {
+        width: 100%;
+        min-width: auto;
+    }
+}

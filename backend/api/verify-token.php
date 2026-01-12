@@ -58,7 +58,7 @@ $payload = $result['payload'];
 // Optionally verify user still exists and is active
 try {
     $pdo = getDBConnection();
-    $stmt = $pdo->prepare("SELECT id, email, student_id, full_name, role, avatar_url, password_hash FROM users WHERE id = :id AND is_active = 1");
+    $stmt = $pdo->prepare("SELECT id, email, student_id, full_name, role, avatar_url, password_hash, current_semester FROM users WHERE id = :id AND is_active = 1");
     $stmt->execute(['id' => $payload['user_id']]);
     $user = $stmt->fetch();
 
@@ -78,6 +78,7 @@ try {
             'full_name' => $user['full_name'],
             'role' => $user['role'],
             'avatar_url' => $user['avatar_url'],
+            'current_semester' => $user['current_semester'],
             'hasPassword' => !empty($user['password_hash'])
         ]
     ]);

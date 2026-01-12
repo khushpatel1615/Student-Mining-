@@ -98,30 +98,32 @@
     gap: 12px;
     padding: 12px 16px;
     border-radius: 12px;
-    /* Premium rounded corner */
     color: var(--text-secondary);
     text-decoration: none;
     font-size: 0.95rem;
     font-weight: 500;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    margin-bottom: 2px;
+    margin-bottom: 4px;
+    border: 1px solid transparent;
 }
 
 .nav-item:hover {
-    background: rgba(99, 102, 241, 0.08);
+    background: #f3f4f6;
+    /* Light gray hover */
     color: var(--primary);
     transform: translateX(4px);
 }
 
 .nav-item.active {
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
     color: white;
     font-weight: 600;
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Remove the old left accent bar */
+/* Remove old sidebar accent */
 .nav-item.active::before {
     display: none;
 }
@@ -137,7 +139,6 @@
 .nav-item:hover .nav-icon {
     opacity: 1;
     color: var(--primary);
-    transform: scale(1.1);
 }
 
 .nav-item.active .nav-icon {
@@ -149,16 +150,17 @@
     flex: 1;
 }
 
-/* Optional: Add a subtle chevron for active items or just keep it clean */
 .nav-indicator {
     opacity: 0;
     transition: opacity var(--transition-fast);
     color: white;
-    /* Ensure chevron is white on active */
+    transform: translateX(-5px);
+    transition: all 0.2s;
 }
 
 .nav-item.active .nav-indicator {
     opacity: 1;
+    transform: translateX(0);
 }
 
 /* Sub-menu Styles */

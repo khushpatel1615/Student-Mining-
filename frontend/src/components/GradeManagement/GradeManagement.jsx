@@ -29,6 +29,7 @@ function GradeManagement() {
     const [enrollments, setEnrollments] = useState([])
     const [criteria, setCriteria] = useState([])
     const [grades, setGrades] = useState({})
+    const [remarks, setRemarks] = useState({})
     const [loading, setLoading] = useState(false)
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState(null)
@@ -152,16 +153,20 @@ function GradeManagement() {
                 setEnrollments(data.data.enrollments || [])
                 setCriteria(data.data.criteria || [])
 
-                // Initialize grades object
+                // Initialize grades and remarks objects
                 const gradesObj = {}
+                const remarksObj = {}
                 data.data.enrollments?.forEach(enrollment => {
                     gradesObj[enrollment.id] = {}
+                    remarksObj[enrollment.id] = {}
                     data.data.criteria?.forEach(c => {
                         const existingGrade = enrollment.grades?.find(g => g.criteria_id === c.id)
                         gradesObj[enrollment.id][c.id] = existingGrade?.marks_obtained || ''
+                        remarksObj[enrollment.id][c.id] = existingGrade?.remarks || ''
                     })
                 })
                 setGrades(gradesObj)
+                setRemarks(remarksObj)
             } else {
                 setError(data.error || 'Failed to fetch grades')
             }
@@ -178,6 +183,16 @@ function GradeManagement() {
 
     const updateGrade = (enrollmentId, criteriaId, value) => {
         setGrades(prev => ({
+            ...prev,
+            [enrollmentId]: {
+                ...prev[enrollmentId],
+                [criteriaId]: value
+            }
+        }))
+    }
+
+    const updateRemark = (enrollmentId, criteriaId, value) => {
+        setRemarks(prev => ({
             ...prev,
             [enrollmentId]: {
                 ...prev[enrollmentId],
@@ -204,11 +219,15 @@ function GradeManagement() {
             const gradesData = []
             Object.entries(grades).forEach(([enrollmentId, criteriaGrades]) => {
                 Object.entries(criteriaGrades).forEach(([criteriaId, marks]) => {
+                    const remark = remarks[enrollmentId]?.[criteriaId];
+                    // Save if marks changed OR remark exists/changed
+                    // We send if marks exist OR if we are updating a remark
                     if (marks !== '' && marks !== null) {
                         gradesData.push({
                             enrollment_id: parseInt(enrollmentId),
                             criteria_id: parseInt(criteriaId),
-                            marks_obtained: parseFloat(marks)
+                            marks_obtained: parseFloat(marks),
+                            remarks: remark || null
                         })
                     }
                 })
@@ -402,18 +421,27 @@ function GradeManagement() {
                                                     <div className="criteria-grades">
                                                         {subjectCriteria.map(c => (
                                                             <div key={c.id} className="criteria-row">
-                                                                <label className="criteria-label">
-                                                                    {c.component_name}
-                                                                    <span className="max-marks">/{c.max_marks}</span>
-                                                                </label>
+                                                                <div className="criteria-main">
+                                                                    <label className="criteria-label">
+                                                                        {c.component_name}
+                                                                        <span className="max-marks">/{c.max_marks}</span>
+                                                                    </label>
+                                                                    <input
+                                                                        type="number"
+                                                                        className="grade-input-compact"
+                                                                        value={grades[enrollment.id]?.[c.id] || ''}
+                                                                        onChange={(e) => updateGrade(enrollment.id, c.id, e.target.value)}
+                                                                        min="0"
+                                                                        max={c.max_marks}
+                                                                        placeholder="0"
+                                                                    />
+                                                                </div>
                                                                 <input
-                                                                    type="number"
-                                                                    className="grade-input-compact"
-                                                                    value={grades[enrollment.id]?.[c.id] || ''}
-                                                                    onChange={(e) => updateGrade(enrollment.id, c.id, e.target.value)}
-                                                                    min="0"
-                                                                    max={c.max_marks}
-                                                                    placeholder="0"
+                                                                    type="text"
+                                                                    className="remark-input-compact"
+                                                                    placeholder="Add feedback..."
+                                                                    value={remarks[enrollment.id]?.[c.id] || ''}
+                                                                    onChange={(e) => updateRemark(enrollment.id, c.id, e.target.value)}
                                                                 />
                                                             </div>
                                                         ))}
@@ -490,15 +518,25 @@ function GradeManagement() {
                                                 </td>
                                                 {criteria.map(c => (
                                                     <td key={c.id}>
-                                                        <input
-                                                            type="number"
-                                                            className="grade-input"
-                                                            value={grades[enrollment.id]?.[c.id] || ''}
-                                                            onChange={(e) => updateGrade(enrollment.id, c.id, e.target.value)}
-                                                            min="0"
-                                                            max={c.max_marks}
-                                                            placeholder="-"
-                                                        />
+                                                        <div className="grade-cell-wrapper">
+                                                            <input
+                                                                type="number"
+                                                                className="grade-input"
+                                                                value={grades[enrollment.id]?.[c.id] || ''}
+                                                                onChange={(e) => updateGrade(enrollment.id, c.id, e.target.value)}
+                                                                min="0"
+                                                                max={c.max_marks}
+                                                                placeholder="-"
+                                                            />
+                                                            <input
+                                                                type="text"
+                                                                className="remark-input-mini"
+                                                                placeholder="Rem..."
+                                                                title="Add remarks"
+                                                                value={remarks[enrollment.id]?.[c.id] || ''}
+                                                                onChange={(e) => updateRemark(enrollment.id, c.id, e.target.value)}
+                                                            />
+                                                        </div>
                                                     </td>
                                                 ))}
                                                 <td>
