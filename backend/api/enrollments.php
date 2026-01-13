@@ -479,27 +479,6 @@ function handleDelete($pdo)
 }
 
 /**
- * Helper: Get authenticated user payload
- */
-function getAuthUser()
-{
-    $headers = getallheaders();
-    $authHeader = $headers['Authorization'] ?? '';
-
-    if (empty($authHeader) || !preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches)) {
-        return null;
-    }
-
-    $result = verifyToken($matches[1]);
-
-    if (!$result['valid']) {
-        return null;
-    }
-
-    return $result['payload'];
-}
-
-/**
  * Helper: Verify admin token
  */
 function verifyAdminToken()

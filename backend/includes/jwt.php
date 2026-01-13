@@ -145,4 +145,20 @@ function requireRole($requiredRole)
 
     return $payload;
 }
+
+/**
+ * Get authenticated user payload
+ */
+function getAuthUser()
+{
+    $token = getTokenFromHeader();
+    if (!$token)
+        return null;
+
+    $result = verifyToken($token);
+    if (!$result['valid'])
+        return null;
+
+    return $result['payload'];
+}
 ?>

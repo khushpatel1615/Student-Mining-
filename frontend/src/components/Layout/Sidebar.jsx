@@ -17,8 +17,9 @@ import {
     CheckSquare,
     ClipboardList,
     Layers,
-    FileText,
-    Settings
+    Settings,
+    Brain,
+    Briefcase
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -31,6 +32,8 @@ const Sidebar = ({ role = 'student', onLogout, collapsed, mobileMenuOpen, onTogg
     const studentMenuItems = [
         { id: 'overview', label: 'Overview', icon: LayoutDashboard, tab: 'overview' },
         { id: 'analytics', label: 'Analytics', icon: BarChart3, tab: 'analytics' },
+        { id: 'skills', label: 'Skills Map', icon: Brain, tab: 'skills' },
+        { id: 'career', label: 'Career Fit', icon: Briefcase, tab: 'career' },
         { id: 'grades', label: 'Grades', icon: GraduationCap, tab: 'grades' },
         { id: 'attendance', label: 'Attendance', icon: Calendar, tab: 'attendance' },
         { id: 'profile', label: 'Profile', icon: User, tab: 'profile' },

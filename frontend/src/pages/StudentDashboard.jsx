@@ -7,6 +7,11 @@ import StudentAnalyticsDashboard from '../components/Analytics/StudentAnalyticsD
 import CalendarManagement from '../components/CalendarManagement/CalendarManagement'
 import { CircularProgress } from '../components/CircularProgress'
 import GradesTab from '../components/Student/Grades/GradesTab'
+import StudentProfile from '../components/Student/Profile/StudentProfile'
+import StudentSkills from '../components/Student/Skills/StudentSkills'
+
+import StudentCareer from '../components/Student/Career/StudentCareer'
+import StudentAttendance from '../components/Student/Attendance/StudentAttendance'
 import './StudentDashboard.css'
 import {
     BookOpen,
@@ -485,6 +490,26 @@ const StudentDashboard = () => {
 
                     {activeTab === 'analytics' && (
                         <StudentAnalyticsDashboard studentData={dashboardData} />
+                    )}
+
+                    {activeTab === 'skills' && (
+                        <StudentSkills />
+                    )}
+
+
+
+                    {activeTab === 'career' && (
+                        <StudentCareer />
+                    )}
+
+                    {activeTab === 'profile' && (
+                        <StudentProfile />
+                    )}
+
+                    {activeTab === 'attendance' && (
+                        <div className="card">
+                            <StudentAttendance />
+                        </div>
                     )}
 
                     {activeTab === 'grades' && (
