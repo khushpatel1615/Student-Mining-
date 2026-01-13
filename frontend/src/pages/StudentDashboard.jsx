@@ -12,6 +12,8 @@ import StudentSkills from '../components/Student/Skills/StudentSkills'
 
 import StudentCareer from '../components/Student/Career/StudentCareer'
 import StudentAttendance from '../components/Student/Attendance/StudentAttendance'
+import StudentAssignments from '../components/Student/Assignments/StudentAssignments'
+import StudentExams from '../components/Student/Exams/StudentExams'
 import './StudentDashboard.css'
 import {
     BookOpen,
@@ -515,6 +517,18 @@ const StudentDashboard = () => {
                     {activeTab === 'grades' && (
                         <div className="card">
                             <GradesTab />
+                        </div>
+                    )}
+
+                    {activeTab === 'assignments' && (
+                        <div className="card">
+                            <StudentAssignments />
+                        </div>
+                    )}
+
+                    {activeTab === 'exams' && (
+                        <div className="card">
+                            <StudentExams />
                         </div>
                     )}
 

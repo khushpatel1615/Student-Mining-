@@ -14,6 +14,8 @@ import CalendarManagement from '../components/CalendarManagement/CalendarManagem
 import AdminAnalyticsDashboard from '../components/Analytics/AdminAnalyticsDashboard'
 import AdminOverview from '../components/Overview/AdminOverview'
 import CSVImport from '../components/Import/CSVImport'
+import AssignmentManagement from '../components/AssignmentManagement/AssignmentManagement'
+import ExamManagement from '../components/ExamManagement/ExamManagement'
 // ... (keep other imports)
 
 
@@ -315,6 +317,10 @@ function AdminDashboard() {
                 return <GradeManagement />
             case 'attendance':
                 return <AttendanceManagement />
+            case 'assignments':
+                return <AssignmentManagement />
+            case 'exams':
+                return <ExamManagement />
             case 'calendar':
                 return <CalendarManagement role="admin" />
             default:

@@ -263,7 +263,7 @@ function EnrollmentManagement() {
                             className={`toggle-btn ${viewStatus === status ? 'active' : ''}`}
                             onClick={() => setViewStatus(status)}
                         >
-                            {status.charAt(0).toUpperCase() + status.slice(1)} Subjects
+                            {status.charAt(0).toUpperCase() + status.slice(1)}
                         </button>
                     ))}
                 </div>

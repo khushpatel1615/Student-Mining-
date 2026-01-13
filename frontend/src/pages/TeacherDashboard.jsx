@@ -1,424 +1,230 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
+import MainLayout from '../components/Layout/MainLayout'
 import { useAuth } from '../context/AuthContext'
-import { useTheme } from '../context/ThemeContext'
+import TeacherAssignments from '../components/Teacher/Assignments/TeacherAssignments'
+import TeacherExams from '../components/Teacher/Exams/TeacherExams'
+import TeacherGrades from '../components/Teacher/Grades/TeacherGrades'
 import './TeacherDashboard.css'
-import QuickActionsPanel from '../components/QuickActions/QuickActionsPanel'
-import ActivityFeed from '../components/ActivityFeed/ActivityFeed'
-import CalendarManagement from '../components/CalendarManagement/CalendarManagement'
-import { Calendar } from 'lucide-react'
 
 const API_BASE = 'http://localhost/StudentDataMining/backend/api'
 
-// Icons
-const MegaphoneIcon = (props) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-        <path d="M3 11l18-5v12L3 13v-2z" />
-        <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
-    </svg>
-)
-
-const BookIcon = (props) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-    </svg>
-)
-
-const PlusIcon = (props) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16" {...props}>
-        <line x1="12" y1="5" x2="12" y2="19" />
-        <line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
-)
-
-const EditIcon = (props) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16" {...props}>
-        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-    </svg>
-)
-
-const TrashIcon = (props) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16" {...props}>
-        <polyline points="3 6 5 6 21 6" />
-        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-    </svg>
-)
-
-const LogoutIcon = (props) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20" {...props}>
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-        <polyline points="16 17 21 12 16 7" />
-        <line x1="21" y1="12" x2="9" y2="12" />
-    </svg>
-)
-
-function TeacherDashboard() {
-    const navigate = useNavigate()
+const TeacherDashboard = () => {
     const { user, token, logout } = useAuth()
-    const { theme, toggleTheme } = useTheme()
+    const [searchParams, setSearchParams] = useSearchParams()
+    const activeTab = searchParams.get('tab') || 'overview'
+    const setActiveTab = (tab) => setSearchParams({ tab })
 
-    // Tab State: 'overview', 'calendar'
-    const [activeTab, setActiveTab] = useState('overview')
-
-    const [subjects, setSubjects] = useState([])
-    const [selectedSubject, setSelectedSubject] = useState(null)
-    const [announcements, setAnnouncements] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [showForm, setShowForm] = useState(false)
-    const [formData, setFormData] = useState({ title: '', content: '', is_pinned: false })
-    const [file, setFile] = useState(null)
-    const [editingId, setEditingId] = useState(null)
+    const [refreshing, setRefreshing] = useState(false)
+    const [lastUpdated, setLastUpdated] = useState(new Date())
+    const [dashboardData, setDashboardData] = useState({
+        subjects: [],
+        totalStudents: 0,
+        upcomingExams: [],
+        pendingGrading: 0
+    })
 
     useEffect(() => {
-        fetchAssignedSubjects()
+        fetchDashboardData()
     }, [])
 
-    useEffect(() => {
-        if (selectedSubject) {
-            fetchAnnouncements(selectedSubject.id)
-        }
-    }, [selectedSubject])
-
-    const fetchAssignedSubjects = async () => {
+    const fetchDashboardData = async () => {
+        setRefreshing(true)
         try {
-            const response = await fetch(`${API_BASE}/teachers.php?id=${user.id}`, {
+            // Fetch teacher's subjects
+            const subjectsRes = await fetch(`${API_BASE}/teachers.php?action=my_subjects`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
-            const data = await response.json()
-            if (data.success && data.data.assigned_subjects) {
-                setSubjects(data.data.assigned_subjects)
-                if (data.data.assigned_subjects.length > 0) {
-                    setSelectedSubject(data.data.assigned_subjects[0])
-                }
+            const subjectsData = await subjectsRes.json()
+
+            if (subjectsData.success) {
+                const subjects = subjectsData.data
+
+                // Fetch stats for each subject
+                const subjectsWithStats = await Promise.all(
+                    subjects.map(async (subject) => {
+                        const statsRes = await fetch(
+                            `${API_BASE}/teachers.php?action=subject_stats&subject_id=${subject.id}`,
+                            { headers: { 'Authorization': `Bearer ${token}` } }
+                        )
+                        const statsData = await statsRes.json()
+                        return {
+                            ...subject,
+                            stats: statsData.success ? statsData.data : { total_students: 0, avg_attendance: 0 }
+                        }
+                    })
+                )
+
+                const totalStudents = subjectsWithStats.reduce((sum, s) => sum + (s.stats.total_students || 0), 0)
+
+                setDashboardData({
+                    subjects: subjectsWithStats,
+                    totalStudents,
+                    upcomingExams: [],
+                    pendingGrading: 0
+                })
             }
-        } catch (err) {
-            console.error('Failed to fetch subjects:', err)
+
+            setLastUpdated(new Date())
+        } catch (error) {
+            console.error('Error fetching dashboard data:', error)
         } finally {
-            setLoading(false)
+            setRefreshing(false)
         }
     }
 
-    const fetchAnnouncements = async (subjectId) => {
-        try {
-            const response = await fetch(`${API_BASE}/announcements.php?subject_id=${subjectId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
-            if (data.success) {
-                setAnnouncements(data.data)
-            }
-        } catch (err) {
-            console.error('Failed to fetch announcements:', err)
-        }
-    }
-
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-        if (!formData.title.trim() || !formData.content.trim()) return
-
-        try {
-            const url = `${API_BASE}/announcements.php`
-            // If editing, use PUT. If new, use POST with FormData for file.
-            // Simplified for this context to match previous logic
-            let response;
-
-            if (editingId) {
-                const body = { id: editingId, ...formData }
-                response = await fetch(url, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(body)
-                })
-            } else {
-                const data = new FormData()
-                data.append('subject_id', selectedSubject.id)
-                data.append('title', formData.title)
-                data.append('content', formData.content)
-                data.append('is_pinned', formData.is_pinned ? '1' : '0')
-                if (file) {
-                    data.append('attachment', file)
-                }
-
-                response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` },
-                    body: data
-                })
-            }
-
-            const data = await response.json()
-
-            if (data.success) {
-                setFormData({ title: '', content: '', is_pinned: false })
-                setFile(null)
-                setShowForm(false)
-                setEditingId(null)
-                fetchAnnouncements(selectedSubject.id)
-            } else {
-                alert(data.error || 'Failed to save announcement')
-            }
-        } catch (err) {
-            alert('Failed to save announcement')
-        }
-    }
-
-    const handleEdit = (announcement) => {
-        setFormData({
-            title: announcement.title,
-            content: announcement.content,
-            is_pinned: announcement.is_pinned
-        })
-        setEditingId(announcement.id)
-        setShowForm(true)
-    }
-
-    const handleDelete = async (id) => {
-        if (!confirm('Are you sure you want to delete this announcement?')) return
-
-        try {
-            const response = await fetch(`${API_BASE}/announcements.php?id=${id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
-
-            if (data.success) {
-                fetchAnnouncements(selectedSubject.id)
-            } else {
-                alert(data.error || 'Failed to delete announcement')
-            }
-        } catch (err) {
-            alert('Failed to delete announcement')
-        }
-    }
-
-    const formatDate = (dateStr) => {
-        const date = new Date(dateStr)
-        return date.toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit'
-        })
-    }
-
-    if (loading) {
-        return (
-            <div className={`teacher-dashboard ${theme}`}>
-                <div style={{ padding: '2rem', textAlign: 'center' }}>Loading...</div>
-            </div>
-        )
-    }
-
-    // Main Content Renderer
-    const renderContent = () => {
-        if (activeTab === 'calendar') {
-            return <CalendarManagement role="teacher" />
-        }
-
-        return (
-            <>
-                {/* Sidebar - Subject List */}
-                <aside className="subjects-sidebar">
-                    <h2>My Subjects</h2>
-                    {subjects.length === 0 ? (
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                            No subjects assigned yet. Contact admin.
-                        </p>
-                    ) : (
-                        <div className="subject-list">
-                            {subjects.map(subject => (
-                                <div
-                                    key={subject.id}
-                                    className={`subject-item ${selectedSubject?.id === subject.id ? 'active' : ''}`}
-                                    onClick={() => setSelectedSubject(subject)}
-                                >
-                                    <h3>{subject.name}</h3>
-                                    <p>{subject.code} • Semester {subject.semester}</p>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </aside>
-
-                {/* Announcements Panel */}
-                <section className="announcements-panel">
-                    {selectedSubject ? (
-                        <>
-                            <div className="panel-header">
-                                <h2>Announcements for {selectedSubject.name}</h2>
-                                <button
-                                    className="btn btn-primary btn-sm"
-                                    onClick={() => {
-                                        setFormData({ title: '', content: '', is_pinned: false })
-                                        setFile(null)
-                                        setEditingId(null)
-                                        setShowForm(!showForm)
-                                    }}
-                                >
-                                    <PlusIcon /> New Announcement
-                                </button>
-                            </div>
-
-                            {showForm && (
-                                <form className="announcement-form" onSubmit={handleSubmit}>
-                                    <h3>
-                                        <MegaphoneIcon width={24} height={24} />
-                                        {editingId ? 'Edit Announcement' : 'Create Announcement'}
-                                    </h3>
-                                    <div className="form-group">
-                                        <label>Title</label>
-                                        <input
-                                            type="text"
-                                            value={formData.title}
-                                            onChange={e => setFormData({ ...formData, title: e.target.value })}
-                                            placeholder="Announcement title..."
-                                            required
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>Content</label>
-                                        <textarea
-                                            value={formData.content}
-                                            onChange={e => setFormData({ ...formData, content: e.target.value })}
-                                            placeholder="Write your announcement here..."
-                                            required
-                                        />
-                                    </div>
-
-                                    {!editingId && (
-                                        <div className="form-group">
-                                            <label className="file-input-label" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                                                Attach PDF Document
-                                            </label>
-                                            <input
-                                                type="file"
-                                                accept=".pdf"
-                                                onChange={e => setFile(e.target.files[0])}
-                                                className="file-input"
-                                                style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border-color)', borderRadius: '6px' }}
-                                            />
-                                            {file && <div style={{ fontSize: '0.85rem', color: 'var(--accent)', marginTop: '0.25rem' }}>{file.name}</div>}
-                                        </div>
-                                    )}
-
-                                    <div className="form-group">
-                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            <input
-                                                type="checkbox"
-                                                checked={formData.is_pinned}
-                                                onChange={e => setFormData({ ...formData, is_pinned: e.target.checked })}
-                                            />
-                                            Pin this announcement
-                                        </label>
-                                    </div>
-
-                                    <div className="form-actions">
-                                        <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancel</button>
-                                        <button type="submit" className="btn btn-primary">{editingId ? 'Update' : 'Post'} Announcement</button>
-                                    </div>
-                                </form>
-                            )}
-
-                            <div className="announcements-list">
-                                {announcements.length === 0 ? (
-                                    <div className="empty-state">
-                                        <MegaphoneIcon />
-                                        <p>No announcements yet. Create your first one!</p>
-                                    </div>
-                                ) : (
-                                    announcements.map(announcement => (
-                                        <div key={announcement.id} className={`announcement-card ${announcement.is_pinned ? 'pinned' : ''}`}>
-                                            <div className="announcement-header">
-                                                <div className="megaphone-icon">
-                                                    <MegaphoneIcon />
-                                                </div>
-                                                <div className="announcement-meta">
-                                                    <h4>{announcement.title}</h4>
-                                                    <span className="date">{formatDate(announcement.created_at)}</span>
-                                                </div>
-                                            </div>
-                                            <div className="announcement-content">
-                                                {announcement.content.split('\n').map((para, i) => (
-                                                    <p key={i}>{para}</p>
-                                                ))}
-                                            </div>
-                                            <div className="announcement-actions">
-                                                <button onClick={() => handleEdit(announcement)} title="Edit"><EditIcon /></button>
-                                                <button className="delete" onClick={() => handleDelete(announcement.id)} title="Delete"><TrashIcon /></button>
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </>
-                    ) : (
-                        <div className="empty-state">
-                            <BookIcon />
-                            <p>Select a subject to manage messages</p>
-                        </div>
-                    )}
-                </section>
-
-                {/* Right Sidebar - Quick Actions & Feed */}
-                <div className="teacher-sidebar-right">
-                    <QuickActionsPanel role="teacher" />
-                    <ActivityFeed activities={[]} title="Recent Activity" />
-                </div>
-            </>
-        )
+    const getGreeting = () => {
+        const hour = new Date().getHours()
+        if (hour < 12) return 'Good Morning'
+        if (hour < 17) return 'Good Afternoon'
+        return 'Good Evening'
     }
 
     return (
-        <div className={`teacher-dashboard-page teacher-dashboard ${theme}`}>
-            {/* Header */}
-            <header className="teacher-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <h1>
-                        <BookIcon />
-                        Teacher Dashboard
-                    </h1>
-                    <nav className="teacher-nav" style={{ marginLeft: '2rem', display: 'flex', gap: '1rem' }}>
-                        <button
-                            className={`btn btn-link ${activeTab === 'overview' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('overview')}
-                            style={{ color: activeTab === 'overview' ? 'var(--primary)' : 'var(--text-primary)', fontWeight: 'bold' }}
-                        >
-                            Overview
-                        </button>
-                        <button
-                            className={`btn btn-link ${activeTab === 'calendar' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('calendar')}
-                            style={{ color: activeTab === 'calendar' ? 'var(--primary)' : 'var(--text-primary)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                        >
-                            <Calendar size={18} /> Calendar
-                        </button>
-                    </nav>
+        <MainLayout
+            role="teacher"
+            lastUpdated={lastUpdated}
+            onRefresh={fetchDashboardData}
+            refreshing={refreshing}
+            onLogout={logout}
+        >
+            <div className="dashboard-content">
+                {/* Welcome Banner */}
+                <div className="welcome-banner">
+                    <div className="welcome-content">
+                        <h1>{getGreeting()}, {user?.full_name}! 👋</h1>
+                        <p>Manage your classes, assignments, and student performance.</p>
+                    </div>
                 </div>
 
-                <div className="header-actions">
-                    <span style={{ color: 'var(--text-secondary)' }}>Welcome, {user?.full_name}</span>
-                    <button className="btn btn-secondary btn-sm" onClick={toggleTheme}>
-                        {theme === 'dark' ? '☀️' : '🌙'}
-                    </button>
-                    <button className="btn btn-secondary btn-sm" onClick={logout}>
-                        <LogoutIcon /> Logout
-                    </button>
-                </div>
-            </header>
+                {/* Tab Content */}
+                <div className="tab-content">
+                    {activeTab === 'overview' && (
+                        <div className="overview-content">
+                            {/* Stats Cards */}
+                            <div className="stats-grid">
+                                <div className="stat-card">
+                                    <div className="stat-icon subjects">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                                        </svg>
+                                    </div>
+                                    <div className="stat-info">
+                                        <span className="stat-label">My Subjects</span>
+                                        <span className="stat-value">{dashboardData.subjects.length}</span>
+                                    </div>
+                                </div>
 
-            {/* Main Content */}
-            <main className="teacher-main" style={activeTab === 'calendar' ? { display: 'block' } : {}}>
-                {renderContent()}
-            </main>
-        </div>
+                                <div className="stat-card">
+                                    <div className="stat-icon students">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                            <circle cx="9" cy="7" r="4" />
+                                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                        </svg>
+                                    </div>
+                                    <div className="stat-info">
+                                        <span className="stat-label">Total Students</span>
+                                        <span className="stat-value">{dashboardData.totalStudents}</span>
+                                    </div>
+                                </div>
+
+                                <div className="stat-card">
+                                    <div className="stat-icon exams">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                            <polyline points="14 2 14 8 20 8" />
+                                            <line x1="16" y1="13" x2="8" y2="13" />
+                                            <line x1="16" y1="17" x2="8" y2="17" />
+                                            <polyline points="10 9 9 9 8 9" />
+                                        </svg>
+                                    </div>
+                                    <div className="stat-info">
+                                        <span className="stat-label">Upcoming Exams</span>
+                                        <span className="stat-value">{dashboardData.upcomingExams.length}</span>
+                                    </div>
+                                </div>
+
+                                <div className="stat-card">
+                                    <div className="stat-icon pending">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <polyline points="12 6 12 12 16 14" />
+                                        </svg>
+                                    </div>
+                                    <div className="stat-info">
+                                        <span className="stat-label">Pending Grading</span>
+                                        <span className="stat-value">{dashboardData.pendingGrading}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Subjects List */}
+                            <div className="card">
+                                <h3>My Subjects</h3>
+                                <div className="subjects-list">
+                                    {dashboardData.subjects.length === 0 ? (
+                                        <div className="empty-state">No subjects assigned</div>
+                                    ) : (
+                                        dashboardData.subjects.map(subject => (
+                                            <div key={subject.id} className="subject-item">
+                                                <div className="subject-info">
+                                                    <h4>{subject.name}</h4>
+                                                    <span className="subject-code">{subject.code}</span>
+                                                </div>
+                                                <div className="subject-stats">
+                                                    <div className="stat-item">
+                                                        <span className="label">Students:</span>
+                                                        <span className="value">{subject.stats.total_students}</span>
+                                                    </div>
+                                                    <div className="stat-item">
+                                                        <span className="label">Avg Attendance:</span>
+                                                        <span className="value">{subject.stats.avg_attendance}%</span>
+                                                    </div>
+                                                    <div className="stat-item">
+                                                        <span className="label">Credits:</span>
+                                                        <span className="value">{subject.credits}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'assignments' && (
+                        <div className="card">
+                            <TeacherAssignments />
+                        </div>
+                    )}
+
+                    {activeTab === 'exams' && (
+                        <div className="card">
+                            <TeacherExams />
+                        </div>
+                    )}
+
+                    {activeTab === 'grades' && (
+                        <div className="card">
+                            <TeacherGrades />
+                        </div>
+                    )}
+
+                    {activeTab === 'attendance' && (
+                        <div className="card">
+                            <div className="coming-soon">
+                                <h3>Attendance Management</h3>
+                                <p>QR code generation and manual marking coming soon...</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </MainLayout>
     )
 }
 

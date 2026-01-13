@@ -1,0 +1,333 @@
+/* Teacher Grades Styles */
+.teacher-grades {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.grades-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    gap: 2rem;
+}
+
+.grades-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.subtitle {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.header-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.subject-select {
+    padding: 0.625rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    min-width: 250px;
+    cursor: pointer;
+}
+
+.subject-select:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.btn-export,
+.btn-save-all {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-export {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.btn-export:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--accent-primary);
+}
+
+.btn-save-all {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+}
+
+.btn-save-all:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.btn-save-all:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-export svg,
+.btn-save-all svg {
+    width: 16px;
+    height: 16px;
+}
+
+.grades-table-container {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    overflow-x: auto;
+    max-height: calc(100vh - 250px);
+    overflow-y: auto;
+}
+
+.grades-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.grades-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--bg-primary);
+}
+
+.grades-table th {
+    padding: 1rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    border-bottom: 2px solid var(--border-color);
+    background: var(--bg-primary);
+}
+
+.sticky-col,
+.sticky-col-2 {
+    position: sticky;
+    left: 0;
+    background: var(--bg-primary);
+    z-index: 11;
+}
+
+.sticky-col-2 {
+    left: 120px;
+}
+
+.component-header {
+    min-width: 150px;
+    text-align: center;
+}
+
+.component-name {
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.component-weight {
+    font-size: 0.7rem;
+    color: var(--text-tertiary);
+    font-weight: 400;
+}
+
+.total-col,
+.percentage-col,
+.grade-col {
+    text-align: center;
+    font-weight: 700;
+}
+
+.grades-table tbody tr {
+    transition: background 0.2s;
+}
+
+.grades-table tbody tr:hover {
+    background: var(--bg-tertiary);
+}
+
+.grades-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.grades-table tbody .sticky-col,
+.grades-table tbody .sticky-col-2 {
+    background: var(--bg-secondary);
+}
+
+.grades-table tbody tr:hover .sticky-col,
+.grades-table tbody tr:hover .sticky-col-2 {
+    background: var(--bg-tertiary);
+}
+
+.grade-cell {
+    text-align: center;
+    position: relative;
+}
+
+.grade-cell.saved {
+    animation: flashGreen 0.5s;
+}
+
+@keyframes flashGreen {
+
+    0%,
+    100% {
+        background: transparent;
+    }
+
+    50% {
+        background: rgba(34, 197, 94, 0.2);
+    }
+}
+
+.marks-input {
+    width: 70px;
+    padding: 0.375rem 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    text-align: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.marks-input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+}
+
+.max-marks {
+    margin-left: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+}
+
+.grade-badge {
+    display: inline-block;
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+    font-size: 0.875rem;
+}
+
+.grade-Aplus,
+.grade-A {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+}
+
+.grade-Aminus,
+.grade-Bplus {
+    background: rgba(59, 130, 246, 0.15);
+    color: #3b82f6;
+}
+
+.grade-B,
+.grade-Bminus {
+    background: rgba(99, 102, 241, 0.15);
+    color: #6366f1;
+}
+
+.grade-Cplus,
+.grade-C {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+}
+
+.grade-Cminus,
+.grade-D {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+}
+
+.grade-F {
+    background: rgba(220, 38, 38, 0.15);
+    color: #dc2626;
+    font-weight: 800;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-state p {
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.help-text {
+    font-size: 0.875rem;
+    color: var(--text-tertiary);
+}
+
+.loading {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@media (max-width: 1200px) {
+    .grades-header {
+        flex-direction: column;
+    }
+
+    .header-actions {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .subject-select {
+        flex: 1;
+        min-width: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .grades-table-container {
+        max-height: calc(100vh - 300px);
+    }
+
+    .marks-input {
+        width: 60px;
+    }
+
+    .component-header {
+        min-width: 120px;
+    }
+}

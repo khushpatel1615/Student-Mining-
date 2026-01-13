@@ -19,7 +19,9 @@ import {
     Layers,
     Settings,
     Brain,
-    Briefcase
+    Briefcase,
+    FileText,
+    ClipboardCheck
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -36,6 +38,8 @@ const Sidebar = ({ role = 'student', onLogout, collapsed, mobileMenuOpen, onTogg
         { id: 'career', label: 'Career Fit', icon: Briefcase, tab: 'career' },
         { id: 'grades', label: 'Grades', icon: GraduationCap, tab: 'grades' },
         { id: 'attendance', label: 'Attendance', icon: Calendar, tab: 'attendance' },
+        { id: 'assignments', label: 'Assignments', icon: FileText, tab: 'assignments' },
+        { id: 'exams', label: 'Exams', icon: ClipboardCheck, tab: 'exams' },
         { id: 'profile', label: 'Profile', icon: User, tab: 'profile' },
         { id: 'calendar', label: 'Calendar', icon: CalendarDays, tab: 'calendar' }
     ];
@@ -48,10 +52,22 @@ const Sidebar = ({ role = 'student', onLogout, collapsed, mobileMenuOpen, onTogg
         { id: 'enrollments', label: 'Enrollments', icon: ClipboardList, tab: 'enrollments' },
         { id: 'grades', label: 'Grades', icon: GraduationCap, tab: 'grades' },
         { id: 'attendance', label: 'Attendance', icon: CheckSquare, tab: 'attendance' },
+        { id: 'assignments', label: 'Assignments', icon: FileText, tab: 'assignments' },
+        { id: 'exams', label: 'Exams', icon: ClipboardCheck, tab: 'exams' },
         { id: 'calendar', label: 'Calendar', icon: CalendarDays, tab: 'calendar' }
     ];
 
-    const menuItems = role === 'admin' ? adminMenuItems : studentMenuItems;
+    const teacherMenuItems = [
+        { id: 'overview', label: 'Overview', icon: LayoutDashboard, tab: 'overview' },
+        { id: 'subjects', label: 'My Subjects', icon: BookOpen, tab: 'subjects' },
+        { id: 'assignments', label: 'Assignments', icon: FileText, tab: 'assignments' },
+        { id: 'exams', label: 'Exams', icon: ClipboardCheck, tab: 'exams' },
+        { id: 'grades', label: 'Grades', icon: GraduationCap, tab: 'grades' },
+        { id: 'attendance', label: 'Attendance', icon: CheckSquare, tab: 'attendance' },
+        { id: 'calendar', label: 'Calendar', icon: CalendarDays, tab: 'calendar' }
+    ];
+
+    const menuItems = role === 'admin' ? adminMenuItems : role === 'teacher' ? teacherMenuItems : studentMenuItems;
 
     const getInitials = (name) => {
         if (!name) return '?';

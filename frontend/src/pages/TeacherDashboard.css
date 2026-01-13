@@ -1,475 +1,171 @@
-/* ============================================
-   Teacher Dashboard - Professional UI
-   Scoped: .teacher-dashboard-page
-   ============================================ */
-
-/* Main Container Scope */
-.teacher-dashboard-page {
+/* Teacher Dashboard Styles */
+.teacher-dashboard {
     min-height: 100vh;
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-    font-family: 'Inter', sans-serif;
 }
 
-/* Header */
-.teacher-dashboard-page .teacher-header {
-    background: var(--bg-glass);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border-color);
-    padding: 1rem 2rem;
+.overview-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    transition: all 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-icon svg {
+    width: 28px;
+    height: 28px;
+    color: white;
+}
+
+.stat-icon.subjects {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+}
+
+.stat-icon.students {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.stat-icon.exams {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.stat-icon.pending {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.subjects-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.subject-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: var(--shadow-sm);
-}
-
-.teacher-dashboard-page .teacher-header h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin: 0;
-}
-
-.teacher-dashboard-page .teacher-header h1 svg {
-    color: var(--accent-primary);
-    filter: drop-shadow(0 2px 4px rgba(99, 102, 241, 0.3));
-}
-
-.teacher-dashboard-page .header-actions {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-}
-
-/* Main Layout */
-.teacher-dashboard-page .teacher-main {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: 2rem;
-    padding: 2rem;
-    max-width: 1600px;
-    margin: 0 auto;
-    align-items: start;
-}
-
-/* Sidebar - Subject List */
-.teacher-dashboard-page .subjects-sidebar {
+    padding: 1.25rem;
     background: var(--bg-secondary);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
     border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-md);
-    position: sticky;
-    top: 6rem;
-    max-height: calc(100vh - 8rem);
-    overflow-y: auto;
-}
-
-/* Responsive */
-@media (max-width: 1280px) {
-    .teacher-dashboard-page .teacher-main {
-        grid-template-columns: 250px 1fr;
-    }
-}
-
-@media (max-width: 900px) {
-    .teacher-dashboard-page .teacher-main {
-        grid-template-columns: 1fr;
-    }
-
-    .teacher-dashboard-page .subjects-sidebar {
-        position: static;
-        max-height: none;
-        margin-bottom: 2rem;
-    }
-
-    .teacher-right-sidebar {
-        flex-direction: column;
-    }
-
-    .teacher-dashboard-page .announcement-content {
-        padding-left: 0;
-        margin-top: 1rem;
-    }
-}
-
-.teacher-dashboard-page .subjects-sidebar h2 {
-    font-size: 0.85rem;
-    color: var(--text-tertiary);
-    margin-bottom: 1rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 600;
-}
-
-.teacher-dashboard-page .subject-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.teacher-dashboard-page .subject-item {
-    padding: 1rem 1.25rem;
     border-radius: var(--radius-md);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    border: 1px solid transparent;
-    background: transparent;
+    transition: all 0.2s;
 }
 
-.teacher-dashboard-page .subject-item:hover {
-    background: var(--bg-tertiary);
-    transform: translateX(4px);
-}
-
-.teacher-dashboard-page .subject-item.active {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+.subject-item:hover {
     border-color: var(--accent-primary);
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
 }
 
-.teacher-dashboard-page .subject-item h3 {
-    font-size: 1rem;
+.subject-info h4 {
+    font-size: 1.125rem;
     font-weight: 600;
     color: var(--text-primary);
-    margin: 0 0 0.25rem 0;
+    margin-bottom: 0.25rem;
 }
 
-.teacher-dashboard-page .subject-item.active h3 {
+.subject-code {
+    font-size: 0.875rem;
     color: var(--accent-primary);
+    font-weight: 600;
 }
 
-.teacher-dashboard-page .subject-item p {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    margin: 0;
-}
-
-/* Announcements Panel */
-.teacher-dashboard-page .announcements-panel {
-    background: var(--bg-secondary);
-    border-radius: var(--radius-xl);
-    padding: 2.5rem;
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-md);
-    min-height: 600px;
-}
-
-.teacher-dashboard-page .panel-header {
+.subject-stats {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--border-color);
+    gap: 2rem;
 }
 
-.teacher-dashboard-page .panel-header h2 {
-    font-size: 1.75rem;
-    color: var(--text-primary);
-    font-weight: 700;
-    margin: 0;
-    background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-/* Announcement Form */
-.teacher-dashboard-page .announcement-form {
-    background: var(--bg-tertiary);
-    border-radius: var(--radius-lg);
-    padding: 2rem;
-    margin-bottom: 3rem;
-    border: 1px solid var(--border-color);
-    animation: slideUp 0.4s ease-out;
-}
-
-.teacher-dashboard-page .announcement-form h3 {
-    margin: 0 0 1.5rem 0;
-    color: var(--text-primary);
-    font-size: 1.25rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.teacher-dashboard-page .form-group {
-    margin-bottom: 1.5rem;
-}
-
-.teacher-dashboard-page .form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-}
-
-.teacher-dashboard-page .form-group input[type="text"],
-.teacher-dashboard-page .form-group textarea {
-    width: 100%;
-    padding: 0.875rem 1rem;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    font-size: 1rem;
-    transition: all var(--transition-fast);
-}
-
-.teacher-dashboard-page .form-group textarea {
-    min-height: 180px;
-    resize: vertical;
-    line-height: 1.6;
-}
-
-.teacher-dashboard-page .form-group input:focus,
-.teacher-dashboard-page .form-group textarea:focus {
-    outline: none;
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-}
-
-/* File Input Styling */
-.teacher-dashboard-page .file-input {
-    border: 2px dashed var(--border-color) !important;
-    background: var(--bg-secondary);
-    padding: 2rem !important;
-    text-align: center;
-    cursor: pointer;
-    transition: all var(--transition-normal);
-}
-
-.teacher-dashboard-page .file-input:hover {
-    border-color: var(--accent-primary) !important;
-    background: rgba(99, 102, 241, 0.02);
-}
-
-.teacher-dashboard-page .form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-    margin-top: 2rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border-color);
-}
-
-/* Announcements List */
-.teacher-dashboard-page .announcements-list {
+.stat-item {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    align-items: flex-end;
 }
 
-.teacher-dashboard-page .announcement-card {
-    background: var(--bg-secondary);
-    border-radius: var(--radius-lg);
-    padding: 1.75rem;
-    border: 1px solid var(--border-color);
-    position: relative;
-    transition: all var(--transition-normal);
-}
-
-.teacher-dashboard-page .announcement-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    border-color: var(--border-color-hover);
-}
-
-.teacher-dashboard-page .announcement-card.pinned {
-    border: 1px solid var(--accent-primary);
-    background: linear-gradient(to bottom right, var(--bg-secondary), rgba(99, 102, 241, 0.03));
-}
-
-.teacher-dashboard-page .announcement-card.pinned::before {
-    content: '📌 Pinned';
-    position: absolute;
-    top: -10px;
-    right: 20px;
-    background: var(--accent-primary);
-    color: white;
+.stat-item .label {
     font-size: 0.75rem;
-    font-weight: 600;
-    padding: 0.25rem 0.75rem;
-    border-radius: var(--radius-full);
-    box-shadow: var(--shadow-sm);
-}
-
-.teacher-dashboard-page .announcement-header {
-    display: flex;
-    gap: 1.25rem;
-    margin-bottom: 1.25rem;
-}
-
-.teacher-dashboard-page .megaphone-icon {
-    width: 48px;
-    height: 48px;
-    background: var(--accent-gradient);
-    border-radius: var(--radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    flex-shrink: 0;
-    box-shadow: var(--shadow-glow);
-}
-
-.teacher-dashboard-page .announcement-meta {
-    flex: 1;
-}
-
-.teacher-dashboard-page .announcement-meta h4 {
-    font-size: 1.25rem;
-    color: var(--text-primary);
-    margin: 0 0 0.35rem 0;
-    font-weight: 600;
-}
-
-.teacher-dashboard-page .announcement-meta .date {
-    font-size: 0.85rem;
     color: var(--text-tertiary);
-    font-weight: 500;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
 }
 
-.teacher-dashboard-page .announcement-content {
-    color: var(--text-secondary);
-    line-height: 1.7;
+.stat-item .value {
     font-size: 1rem;
-    padding-left: calc(48px + 1.25rem);
-    /* Align with text, not icon */
-}
-
-.teacher-dashboard-page .announcement-content p {
-    margin-bottom: 1rem;
-}
-
-/* Actions */
-.teacher-dashboard-page .announcement-actions {
-    position: absolute;
-    top: 1.75rem;
-    right: 1.75rem;
-    display: flex;
-    gap: 0.5rem;
-    opacity: 0;
-    transition: opacity 0.2s;
-}
-
-.teacher-dashboard-page .announcement-card:hover .announcement-actions {
-    opacity: 1;
-}
-
-.teacher-dashboard-page .announcement-actions button {
-    width: 32px;
-    height: 32px;
-    border-radius: var(--radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
-    cursor: pointer;
-    color: var(--text-secondary);
-    transition: all 0.2s;
-}
-
-.teacher-dashboard-page .announcement-actions button:hover {
-    background: var(--accent-primary);
-    color: white;
-    border-color: var(--accent-primary);
-}
-
-.teacher-dashboard-page .announcement-actions button.delete:hover {
-    background: var(--error);
-    border-color: var(--error);
-}
-
-/* Empty State */
-.teacher-dashboard-page .empty-state {
-    text-align: center;
-    padding: 5rem 2rem;
-    color: var(--text-tertiary);
-    background: var(--bg-tertiary);
-    border-radius: var(--radius-lg);
-    border: 2px dashed var(--border-color);
-}
-
-.teacher-dashboard-page .empty-state svg {
-    width: 64px;
-    height: 64px;
-    margin-bottom: 1.5rem;
-    opacity: 0.5;
-    color: var(--text-secondary);
-}
-
-.teacher-dashboard-page .empty-state p {
-    font-size: 1.1rem;
-    font-weight: 500;
-}
-
-/* Buttons */
-.teacher-dashboard-page .btn {
-    padding: 0.75rem 1.5rem;
-    border-radius: var(--radius-md);
     font-weight: 600;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    border: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.95rem;
-}
-
-.teacher-dashboard-page .btn-primary {
-    background: var(--accent-gradient);
-    color: white;
-    box-shadow: var(--shadow-lg);
-}
-
-.teacher-dashboard-page .btn-primary:hover {
-    background: var(--accent-gradient-hover);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-glow);
-}
-
-.teacher-dashboard-page .btn-secondary {
-    background: var(--bg-secondary);
     color: var(--text-primary);
-    border: 1px solid var(--border-color);
 }
 
-.teacher-dashboard-page .btn-secondary:hover {
-    background: var(--bg-tertiary);
-    border-color: var(--text-secondary);
+.coming-soon {
+    text-align: center;
+    padding: 4rem 2rem;
 }
 
-.teacher-dashboard-page .btn-sm {
-    padding: 0.5rem 1rem;
-    font-size: 0.85rem;
-    border-radius: var(--radius-sm);
+.coming-soon h3 {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
 }
 
-/* Responsive */
-@media (max-width: 900px) {
-    .teacher-dashboard-page .teacher-main {
+.coming-soon p {
+    color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
         grid-template-columns: 1fr;
     }
 
-    .teacher-dashboard-page .subjects-sidebar {
-        position: static;
-        max-height: none;
-        margin-bottom: 2rem;
+    .subject-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
     }
 
-    .teacher-dashboard-page .announcement-content {
-        padding-left: 0;
-        margin-top: 1rem;
+    .subject-stats {
+        width: 100%;
+        justify-content: space-between;
     }
 }
