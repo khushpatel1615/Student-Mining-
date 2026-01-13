@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { Line, Doughnut, Bar } from 'react-chartjs-2'
+import CohortBenchmarking from './CohortBenchmarking'
+import CourseRecommender from '../Student/Recommendations/CourseRecommender'
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -98,7 +100,7 @@ function StudentAnalyticsDashboard() {
         }]
     }
 
-    // Performance Tier Colors
+    // Performance Tier Colors (Unused but kept for reference)
     const tierColors = {
         excellent: '#10b981',
         good: '#3b82f6',
@@ -204,6 +206,12 @@ function StudentAnalyticsDashboard() {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {/* Cohort Benchmarking and AI Recommendations */}
+            <div className="analytics-mid-section" style={{ display: 'grid', gap: '2rem', marginBottom: '2.5rem' }}>
+                <CohortBenchmarking />
+                <CourseRecommender />
             </div>
 
             {/* Charts Section */}
