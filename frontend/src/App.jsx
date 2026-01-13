@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage'
 import StudentDashboard from './pages/StudentDashboard'
 import SubjectDetailPage from './pages/SubjectDetailPage'
 import AdminDashboard from './pages/AdminDashboard'
+import TeacherDashboard from './pages/TeacherDashboard'
 import StudentProfilePage from './pages/StudentProfilePage'
 import './App.css'
 
@@ -32,6 +33,7 @@ function ProtectedRoute({ children, allowedRoles }) {
         // Redirect to their own dashboard
         const dashboardMap = {
             admin: '/admin/dashboard',
+            teacher: '/teacher/dashboard',
             student: '/student/dashboard'
         }
         return <Navigate to={dashboardMap[user.role] || '/student/dashboard'} replace />
@@ -56,6 +58,7 @@ function AuthRoute({ children }) {
     if (isAuthenticated) {
         const dashboardMap = {
             admin: '/admin/dashboard',
+            teacher: '/teacher/dashboard',
             student: '/student/dashboard'
         }
         return <Navigate to={dashboardMap[user.role] || '/student/dashboard'} replace />
@@ -139,6 +142,16 @@ function App() {
                     element={
                         <ProtectedRoute allowedRoles={['admin']}>
                             <StudentProfilePage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Teacher Routes */}
+                <Route
+                    path="/teacher/dashboard"
+                    element={
+                        <ProtectedRoute allowedRoles={['teacher']}>
+                            <TeacherDashboard />
                         </ProtectedRoute>
                     }
                 />

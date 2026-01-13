@@ -309,7 +309,7 @@
     color: #64748b;
 }
 
-.toggle-btn {
+.subject-row-main .toggle-btn {
     background: #f8fafc;
     border: none;
     width: 36px;
@@ -323,7 +323,7 @@
     transition: background 0.2s;
 }
 
-.toggle-btn:hover {
+.subject-row-main .toggle-btn:hover {
     background: #e2e8f0;
 }
 

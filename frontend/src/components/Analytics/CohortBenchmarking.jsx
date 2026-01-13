@@ -9,7 +9,7 @@ import {
     Tooltip,
     Legend
 } from 'chart.js';
-import { useAuth } from '../../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import { Users, TrendingUp, Award, AlertCircle } from 'lucide-react';
 import './CohortBenchmarking.css';
 
