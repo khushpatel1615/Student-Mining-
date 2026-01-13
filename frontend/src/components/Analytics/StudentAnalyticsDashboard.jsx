@@ -284,54 +284,55 @@ function StudentAnalyticsDashboard() {
                 </div>
             )}
 
-            {/* Predictions */}
-            {predictions.gpa && (
-                <div className="predictions-card">
-                    <h3>Academic Predictions</h3>
-                    <div className="prediction-item">
-                        <div className="prediction-label">
-                            <TrendingUp size={20} />
-                            <span>Predicted Final GPA</span>
-                        </div>
-                        <div className="prediction-value">
-                            {predictions.gpa.predicted_gpa.toFixed(2)}
-                            <span className="confidence">
-                                {predictions.gpa.confidence}% confidence
-                            </span>
-                        </div>
-                    </div>
-
-                    {predictions.target_gpa && (
+            {/* Predictions & Recommendations Wrapper */}
+            <div className="predictions-recommendations-wrapper">
+                {/* Predictions */}
+                {predictions.gpa && (
+                    <div className="predictions-card">
+                        <h3><TrendingUp size={24} /> Academic Predictions</h3>
                         <div className="prediction-item">
                             <div className="prediction-label">
-                                <Target size={20} />
-                                <span>To reach {predictions.target_gpa.target} GPA</span>
+                                <span>Predicted Final GPA</span>
                             </div>
                             <div className="prediction-value">
-                                Need {predictions.target_gpa.required_percentage.toFixed(1)}% average
-                                <span className={`difficulty ${predictions.target_gpa.difficulty}`}>
-                                    {predictions.target_gpa.achievable ? predictions.target_gpa.difficulty : 'Not achievable'}
+                                {predictions.gpa.predicted_gpa.toFixed(2)}
+                                <span className="confidence">
+                                    {predictions.gpa.confidence}% confidence
                                 </span>
                             </div>
                         </div>
-                    )}
-                </div>
-            )}
 
-            {/* Recommendations */}
-            {recommendations.length > 0 && (
-                <div className="recommendations-section">
-                    <h3>Personalized Recommendations</h3>
-                    <div className="recommendations-grid">
-                        {recommendations.map((rec, idx) => (
-                            <div key={idx} className={`recommendation-card ${rec.priority}`}>
-                                <h4>{rec.title}</h4>
-                                <p>{rec.message}</p>
+                        {predictions.target_gpa && (
+                            <div className="prediction-item">
+                                <div className="prediction-label">
+                                    <span>To reach {predictions.target_gpa.target} GPA</span>
+                                </div>
+                                <div className="prediction-value">
+                                    {predictions.target_gpa.required_percentage.toFixed(1)}% <span style={{ fontSize: '1rem' }}>avg</span>
+                                    <span className={`difficulty ${predictions.target_gpa.difficulty}`}>
+                                        {predictions.target_gpa.achievable ? predictions.target_gpa.difficulty : 'Impossible'}
+                                    </span>
+                                </div>
                             </div>
-                        ))}
+                        )}
                     </div>
-                </div>
-            )}
+                )}
+
+                {/* Recommendations */}
+                {recommendations.length > 0 && (
+                    <div className="recommendations-section">
+                        <h3><Target size={24} className="inline-block mr-2" /> Personalized Recommendations</h3>
+                        <div className="recommendations-grid">
+                            {recommendations.map((rec, idx) => (
+                                <div key={idx} className={`recommendation-card ${rec.priority}`}>
+                                    <h4>{rec.title}</h4>
+                                    <p>{rec.message}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     )
 }
