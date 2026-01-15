@@ -16,7 +16,6 @@ import AdminOverview from '../components/Overview/AdminOverview'
 import CSVImport from '../components/Import/CSVImport'
 import AssignmentManagement from '../components/AssignmentManagement/AssignmentManagement'
 import ExamManagement from '../components/ExamManagement/ExamManagement'
-import ReportGenerator from '../components/Reports/ReportGenerator'
 import DiscussionForum from '../components/Discussions/DiscussionForum'
 import CourseReviews from '../components/Reviews/CourseReviews'
 import VideoLectures from '../components/VideoLectures/VideoLectures'
@@ -324,8 +323,6 @@ function AdminDashboard() {
                 return <AssignmentManagement />
             case 'exams':
                 return <ExamManagement />
-            case 'reports':
-                return <ReportGenerator />
             case 'discussions':
                 return <DiscussionForum />
             case 'reviews':
