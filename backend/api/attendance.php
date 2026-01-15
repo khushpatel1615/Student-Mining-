@@ -63,6 +63,7 @@ function handleGet($pdo)
         $stmt = $pdo->prepare("
             SELECT 
                 se.id,
+                se.user_id,
                 u.full_name as student_name,
                 u.student_id as student_code,
                 sa.status as attendance_status,
@@ -324,10 +325,10 @@ function handlePost($pdo)
         return;
     }
 
-    // --- FALLBACK TO ADMIN ACTIONS ---
-    if ($user['role'] !== 'admin') {
+    // --- FALLBACK TO TEACHER/ADMIN ACTIONS ---
+    if (!in_array($user['role'], ['admin', 'teacher'])) {
         http_response_code(403);
-        echo json_encode(['error' => 'Admin access required for manual marking']);
+        echo json_encode(['error' => 'Authorized access required for manual marking']);
         return;
     }
 
@@ -453,10 +454,10 @@ function handlePost($pdo)
  */
 function handlePut($pdo)
 {
-    $user = verifyAdminToken();
-    if (!$user) {
-        http_response_code(401);
-        echo json_encode(['error' => 'Unauthorized. Admin access required.']);
+    $user = getAuthUser();
+    if (!$user || !in_array($user['role'], ['admin', 'teacher'])) {
+        http_response_code(403);
+        echo json_encode(['error' => 'Unauthorized. Staff access required.']);
         return;
     }
 

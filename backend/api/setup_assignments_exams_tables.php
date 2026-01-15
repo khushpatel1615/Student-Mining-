@@ -49,7 +49,7 @@ try {
             subject_id INT NOT NULL,
             title VARCHAR(255) NOT NULL,
             exam_type ENUM('quiz', 'midterm', 'final', 'practical', 'other') DEFAULT 'midterm',
-            exam_date DATETIME NOT NULL,
+            start_datetime DATETIME NOT NULL,
             duration_minutes INT DEFAULT 120,
             max_marks INT DEFAULT 100,
             created_by INT NOT NULL,

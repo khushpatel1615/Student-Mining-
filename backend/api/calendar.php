@@ -36,35 +36,52 @@ try {
 function handleGet($pdo)
 {
     // 1. Verify User
-    $token = getTokenFromHeader();
-    if (!$token) {
+    $user = getAuthUser();
+    if (!$user) {
         http_response_code(401);
-        echo json_encode(['error' => 'No token provided']);
+        echo json_encode(['error' => 'Unauthorized']);
         return;
     }
 
-    $result = verifyToken($token);
-    if (!$result['valid']) {
-        http_response_code(401);
-        echo json_encode(['error' => $result['error']]);
-        return;
-    }
-
-    $user = $result['payload'];
     $role = $user['role'];
-    $userId = $user['id'];
+    $userId = $user['user_id'];
 
     // 2. Build Query based on Role
-    $sql = "SELECT ac.*, s.name as subject_name 
+    $sql = "SELECT ac.id, ac.title, ac.event_date, ac.type, ac.description, ac.target_audience, 
+                   ac.target_program_id, ac.target_semester, ac.target_subject_id, 
+                   ac.created_by, s.name as subject_name 
             FROM academic_calendar ac
             LEFT JOIN subjects s ON ac.target_subject_id = s.id 
             WHERE 1=1 ";
     $params = [];
+    $extraEvents = [];
 
     // Admins see everything
     if ($role === 'admin') {
-        // No filter needed
-        $sql .= " ORDER BY ac.event_date ASC";
+        // No filter needed for calendar events
+
+        // Fetch ALL Assignments
+        $stmtEx = $pdo->query("SELECT a.id, a.title, DATE(a.due_date) as event_date, 'assignment' as type, 
+                              a.description, s.name as subject_name 
+                              FROM assignments a
+                              JOIN subjects s ON a.subject_id = s.id");
+        while ($row = $stmtEx->fetch(PDO::FETCH_ASSOC)) {
+            $row['id'] = 'assign_' . $row['id']; // Avoid ID collision
+            $row['target_audience'] = 'subject';
+            $extraEvents[] = $row;
+        }
+
+        // Fetch ALL Exams
+        $stmtEx = $pdo->query("SELECT e.id, e.title, DATE(e.start_datetime) as event_date, 'exam' as type, 
+                              'Exam' as description, s.name as subject_name 
+                              FROM exams e
+                              JOIN subjects s ON e.subject_id = s.id");
+        while ($row = $stmtEx->fetch(PDO::FETCH_ASSOC)) {
+            $row['id'] = 'exam_' . $row['id'];
+            $row['target_audience'] = 'subject';
+            $extraEvents[] = $row;
+        }
+
     } elseif ($role === 'student') {
         $sql .= " AND (ac.target_audience IN ('all', 'students') ";
 
@@ -73,12 +90,15 @@ function handleGet($pdo)
         $stmtUser->execute([$userId]);
         $studentData = $stmtUser->fetch(PDO::FETCH_ASSOC);
 
-        if ($studentData) {
-            // Match department events if the student has a program_id (treating program as department)
-            if ($studentData['program_id']) {
-                $sql .= " OR (ac.target_audience = 'department' AND ac.target_dept_id = ?) ";
-                $params[] = $studentData['program_id'];
+        $enrolledSubjectIds = [];
+        // Get enrolled subjects for fetching specific assignments/exams
+        $stmtSubs = $pdo->prepare("SELECT subject_id FROM student_enrollments WHERE user_id = ? AND status = 'active'");
+        $stmtSubs->execute([$user['id']]); // Use user['id'] from token payload which is the ID in users table
+        $enrolledSubjectIds = $stmtSubs->fetchAll(PDO::FETCH_COLUMN);
 
+        if ($studentData) {
+            // Match program events if the student has a program_id
+            if ($studentData['program_id']) {
                 $sql .= " OR (ac.target_audience = 'program' AND ac.target_program_id = ?) ";
                 $params[] = $studentData['program_id'];
 
@@ -96,36 +116,124 @@ function handleGet($pdo)
                 $params[] = $studentData['current_semester'];
             }
         }
+
+        // Match subject specific events
+        if (!empty($enrolledSubjectIds)) {
+            $inQuery = implode(',', array_fill(0, count($enrolledSubjectIds), '?'));
+            $sql .= " OR (ac.target_audience = 'subject' AND ac.target_subject_id IN ($inQuery)) ";
+            foreach ($enrolledSubjectIds as $sid) {
+                $params[] = $sid;
+            }
+        }
+
         $sql .= ")";
-        $sql .= " ORDER BY ac.event_date ASC";
-    } else {
-        $sql .= " ORDER BY ac.event_date ASC";
+
+        // Fetch Assignments for enrolled subjects
+        if (!empty($enrolledSubjectIds)) {
+            $inQuery = implode(',', array_fill(0, count($enrolledSubjectIds), '?'));
+
+            $stmtEx = $pdo->prepare("SELECT a.id, a.title, DATE(a.due_date) as event_date, 'assignment' as type, 
+                                     a.description, s.name as subject_name 
+                                     FROM assignments a
+                                     JOIN subjects s ON a.subject_id = s.id
+                                     WHERE a.subject_id IN ($inQuery)");
+            $stmtEx->execute($enrolledSubjectIds);
+            while ($row = $stmtEx->fetch(PDO::FETCH_ASSOC)) {
+                $row['id'] = 'assign_' . $row['id'];
+                $row['target_audience'] = 'subject';
+                $extraEvents[] = $row;
+            }
+
+            // Fetch Exams for enrolled subjects
+            $stmtEx = $pdo->prepare("SELECT e.id, e.title, DATE(e.start_datetime) as event_date, 'exam' as type, 
+                                     'Exam' as description, s.name as subject_name 
+                                     FROM exams e
+                                     JOIN subjects s ON e.subject_id = s.id
+                                     WHERE e.subject_id IN ($inQuery)");
+            $stmtEx->execute($enrolledSubjectIds);
+            while ($row = $stmtEx->fetch(PDO::FETCH_ASSOC)) {
+                $row['id'] = 'exam_' . $row['id'];
+                $row['target_audience'] = 'subject';
+                $extraEvents[] = $row;
+            }
+        }
+
+    } elseif ($role === 'teacher') {
+        // Teacher sees all/teacher events OR events for their subjects
+        $sql .= " AND (ac.target_audience IN ('all', 'teachers') ";
+
+        // Get subjects taught by teacher
+        $stmtSubs = $pdo->prepare("SELECT id FROM subjects WHERE teacher_id = ?");
+        $stmtSubs->execute([$userId]);
+        $teacherSubjectIds = $stmtSubs->fetchAll(PDO::FETCH_COLUMN);
+
+        if (!empty($teacherSubjectIds)) {
+            $inQuery = implode(',', array_fill(0, count($teacherSubjectIds), '?'));
+            $sql .= " OR (ac.target_audience = 'subject' AND ac.target_subject_id IN ($inQuery)) ";
+            foreach ($teacherSubjectIds as $sid) {
+                $params[] = $sid;
+            }
+        }
+        $sql .= ")";
+
+        // Fetch Assignments created by this teacher (via subjects)
+        if (!empty($teacherSubjectIds)) {
+            $inQuery = implode(',', array_fill(0, count($teacherSubjectIds), '?'));
+
+            $stmtEx = $pdo->prepare("SELECT a.id, a.title, DATE(a.due_date) as event_date, 'assignment' as type, 
+                                     a.description, s.name as subject_name 
+                                     FROM assignments a
+                                     JOIN subjects s ON a.subject_id = s.id
+                                     WHERE a.subject_id IN ($inQuery)");
+            $stmtEx->execute($teacherSubjectIds);
+            while ($row = $stmtEx->fetch(PDO::FETCH_ASSOC)) {
+                $row['id'] = 'assign_' . $row['id'];
+                $row['target_audience'] = 'subject';
+                $extraEvents[] = $row;
+            }
+
+            // Fetch Exams created by this teacher
+            $stmtEx = $pdo->prepare("SELECT e.id, e.title, DATE(e.start_datetime) as event_date, 'exam' as type, 
+                                     'Exam' as description, s.name as subject_name 
+                                     FROM exams e
+                                     JOIN subjects s ON e.subject_id = s.id
+                                     WHERE e.subject_id IN ($inQuery)");
+            $stmtEx->execute($teacherSubjectIds);
+            while ($row = $stmtEx->fetch(PDO::FETCH_ASSOC)) {
+                $row['id'] = 'exam_' . $row['id'];
+                $row['target_audience'] = 'subject';
+                $extraEvents[] = $row;
+            }
+        }
     }
+
+    $sql .= " ORDER BY ac.event_date ASC";
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // Merge standard events with assignments/exams
+    $allEvents = array_merge($events, $extraEvents);
+
     echo json_encode([
         'success' => true,
-        'data' => $events
+        'data' => $allEvents
     ]);
 }
 
 function handlePost($pdo)
 {
     // Verify User
-    $token = getTokenFromHeader();
-    $result = verifyToken($token);
-    if (!$result['valid']) {
+    $user = getAuthUser();
+    if (!$user) {
         http_response_code(401);
         echo json_encode(['error' => 'Unauthorized']);
         return;
     }
 
-    $user = $result['payload'];
     $role = $user['role'];
-    $userId = $user['id'];
+    $userId = $user['user_id'];
 
     if (!in_array($role, ['admin', 'teacher'])) {
         http_response_code(403);
@@ -157,15 +265,6 @@ function handlePost($pdo)
             echo json_encode(['error' => 'Teachers must select a specific subject']);
             return;
         }
-
-        // Verify assignment
-        $stmt = $pdo->prepare("SELECT 1 FROM teacher_subjects WHERE teacher_id = ? AND subject_id = ?");
-        $stmt->execute([$userId, $data['target_subject_id']]);
-        if (!$stmt->fetch()) {
-            http_response_code(403);
-            echo json_encode(['error' => 'You are not assigned to this subject']);
-            return;
-        }
     }
 
     $stmt = $pdo->prepare("INSERT INTO academic_calendar 
@@ -191,17 +290,15 @@ function handlePost($pdo)
 function handlePut($pdo)
 {
     // Verify User
-    $token = getTokenFromHeader();
-    $result = verifyToken($token);
-    if (!$result['valid']) {
+    $user = getAuthUser();
+    if (!$user) {
         http_response_code(401);
         echo json_encode(['error' => 'Unauthorized']);
         return;
     }
 
-    $user = $result['payload'];
     $role = $user['role'];
-    $userId = $user['id'];
+    $userId = $user['user_id'];
 
     $data = json_decode(file_get_contents("php://input"), true);
 
@@ -258,17 +355,15 @@ function handlePut($pdo)
 function handleDelete($pdo)
 {
     // Verify User
-    $token = getTokenFromHeader();
-    $result = verifyToken($token);
-    if (!$result['valid']) {
+    $user = getAuthUser();
+    if (!$user) {
         http_response_code(401);
         echo json_encode(['error' => 'Unauthorized']);
         return;
     }
 
-    $user = $result['payload'];
     $role = $user['role'];
-    $userId = $user['id'];
+    $userId = $user['user_id'];
 
     $id = $_GET['id'] ?? null;
     if (!$id) {

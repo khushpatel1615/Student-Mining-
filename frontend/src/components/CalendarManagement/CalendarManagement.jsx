@@ -66,7 +66,7 @@ const CalendarManagement = ({ role: propRole }) => {
             })
             const data = await response.json()
             if (data.success) {
-                setEvents(data.data)
+                setEvents(data.data || [])
             }
         } catch (err) {
             console.error('Failed to fetch events', err)
@@ -111,6 +111,9 @@ const CalendarManagement = ({ role: propRole }) => {
         if (payload.target_audience === 'program') {
             payload.target_program_id = payload.target_program_id ? parseInt(payload.target_program_id) : null
             payload.target_semester = null;
+        } else if (payload.target_audience === 'program_semester') {
+            payload.target_program_id = payload.target_program_id ? parseInt(payload.target_program_id) : null
+            payload.target_semester = payload.target_semester ? parseInt(payload.target_semester) : null;
         } else if (payload.target_audience === 'semester') {
             payload.target_semester = payload.target_semester ? parseInt(payload.target_semester) : null
             payload.target_program_id = null;
@@ -268,17 +271,25 @@ const CalendarManagement = ({ role: propRole }) => {
             assignment: '#8b5cf6'
         }
 
-        const typeColor = colors[event.type] || '#6366f1'
+        let typeColor = colors[event.type] || '#6366f1'
+        let opacity = 0.9
+        const isPast = new Date(event.event_date) < new Date().setHours(0, 0, 0, 0)
+
+        if (isPast) {
+            typeColor = '#94a3b8' // Slate-400 for past events
+            opacity = 0.6
+        }
 
         return {
             style: {
                 backgroundColor: typeColor,
                 borderRadius: '4px',
-                opacity: 0.9,
+                opacity: opacity,
                 color: 'white',
                 border: 'none',
                 display: 'block',
-                fontSize: '0.85rem'
+                fontSize: '0.85rem',
+                textDecoration: isPast ? 'line-through' : 'none'
             }
         }
     }
@@ -303,12 +314,14 @@ const CalendarManagement = ({ role: propRole }) => {
             <div className="calendar-grid-wrapper" style={{ height: '700px', background: 'var(--bg-card)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
                 <DnDCalendar
                     localizer={localizer}
-                    events={events.map(ev => ({
-                        ...ev,
-                        start: parse(ev.event_date, 'yyyy-MM-dd', new Date()),
-                        end: parse(ev.event_date, 'yyyy-MM-dd', new Date()),
-                        allDay: true
-                    }))}
+                    events={events
+                        .filter(ev => ev.event_date) // Ensure date exists
+                        .map(ev => ({
+                            ...ev,
+                            start: parse(ev.event_date, 'yyyy-MM-dd', new Date()),
+                            end: parse(ev.event_date, 'yyyy-MM-dd', new Date()),
+                            allDay: true
+                        }))}
                     startAccessor="start"
                     endAccessor="end"
                     style={{ height: '100%' }}
@@ -431,7 +444,7 @@ const CalendarManagement = ({ role: propRole }) => {
                                                                 type="radio"
                                                                 name="target"
                                                                 value="program"
-                                                                checked={['program', 'program_semester', 'semester'].includes(formData.target_audience)}
+                                                                checked={['program', 'program_semester'].includes(formData.target_audience)}
                                                                 onChange={() => setFormData({
                                                                     ...formData,
                                                                     target_audience: 'program',
