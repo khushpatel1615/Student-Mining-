@@ -126,39 +126,27 @@ try {
 
     // === PROGRAM ANALYTICS ===
 
-    $stmt = $pdo->query("SELECT p.id, p.name, p.code,
-                                (SELECT COUNT(*) FROM users u WHERE u.program_id = p.id AND u.role = 'student') as student_count
-                         FROM programs p
-                         GROUP BY p.id");
+    $stmt = $pdo->query("SELECT 
+        p.id, 
+        p.name, 
+        p.code,
+        COUNT(DISTINCT u.id) as student_count,
+        AVG(se.final_percentage) as avg_grade,
+        SUM(CASE WHEN se.final_percentage >= 50 THEN 1 ELSE 0 END) as passed,
+        COUNT(se.id) as total_enrollments
+    FROM programs p
+    LEFT JOIN users u ON p.id = u.program_id AND u.role = 'student'
+    LEFT JOIN student_enrollments se ON u.id = se.user_id
+    GROUP BY p.id
+    ORDER BY avg_grade DESC");
+    
     $programs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     foreach ($programs as &$program) {
-        // Get average grade for this program
-        $stmt = $pdo->prepare("SELECT AVG(se.final_percentage) as avg_grade
-                               FROM student_enrollments se
-                               JOIN users u ON se.user_id = u.id
-                               WHERE u.program_id = ? AND u.role = 'student'");
-        $stmt->execute([$program['id']]);
-        $avgGrade = $stmt->fetch(PDO::FETCH_ASSOC)['avg_grade'];
-
+        $avgGrade = $program['avg_grade'];
         $program['average_gpa'] = $avgGrade ? round(($avgGrade / 100) * 4, 2) : 0;
-
-        // Pass rate for this program
-        $stmt = $pdo->prepare("SELECT COUNT(*) as total,
-                                      SUM(CASE WHEN se.final_percentage >= 50 THEN 1 ELSE 0 END) as passed
-                               FROM student_enrollments se
-                               JOIN users u ON se.user_id = u.id
-                               WHERE u.program_id = ?");
-        $stmt->execute([$program['id']]);
-        $stats = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        $program['pass_rate'] = $stats['total'] > 0 ? ($stats['passed'] / $stats['total']) * 100 : 0;
+        $program['pass_rate'] = $program['total_enrollments'] > 0 ? ($program['passed'] / $program['total_enrollments']) * 100 : 0;
     }
-
-    // Sort programs by average GPA
-    usort($programs, function ($a, $b) {
-        return $b['average_gpa'] - $a['average_gpa'];
-    });
 
     // === SUBJECT DIFFICULTY ANALYSIS ===
 

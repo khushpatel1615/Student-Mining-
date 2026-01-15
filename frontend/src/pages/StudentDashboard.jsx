@@ -14,6 +14,16 @@ import StudentCareer from '../components/Student/Career/StudentCareer'
 import StudentAttendance from '../components/Student/Attendance/StudentAttendance'
 import StudentAssignments from '../components/Student/Assignments/StudentAssignments'
 import StudentExams from '../components/Student/Exams/StudentExams'
+import CourseRecommendations from '../components/Student/Recommendations/CourseRecommendations'
+import SmartStudyPlanner from '../components/Student/StudyPlanner/SmartStudyPlanner'
+import PerformanceTrends from '../components/Student/Performance/PerformanceTrends'
+import SubmissionHistory from '../components/Student/Submissions/SubmissionHistory'
+import SubjectDifficulty from '../components/Student/Difficulty/SubjectDifficulty'
+import AchievementBadges from '../components/Student/Badges/AchievementBadges'
+import ReportGenerator from '../components/Reports/ReportGenerator'
+import DiscussionForum from '../components/Discussions/DiscussionForum'
+import CourseReviews from '../components/Reviews/CourseReviews'
+import VideoLectures from '../components/VideoLectures/VideoLectures'
 import './StudentDashboard.css'
 import {
     BookOpen,
@@ -504,6 +514,42 @@ const StudentDashboard = () => {
                         <StudentCareer />
                     )}
 
+                    {activeTab === 'recommendations' && (
+                        <div className="card">
+                            <CourseRecommendations />
+                        </div>
+                    )}
+
+                    {activeTab === 'study-planner' && (
+                        <div className="card">
+                            <SmartStudyPlanner />
+                        </div>
+                    )}
+
+                    {activeTab === 'performance' && (
+                        <div className="card">
+                            <PerformanceTrends />
+                        </div>
+                    )}
+
+                    {activeTab === 'submissions' && (
+                        <div className="card">
+                            <SubmissionHistory />
+                        </div>
+                    )}
+
+                    {activeTab === 'difficulty' && (
+                        <div className="card">
+                            <SubjectDifficulty />
+                        </div>
+                    )}
+
+                    {activeTab === 'badges' && (
+                        <div className="card">
+                            <AchievementBadges />
+                        </div>
+                    )}
+
                     {activeTab === 'profile' && (
                         <StudentProfile />
                     )}
@@ -529,6 +575,30 @@ const StudentDashboard = () => {
                     {activeTab === 'exams' && (
                         <div className="card">
                             <StudentExams />
+                        </div>
+                    )}
+
+                    {activeTab === 'reports' && (
+                        <div className="card">
+                            <ReportGenerator />
+                        </div>
+                    )}
+
+                    {activeTab === 'discussions' && (
+                        <div className="card">
+                            <DiscussionForum />
+                        </div>
+                    )}
+
+                    {activeTab === 'reviews' && (
+                        <div className="card">
+                            <CourseReviews />
+                        </div>
+                    )}
+
+                    {activeTab === 'videos' && (
+                        <div className="card">
+                            <VideoLectures />
                         </div>
                     )}
 

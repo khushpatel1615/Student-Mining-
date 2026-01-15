@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import NotificationCenter from '../Notifications/NotificationCenter';
 import './MainLayout.css';
 
 const MainLayout = ({
@@ -65,6 +66,12 @@ const MainLayout = ({
                     onClick={() => setMobileMenuOpen(false)}
                 />
             )}
+
+            {/* Notification Center */}
+            <NotificationCenter
+                isOpen={showNotifications}
+                onClose={() => setShowNotifications?.(false)}
+            />
         </div>
     );
 };

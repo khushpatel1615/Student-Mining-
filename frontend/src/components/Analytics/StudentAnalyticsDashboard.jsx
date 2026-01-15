@@ -37,11 +37,15 @@ const API_BASE = 'http://localhost/StudentDataMining/backend/api'
 function StudentAnalyticsDashboard() {
     const { user, token } = useAuth()
     const [analytics, setAnalytics] = useState(null)
+    const [peerData, setPeerData] = useState(null)
+    const [studyHabits, setStudyHabits] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
 
     useEffect(() => {
         fetchAnalytics()
+        fetchPeerComparison()
+        fetchStudyHabits()
     }, [user.id])
 
     const fetchAnalytics = async () => {
@@ -60,6 +64,34 @@ function StudentAnalyticsDashboard() {
             setError('Failed to connect to server')
         } finally {
             setLoading(false)
+        }
+    }
+
+    const fetchPeerComparison = async () => {
+        try {
+            const response = await fetch(`${API_BASE}/peer_comparison.php`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            const data = await response.json()
+            if (data.success) {
+                setPeerData(data.data)
+            }
+        } catch (err) {
+            console.error('Failed to load peer comparison:', err)
+        }
+    }
+
+    const fetchStudyHabits = async () => {
+        try {
+            const response = await fetch(`${API_BASE}/study_habits.php`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            const data = await response.json()
+            if (data.success) {
+                setStudyHabits(data.data)
+            }
+        } catch (err) {
+            console.error('Failed to load study habits:', err)
         }
     }
 
@@ -341,6 +373,204 @@ function StudentAnalyticsDashboard() {
                     </div>
                 )}
             </div>
+
+            {/* Peer Comparison Section */}
+            {peerData && (
+                <div className="peer-comparison-section" style={{ marginTop: '2.5rem' }}>
+                    <h2 style={{ marginBottom: '1.5rem' }}>📊 Peer Comparison</h2>
+
+                    {/* Percentile Cards */}
+                    <div className="summary-grid" style={{ marginBottom: '2rem' }}>
+                        <div className="summary-card">
+                            <div className="card-content">
+                                <h3>Overall Percentile</h3>
+                                <div className="metric-value">{peerData.percentiles.overall_gpa_percentile}%</div>
+                                <div className="metric-subtext">{peerData.percentiles.interpretation}</div>
+                            </div>
+                        </div>
+                        <div className="summary-card">
+                            <div className="card-content">
+                                <h3>Attendance Rank</h3>
+                                <div className="metric-value">{peerData.percentiles.attendance_percentile}%</div>
+                                <div className="metric-subtext">Attendance percentile</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Leaderboard */}
+                    {peerData.leaderboard && peerData.leaderboard.top_10.length > 0 && (
+                        <div className="chart-card" style={{ marginBottom: '2rem' }}>
+                            <h3>🏆 Class Leaderboard (Anonymous)</h3>
+                            <div style={{ padding: '1rem 0' }}>
+                                {peerData.leaderboard.top_10.map((student) => (
+                                    <div key={student.rank} style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        padding: '0.75rem 1rem',
+                                        marginBottom: '0.5rem',
+                                        background: student.is_you ? 'rgba(99, 102, 241, 0.1)' : 'var(--bg-secondary)',
+                                        borderLeft: student.is_you ? '4px solid #6366f1' : '4px solid transparent',
+                                        borderRadius: 'var(--radius-md)',
+                                        fontWeight: student.is_you ? '700' : '400'
+                                    }}>
+                                        <span>#{student.rank} {student.label}</span>
+                                        <span style={{ color: '#6366f1' }}>{student.grade}%</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Similar Students */}
+                    {peerData.similar_students && peerData.similar_students.courses.length > 0 && (
+                        <div className="chart-card">
+                            <h3>👥 {peerData.similar_students.message}</h3>
+                            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                                {peerData.similar_students.similarity_criteria}
+                            </p>
+                            <div style={{ display: 'grid', gap: '0.75rem' }}>
+                                {peerData.similar_students.courses.map((course) => (
+                                    <div key={course.id} style={{
+                                        padding: '1rem',
+                                        background: 'var(--bg-secondary)',
+                                        borderRadius: 'var(--radius-md)',
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center'
+                                    }}>
+                                        <div>
+                                            <div style={{ fontWeight: '600' }}>{course.code}</div>
+                                            <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                                                {course.name}
+                                            </div>
+                                        </div>
+                                        <div style={{
+                                            fontSize: '0.875rem',
+                                            color: 'var(--text-tertiary)',
+                                            background: 'var(--bg-tertiary)',
+                                            padding: '0.25rem 0.75rem',
+                                            borderRadius: 'var(--radius-sm)'
+                                        }}>
+                                            {course.similar_students_count} students
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Study Habits Section */}
+            {studyHabits && (
+                <div className="study-habits-section" style={{ marginTop: '2.5rem' }}>
+                    <h2 style={{ marginBottom: '1.5rem' }}>📚 Study Habits & Productivity</h2>
+
+                    {/* Productive Hours */}
+                    {studyHabits.patterns && studyHabits.patterns.most_productive_hours.length > 0 && (
+                        <div className="chart-card" style={{ marginBottom: '2rem' }}>
+                            <h3>⏰ Your Most Productive Hours</h3>
+                            <div style={{ display: 'grid', gap: '1rem', marginTop: '1rem' }}>
+                                {studyHabits.patterns.most_productive_hours.map((hour, idx) => (
+                                    <div key={idx} style={{
+                                        padding: '1rem',
+                                        background: 'var(--bg-secondary)',
+                                        borderRadius: 'var(--radius-md)',
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center'
+                                    }}>
+                                        <div>
+                                            <div style={{ fontWeight: '600', fontSize: '1.125rem' }}>
+                                                {hour.hour}:00 {hour.hour >= 12 ? 'PM' : 'AM'}
+                                            </div>
+                                            <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                                                {hour.submissions} submissions analyzed
+                                            </div>
+                                        </div>
+                                        <div style={{
+                                            fontSize: '1.5rem',
+                                            fontWeight: '700',
+                                            color: '#22c55e'
+                                        }}>
+                                            {hour.avg_grade}%
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Correlations */}
+                    {studyHabits.correlations && studyHabits.correlations.early_submission_impact && (
+                        <div className="chart-card" style={{ marginBottom: '2rem' }}>
+                            <h3>📊 Performance Insights</h3>
+                            <div style={{ padding: '1rem', background: 'rgba(99, 102, 241, 0.1)', borderRadius: 'var(--radius-md)', marginTop: '1rem' }}>
+                                <p style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.5rem' }}>
+                                    {studyHabits.correlations.early_submission_impact.message}
+                                </p>
+                                {studyHabits.correlations.early_submission_impact.improvement > 0 && (
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginTop: '1rem' }}>
+                                        <div>
+                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Early</div>
+                                            <div style={{ fontSize: '1.25rem', fontWeight: '700' }}>
+                                                {studyHabits.correlations.early_submission_impact.early_avg}%
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>On Time</div>
+                                            <div style={{ fontSize: '1.25rem', fontWeight: '700' }}>
+                                                {studyHabits.correlations.early_submission_impact.on_time_avg}%
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Late</div>
+                                            <div style={{ fontSize: '1.25rem', fontWeight: '700' }}>
+                                                {studyHabits.correlations.early_submission_impact.late_avg}%
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Recommendations */}
+                    {studyHabits.recommendations && studyHabits.recommendations.length > 0 && (
+                        <div className="chart-card">
+                            <h3>💡 Personalized Study Recommendations</h3>
+                            <div style={{ display: 'grid', gap: '1rem', marginTop: '1rem' }}>
+                                {studyHabits.recommendations.map((rec, idx) => (
+                                    <div key={idx} style={{
+                                        padding: '1.25rem',
+                                        background: 'var(--bg-secondary)',
+                                        borderRadius: 'var(--radius-md)',
+                                        borderLeft: '4px solid #6366f1'
+                                    }}>
+                                        <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{rec.icon}</div>
+                                        <h4 style={{ marginBottom: '0.5rem' }}>{rec.title}</h4>
+                                        <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.75rem' }}>
+                                            {rec.message}
+                                        </p>
+                                        <div style={{
+                                            fontSize: '0.875rem',
+                                            fontWeight: '600',
+                                            color: '#6366f1',
+                                            padding: '0.5rem 1rem',
+                                            background: 'rgba(99, 102, 241, 0.1)',
+                                            borderRadius: 'var(--radius-sm)',
+                                            display: 'inline-block'
+                                        }}>
+                                            → {rec.action}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     )
 }

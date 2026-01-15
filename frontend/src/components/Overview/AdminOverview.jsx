@@ -61,6 +61,12 @@ ChartJS.register(
 
 const API_BASE = 'http://localhost/StudentDataMining/backend/api'
 
+// Safe number formatter to prevent crashes on undefined/null/NaN values
+const safeToFixed = (value, decimals = 2) => {
+    const num = Number(value)
+    return isNaN(num) ? (0).toFixed(decimals) : num.toFixed(decimals)
+}
+
 function AdminOverview() {
     const { token } = useAuth()
     const navigate = useNavigate()
@@ -127,16 +133,21 @@ function AdminOverview() {
             const analyticsData = await analyticsRes.json()
 
             if (analyticsData.success) {
-                const { system_overview, performance_distribution, at_risk_students,
-                    program_analytics, semester_trends } = analyticsData.data
+                const {
+                    system_overview = {},
+                    performance_distribution = {}, // Default to object
+                    at_risk_students = [],
+                    program_analytics = [],
+                    semester_trends = []
+                } = analyticsData.data || {}
 
                 setSystemStats(prev => ({
                     ...prev,
-                    totalStudents: system_overview.total_students || 0,
-                    totalPrograms: system_overview.total_programs || 0,
-                    totalSubjects: system_overview.total_subjects || 0,
-                    averageGPA: system_overview.system_gpa || 0,
-                    passRate: system_overview.pass_rate || 0,
+                    totalStudents: system_overview?.total_students || 0,
+                    totalPrograms: system_overview?.total_programs || 0,
+                    totalSubjects: system_overview?.total_subjects || 0,
+                    averageGPA: Number(system_overview?.system_gpa || 0),
+                    passRate: Number(system_overview?.pass_rate || 0),
                     atRiskCount: at_risk_students?.length || 0
                 }))
 
@@ -147,18 +158,24 @@ function AdminOverview() {
                 setAtRiskStudents(at_risk_students || [])
             }
 
-            // Fetch calendar events
-            const eventsRes = await fetch(`${API_BASE}/calendar.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const eventsData = await eventsRes.json()
-            if (eventsData.success) {
-                // Get upcoming events (next 7 days)
-                const upcoming = eventsData.data
-                    .filter(e => new Date(e.event_date) >= today)
-                    .sort((a, b) => new Date(a.event_date) - new Date(b.event_date))
-                    .slice(0, 5)
-                setUpcomingEvents(upcoming)
+            // Fetch calendar events (with error handling to prevent crash)
+            try {
+                const eventsRes = await fetch(`${API_BASE}/calendar.php`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+                const eventsData = await eventsRes.json()
+                if (eventsData.success && Array.isArray(eventsData.data)) {
+                    // Get upcoming events (next 7 days)
+                    const upcoming = eventsData.data
+                        .filter(e => e && new Date(e.event_date) >= today)
+                        .sort((a, b) => new Date(a.event_date) - new Date(b.event_date))
+                        .slice(0, 5)
+                    setUpcomingEvents(upcoming)
+                }
+            } catch (calendarErr) {
+                console.error('Calendar API error (non-critical):', calendarErr)
+                // Set empty events if calendar fails - don't crash the whole dashboard
+                setUpcomingEvents([])
             }
 
             // Fetch recent notifications/activity
@@ -167,20 +184,24 @@ function AdminOverview() {
             })
             const notifData = await notifRes.json()
             if (notifData.success) {
-                setRecentActivity(notifData.data || [])
+                setRecentActivity(Array.isArray(notifData.data) ? notifData.data : [])
             }
 
-            // Calculate additional stats
+            // Calculate additional stats (ensure numbers)
             setSystemStats(prev => ({
                 ...prev,
-                attendanceRate: 87.5, // This would come from real data
+                attendanceRate: 87.5,
                 engagementScore: 92,
                 pendingActions: 3,
-                totalTeachers: 12
+                totalTeachers: 12,
+                // Ensure averageGPA is a number 
+                averageGPA: Number(prev.averageGPA || 0)
             }))
 
-            // Generate insights/alerts
-            generateAlerts(analyticsData.data)
+            // Generate insights/alerts safely
+            if (analyticsData.data) {
+                generateAlerts(analyticsData.data)
+            }
 
         } catch (err) {
             console.error('Failed to fetch dashboard data:', err)
@@ -194,44 +215,53 @@ function AdminOverview() {
     const generateAlerts = (data) => {
         const newAlerts = []
 
-        if (data?.at_risk_students?.length > 0) {
-            newAlerts.push({
-                id: 1,
-                type: 'warning',
-                icon: AlertTriangle,
-                title: `${data.at_risk_students.length} students need attention`,
-                description: 'Students with GPA below 2.0 require intervention',
-                action: 'View Students',
-                actionPath: '/admin/dashboard?tab=students'
-            })
-        }
+        try {
+            if (data?.at_risk_students?.length > 0) {
+                newAlerts.push({
+                    id: 1,
+                    type: 'warning',
+                    icon: AlertTriangle,
+                    title: `${data.at_risk_students.length} students need attention`,
+                    description: 'Students with GPA below 2.0 require intervention',
+                    action: 'View Students',
+                    actionPath: '/admin/dashboard?tab=students'
+                })
+            }
 
-        if (data?.subject_difficulty?.length > 0) {
-            const hardestSubject = data.subject_difficulty[0]
-            newAlerts.push({
-                id: 2,
-                type: 'info',
-                icon: Lightbulb,
-                title: `${hardestSubject?.name} has lowest average`,
-                description: `Average grade: ${hardestSubject?.average_grade?.toFixed(1)}% - Consider additional support`,
-                action: 'View Subject',
-                actionPath: '/admin/dashboard?tab=subjects'
-            })
-        }
+            if (data?.subject_difficulty?.length > 0) {
+                const hardestSubject = data.subject_difficulty[0]
+                const avgGrade = Number(hardestSubject?.average_grade || 0)
+                newAlerts.push({
+                    id: 2,
+                    type: 'info',
+                    icon: Lightbulb,
+                    title: `${hardestSubject?.name || 'Subject'} has lowest average`,
+                    description: `Average grade: ${avgGrade.toFixed(1)}% - Consider additional support`,
+                    action: 'View Subject',
+                    actionPath: '/admin/dashboard?tab=subjects'
+                })
+            }
 
-        if (data?.program_analytics?.length > 0) {
-            const topProgram = data.program_analytics.reduce((a, b) =>
-                a.pass_rate > b.pass_rate ? a : b
-            )
-            newAlerts.push({
-                id: 3,
-                type: 'success',
-                icon: Award,
-                title: `${topProgram?.name} leads with ${topProgram?.pass_rate?.toFixed(1)}% pass rate`,
-                description: 'Best performing program this semester',
-                action: 'View Analytics',
-                actionPath: '/admin/dashboard?tab=analytics'
-            })
+            if (data?.program_analytics?.length > 0) {
+                const topProgram = data.program_analytics.reduce((a, b) =>
+                    Number(a?.pass_rate || 0) > Number(b?.pass_rate || 0) ? a : b
+                    , data.program_analytics[0])
+
+                if (topProgram) {
+                    const passRate = Number(topProgram.pass_rate || 0)
+                    newAlerts.push({
+                        id: 3,
+                        type: 'success',
+                        icon: Award,
+                        title: `${topProgram.name || 'Program'} leads with ${passRate.toFixed(1)}% pass rate`,
+                        description: 'Best performing program this semester',
+                        action: 'View Analytics',
+                        actionPath: '/admin/dashboard?tab=analytics'
+                    })
+                }
+            }
+        } catch (e) {
+            console.error("Error generating alerts:", e)
         }
 
         setAlerts(newAlerts)
@@ -400,7 +430,7 @@ function AdminOverview() {
                         description: meetingData.message || `Meeting scheduled with ${selectedStudent.name}`,
                         event_date: meetingData.date,
                         type: 'event',
-                        target_audience: 'all'
+                        target_audience: 'students'
                     })
                 })
             } catch (calErr) {
@@ -532,7 +562,7 @@ function AdminOverview() {
                     </div>
                     <div className="kpi-content">
                         <span className="kpi-label">Average GPA</span>
-                        <span className="kpi-value">{systemStats.averageGPA.toFixed(2)}</span>
+                        <span className="kpi-value">{safeToFixed(systemStats.averageGPA, 2)}</span>
                         <div className="kpi-trend positive">
                             <TrendingUp size={14} />
                             <span>+0.15 improvement</span>
@@ -904,11 +934,11 @@ function AdminOverview() {
                                 <div className="gpa-detail-content">
                                     <div className="detail-stats-row">
                                         <div className="detail-stat-card">
-                                            <span className="detail-stat-value">{systemStats.averageGPA.toFixed(2)}</span>
+                                            <span className="detail-stat-value">{safeToFixed(systemStats.averageGPA, 2)}</span>
                                             <span className="detail-stat-label">Overall GPA</span>
                                         </div>
                                         <div className="detail-stat-card">
-                                            <span className="detail-stat-value">{systemStats.passRate.toFixed(1)}%</span>
+                                            <span className="detail-stat-value">{safeToFixed(systemStats.passRate, 1)}%</span>
                                             <span className="detail-stat-label">Pass Rate</span>
                                         </div>
                                         <div className="detail-stat-card">
@@ -1043,7 +1073,7 @@ function AdminOverview() {
                                                     <div key={student.id} className="table-row">
                                                         <span className="student-name">{student.name}</span>
                                                         <span className={`gpa-value ${student.gpa < 1.5 ? 'critical' : 'warning'}`}>
-                                                            {student.gpa.toFixed(2)}
+                                                            {safeToFixed(student.gpa, 2)}
                                                         </span>
                                                         <span className={`status-badge ${student.tier?.replace('_', '-')}`}>
                                                             {student.tier?.replace('_', ' ')}

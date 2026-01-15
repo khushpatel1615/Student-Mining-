@@ -5,6 +5,9 @@ import { useAuth } from '../context/AuthContext'
 import TeacherAssignments from '../components/Teacher/Assignments/TeacherAssignments'
 import TeacherExams from '../components/Teacher/Exams/TeacherExams'
 import TeacherGrades from '../components/Teacher/Grades/TeacherGrades'
+import TeacherAttendance from '../components/Teacher/Attendance/TeacherAttendance'
+import QRAttendanceGenerator from '../components/Teacher/Attendance/QRAttendanceGenerator'
+import CalendarManagement from '../components/CalendarManagement/CalendarManagement'
 import './TeacherDashboard.css'
 
 const API_BASE = 'http://localhost/StudentDataMining/backend/api'
@@ -216,10 +219,19 @@ const TeacherDashboard = () => {
 
                     {activeTab === 'attendance' && (
                         <div className="card">
-                            <div className="coming-soon">
-                                <h3>Attendance Management</h3>
-                                <p>QR code generation and manual marking coming soon...</p>
-                            </div>
+                            <TeacherAttendance />
+                        </div>
+                    )}
+
+                    {activeTab === 'qr-attendance' && (
+                        <div className="card">
+                            <QRAttendanceGenerator />
+                        </div>
+                    )}
+
+                    {activeTab === 'calendar' && (
+                        <div className="card">
+                            <CalendarManagement />
                         </div>
                     )}
                 </div>

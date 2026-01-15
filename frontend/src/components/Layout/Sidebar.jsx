@@ -21,7 +21,15 @@ import {
     Brain,
     Briefcase,
     FileText,
-    ClipboardCheck
+    ClipboardCheck,
+    Clock,
+    TrendingUp,
+    QrCode,
+    Award,
+    MessageSquare,
+    Star,
+    Video,
+    Download
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -36,13 +44,24 @@ const Sidebar = ({ role = 'student', onLogout, collapsed, mobileMenuOpen, onTogg
         { id: 'analytics', label: 'Analytics', icon: BarChart3, tab: 'analytics' },
         { id: 'skills', label: 'Skills Map', icon: Brain, tab: 'skills' },
         { id: 'career', label: 'Career Fit', icon: Briefcase, tab: 'career' },
+        { id: 'recommendations', label: 'Course Picks', icon: Layers, tab: 'recommendations' },
+        { id: 'study-planner', label: 'Study Planner', icon: CalendarDays, tab: 'study-planner' },
+        { id: 'performance', label: 'Performance', icon: BarChart3, tab: 'performance' },
+        { id: 'submissions', label: 'Submissions', icon: Clock, tab: 'submissions' },
+        { id: 'difficulty', label: 'Difficulty', icon: TrendingUp, tab: 'difficulty' },
+        { id: 'badges', label: 'Badges', icon: Award, tab: 'badges' },
         { id: 'grades', label: 'Grades', icon: GraduationCap, tab: 'grades' },
         { id: 'attendance', label: 'Attendance', icon: Calendar, tab: 'attendance' },
         { id: 'assignments', label: 'Assignments', icon: FileText, tab: 'assignments' },
         { id: 'exams', label: 'Exams', icon: ClipboardCheck, tab: 'exams' },
+        { id: 'reports', label: 'Reports', icon: Download, tab: 'reports' },
+        { id: 'discussions', label: 'Forum', icon: MessageSquare, tab: 'discussions' },
+        { id: 'reviews', label: 'Course Reviews', icon: Star, tab: 'reviews' },
+        { id: 'videos', label: 'Videos', icon: Video, tab: 'videos' },
         { id: 'profile', label: 'Profile', icon: User, tab: 'profile' },
         { id: 'calendar', label: 'Calendar', icon: CalendarDays, tab: 'calendar' }
     ];
+
 
     const adminMenuItems = [
         { id: 'overview', label: 'Overview', icon: LayoutDashboard, tab: 'overview' },
@@ -64,6 +83,7 @@ const Sidebar = ({ role = 'student', onLogout, collapsed, mobileMenuOpen, onTogg
         { id: 'exams', label: 'Exams', icon: ClipboardCheck, tab: 'exams' },
         { id: 'grades', label: 'Grades', icon: GraduationCap, tab: 'grades' },
         { id: 'attendance', label: 'Attendance', icon: CheckSquare, tab: 'attendance' },
+        { id: 'qr-attendance', label: 'QR Attendance', icon: QrCode, tab: 'qr-attendance' },
         { id: 'calendar', label: 'Calendar', icon: CalendarDays, tab: 'calendar' }
     ];
 
