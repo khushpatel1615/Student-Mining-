@@ -73,6 +73,10 @@ const Sidebar = ({ role = 'student', onLogout, collapsed, mobileMenuOpen, onTogg
         { id: 'attendance', label: 'Attendance', icon: CheckSquare, tab: 'attendance' },
         { id: 'assignments', label: 'Assignments', icon: FileText, tab: 'assignments' },
         { id: 'exams', label: 'Exams', icon: ClipboardCheck, tab: 'exams' },
+        { id: 'reports', label: 'Reports', icon: Download, tab: 'reports' },
+        { id: 'discussions', label: 'Forum', icon: MessageSquare, tab: 'discussions' },
+        { id: 'reviews', label: 'Reviews', icon: Star, tab: 'reviews' },
+        { id: 'videos', label: 'Videos', icon: Video, tab: 'videos' },
         { id: 'calendar', label: 'Calendar', icon: CalendarDays, tab: 'calendar' }
     ];
 
