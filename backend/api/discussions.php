@@ -35,7 +35,7 @@ try {
             } else {
                 $stmt = $pdo->query("SELECT d.*, u.full_name as author_name, s.name as subject_name,
                     (SELECT COUNT(*) FROM discussion_replies WHERE discussion_id = d.id) as reply_count
-                    FROM discussions d JOIN users u ON d.user_id = u.id JOIN subjects s ON d.subject_id = s.id
+                    FROM discussions d JOIN users u ON d.user_id = u.id LEFT JOIN subjects s ON d.subject_id = s.id
                     ORDER BY d.is_pinned DESC, d.created_at DESC LIMIT 50");
             }
             echo json_encode(['success' => true, 'data' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);

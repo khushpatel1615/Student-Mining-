@@ -206,10 +206,14 @@
     transition: all var(--transition-fast);
 }
 
+
 .att-btn svg {
-    width: 16px;
-    height: 16px;
+    width: 16px !important;
+    height: 16px !important;
+    min-width: 16px;
+    min-height: 16px;
     color: var(--text-tertiary);
+    display: block;
 }
 
 .att-btn:hover {

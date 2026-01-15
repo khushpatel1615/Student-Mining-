@@ -67,7 +67,7 @@ function EnrollmentManagement() {
     const [academicYear, setAcademicYear] = useState(getCurrentAcademicYear())
     const [saving, setSaving] = useState(false)
     const [expandedStudents, setExpandedStudents] = useState([])
-    const [viewStatus, setViewStatus] = useState('active') // 'active' or 'completed'
+    const [viewStatus, setViewStatus] = useState('all') // 'all', 'active' or 'completed'
 
     const toggleStudentExpand = (studentId) => {
         setExpandedStudents(prev =>
@@ -256,8 +256,9 @@ function EnrollmentManagement() {
             {/* Header */}
             <div className="enrollment-management-header">
                 <h2 className="enrollment-management-title">Enrollment Management</h2>
+
                 <div className="view-toggle">
-                    {['active', 'completed', 'dropped', 'failed'].map(status => (
+                    {['all', 'active', 'completed', 'dropped', 'failed'].map(status => (
                         <button
                             key={status}
                             className={`toggle-btn ${viewStatus === status ? 'active' : ''}`}
