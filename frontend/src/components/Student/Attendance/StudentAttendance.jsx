@@ -1,194 +1,153 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, ChevronDown, ChevronUp, AlertCircle, CheckCircle, XCircle, Clock, Coffee } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
+import { Calendar, CheckCircle, XCircle, AlertTriangle, ChevronDown, ChevronUp, Loader } from 'lucide-react';
 import './StudentAttendance.css';
 
 const API_BASE = 'http://localhost/StudentDataMining/backend/api';
 
 const StudentAttendance = () => {
-    const { user, token } = useAuth();
-    const [attendanceSummary, setAttendanceSummary] = useState([]);
+    const { token } = useAuth();
+    const [subjects, setSubjects] = useState([]);
+    const [attendanceData, setAttendanceData] = useState({}); // subject_id -> []
     const [loading, setLoading] = useState(true);
-    const [expandedSubject, setExpandedSubject] = useState(null);
+    const [expandedSubjects, setExpandedSubjects] = useState({});
 
+    // 1. Fetch Student Enrollments (to get subjects)
     useEffect(() => {
-        if (user?.id) fetchAttendanceSummary();
-    }, [user.id]);
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                // Fetch enrollments to get active subjects
+                // We can use enrollments.php?status=active&current_sem_only=true
+                const res = await fetch(`${API_BASE}/enrollments.php?status=active&current_sem_only=true`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
 
-    const fetchAttendanceSummary = async () => {
-        try {
-            const res = await fetch(`${API_BASE}/attendance.php?user_id=${user.id}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
-            if (data.success) {
-                setAttendanceSummary(data.data);
+                if (data.success) {
+                    setSubjects(data.data);
+                    // 2. Fetch attendance for each subject
+                    data.data.forEach(sub => {
+                        fetchSubjectAttendance(sub.subject_id);
+                    });
+                }
+            } catch (err) {
+                console.error("Error fetching data", err);
+            } finally {
+                setLoading(false);
             }
-        } catch (error) {
-            console.error("Failed to fetch attendance", error);
-        } finally {
-            setLoading(false);
-        }
-    };
+        };
 
-    if (loading) return <div className="loading-state">Loading attendance records...</div>;
+        fetchData();
+    }, []);
 
-    return (
-        <div className="attendance-tab-container">
-            <div className="attendance-header">
-                <h3>My Attendance</h3>
-                <span className="subtitle">Track your presence across all subjects</span>
-            </div>
-
-            <div className="attendance-list">
-                {attendanceSummary.length > 0 ? (
-                    attendanceSummary.map(subject => (
-                        <AttendanceRow
-                            key={subject.enrollment_id}
-                            subject={subject}
-                            token={token}
-                            expanded={expandedSubject === subject.enrollment_id}
-                            onToggle={() => setExpandedSubject(expandedSubject === subject.enrollment_id ? null : subject.enrollment_id)}
-                        />
-                    ))
-                ) : (
-                    <div className="empty-state">
-                        <AlertCircle size={32} />
-                        <p>No enrollment records found.</p>
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-};
-
-const AttendanceRow = ({ subject, token, expanded, onToggle }) => {
-    const [details, setDetails] = useState(null);
-    const [loadingDetails, setLoadingDetails] = useState(false);
-
-    useEffect(() => {
-        if (expanded && !details) {
-            fetchDetails();
-        }
-    }, [expanded]);
-
-    const fetchDetails = async () => {
-        setLoadingDetails(true);
+    const fetchSubjectAttendance = async (subjectId) => {
         try {
-            const res = await fetch(`${API_BASE}/attendance.php?enrollment_id=${subject.enrollment_id}`, {
+            const res = await fetch(`${API_BASE}/attendance.php?action=student_view&subject_id=${subjectId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
             if (data.success) {
-                setDetails(data.data);
+                setAttendanceData(prev => ({
+                    ...prev,
+                    [subjectId]: data.data
+                }));
             }
         } catch (err) {
-            console.error("Failed to fetch details", err);
-        } finally {
-            setLoadingDetails(false);
+            console.error(`Error fetching attendance for ${subjectId}`, err);
         }
     };
 
-    const getPercentageColor = (pct) => {
-        const val = parseFloat(pct);
-        if (val >= 90) return 'text-green-500';
-        if (val >= 75) return 'text-blue-500';
-        if (val >= 60) return 'text-yellow-500';
-        return 'text-red-500';
+    const toggleExpand = (subId) => {
+        setExpandedSubjects(prev => ({
+            ...prev,
+            [subId]: !prev[subId]
+        }));
     };
 
-    const getStatusIcon = (status) => {
-        switch (status) {
-            case 'present': return <CheckCircle size={16} className="text-green-500" />;
-            case 'absent': return <XCircle size={16} className="text-red-500" />;
-            case 'late': return <Clock size={16} className="text-yellow-500" />;
-            default: return <Coffee size={16} className="text-gray-400" />;
-        }
+    const getStats = (records) => {
+        if (!records || records.length === 0) return { present: 0, total: 0, percentage: 0 };
+        const total = records.filter(r => r.status && r.status !== '-').length;
+        const present = records.filter(r => r.status === 'P').length;
+        const percentage = total > 0 ? Math.round((present / total) * 100) : 0;
+        return { present, total, percentage };
     };
+
+    if (loading) return <div className="p-4"><Loader className="animate-spin" /> Loading attendance...</div>;
 
     return (
-        <div className={`attendance-card ${expanded ? 'expanded' : ''}`}>
-            <div className="attendance-summary" onClick={onToggle}>
-                <div className="subject-info">
-                    <h4>{subject.subject_name}</h4>
-                    <span className="code">{subject.subject_code}</span>
-                </div>
+        <div className="student-attendance">
+            <h2>My Attendance</h2>
 
-                <div className="stats-group">
-                    <div className="stat-pill">
-                        <span className="label">Total Classes</span>
-                        <span className="value">{subject.total_classes}</span>
-                    </div>
-                    <div className="stat-pill percentage">
-                        <span className={`value ${getPercentageColor(subject.attendance_percentage)}`}>
-                            {subject.attendance_percentage}%
-                        </span>
-                    </div>
-                    <div className="toggle-icon">
-                        {expanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                    </div>
-                </div>
-            </div>
+            {subjects.length === 0 ? (
+                <div className="empty-state">No active subjects found.</div>
+            ) : subjects.map(sub => {
+                const records = attendanceData[sub.subject_id] || [];
+                const stats = getStats(records);
+                const isExpanded = expandedSubjects[sub.subject_id];
 
-            <AnimatePresence>
-                {expanded && (
-                    <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="attendance-details"
-                    >
-                        {loadingDetails ? (
-                            <div className="loading-mini">Loading history...</div>
-                        ) : details ? (
+                return (
+                    <div key={sub.subject_id} className="subject-attendance-card">
+                        <div className="subject-header" onClick={() => toggleExpand(sub.subject_id)} style={{ cursor: 'pointer' }}>
+                            <div className="subject-title">
+                                <h3>
+                                    {sub.subject_name}
+                                    <span className="subject-code">{sub.subject_code}</span>
+                                </h3>
+                                <div style={{ fontSize: '0.85rem', color: 'gray', marginTop: '0.25rem' }}>
+                                    Attendance: <span style={{
+                                        fontWeight: 'bold',
+                                        color: stats.percentage < 75 ? 'red' : 'green'
+                                    }}>{stats.percentage}%</span>
+                                </div>
+                            </div>
+                            <div>
+                                {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                            </div>
+                        </div>
+
+                        {isExpanded && (
                             <>
-                                <div className="stats-grid">
-                                    <div className="mini-stat present">
-                                        <div className="val">{details.summary.present}</div>
-                                        <div className="lbl">Present</div>
+                                <div className="attendance-stats">
+                                    <div className="stat-item">
+                                        <span className="stat-label">Total Classes</span>
+                                        <span className="stat-value">{stats.total}</span>
                                     </div>
-                                    <div className="mini-stat absent">
-                                        <div className="val">{details.summary.absent}</div>
-                                        <div className="lbl">Absent</div>
+                                    <div className="stat-item">
+                                        <span className="stat-label">Present</span>
+                                        <span className="stat-value high">{stats.present}</span>
                                     </div>
-                                    <div className="mini-stat late">
-                                        <div className="val">{details.summary.late}</div>
-                                        <div className="lbl">Late</div>
+                                    <div className="stat-item">
+                                        <span className="stat-label">Absent</span>
+                                        <span className="stat-value low">{stats.total - stats.present}</span>
                                     </div>
                                 </div>
 
                                 <div className="history-list">
-                                    <h5>Recent History</h5>
-                                    {details.records.length > 0 ? (
-                                        details.records.map((record, idx) => (
+                                    <h4 style={{ fontSize: '0.9rem', marginBottom: '0.5rem', color: 'gray' }}>History</h4>
+                                    {records.length === 0 ? (
+                                        <div style={{ fontStyle: 'italic', color: 'gray' }}>No records yet.</div>
+                                    ) : (
+                                        [...records].reverse().map((rec, idx) => (
                                             <div key={idx} className="history-item">
-                                                <div className="date-col">
-                                                    <span className="day">{record.day_name}</span>
-                                                    <span className="date">{record.attendance_date}</span>
-                                                </div>
-                                                <div className={`status-badge ${record.status}`}>
-                                                    {getStatusIcon(record.status)}
-                                                    <span>{record.status}</span>
-                                                </div>
-                                                {record.remarks && (
-                                                    <div className="remarks">
-                                                        {record.remarks}
-                                                    </div>
-                                                )}
+                                                <span>{rec.date}</span>
+                                                <span className={`attendance-badge ${rec.status === 'P' ? 'present' :
+                                                    rec.status === 'A' ? 'absent' :
+                                                        rec.status === 'E' ? 'exception' : ''
+                                                    }`}>
+                                                    {rec.status === 'P' ? 'Present' :
+                                                        rec.status === 'A' ? 'Absent' :
+                                                            rec.status === 'E' ? 'Exception' : '-'}
+                                                </span>
                                             </div>
                                         ))
-                                    ) : (
-                                        <div className="no-history">No records found.</div>
                                     )}
                                 </div>
                             </>
-                        ) : (
-                            <div className="error-mini">Failed to load details.</div>
                         )}
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                    </div>
+                );
+            })}
         </div>
     );
 };

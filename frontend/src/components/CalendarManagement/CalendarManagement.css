@@ -16,149 +16,189 @@
 /* --- RBC Theme Overrides --- */
 
 .rbc-calendar {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    color: #374151;
+    font-family: inherit;
+    color: var(--text-primary);
 }
 
 /* Toolbar */
 .rbc-toolbar {
-    margin-bottom: 1.5rem;
-    padding: 1rem;
-    background: white;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
+    margin-bottom: 2rem;
+    padding: 1.25rem;
+    background: var(--bg-card);
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
     display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow-sm);
+    flex-wrap: nowrap;
 }
 
 .rbc-toolbar .rbc-toolbar-label {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #111827;
-    letter-spacing: -0.01em;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    flex-grow: 1;
+    text-align: center;
 }
 
 .rbc-btn-group {
-    box-shadow: none;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid #e5e7eb;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 4px;
+    border: 1px solid var(--glass-border);
+    display: flex;
+    gap: 4px;
 }
 
 .rbc-btn-group button {
-    color: #4b5563;
-    background: white;
-    border: none;
-    border-right: 1px solid #e5e7eb;
-    font-weight: 500;
-    font-size: 0.9rem;
-    padding: 0.5rem 1rem;
+    color: var(--text-secondary);
+    background: var(--bg-page);
+    border: 1px solid var(--border-light) !important;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px !important;
     cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: none !important;
-}
-
-.rbc-btn-group button:last-child {
-    border-right: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .rbc-btn-group button:hover {
-    background-color: #f9fafb;
-    color: #111827;
+    background: var(--bg-card);
+    border-color: var(--primary-light) !important;
+    color: var(--primary);
+    transform: translateY(-1px);
 }
 
 .rbc-btn-group button.rbc-active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-color: transparent;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-}
-
-.rbc-btn-group button.rbc-active:hover {
-    background: linear-gradient(135deg, #5a6fd6 0%, #683999 100%);
-    color: white;
+    background: var(--primary) !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
 }
 
 /* Grid & Header */
 .rbc-header {
-    padding: 1rem 0;
+    padding: 1.25rem 0;
     font-size: 0.75rem;
     font-weight: 700;
-    color: #6b7280;
+    color: var(--text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-bottom: 2px solid #e5e7eb !important;
-    background-color: #f9fafb;
+    letter-spacing: 0.1em;
+    border-bottom: 1px solid var(--border-light) !important;
+    background: transparent;
 }
 
 .rbc-month-view {
-    border: none !important;
-    background: white;
-    border-radius: 0 0 12px 12px;
+    border: 1px solid var(--glass-border) !important;
+    background: var(--bg-card);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
 }
 
 .rbc-day-bg {
-    border: 1px solid #f3f4f6;
-    /* Lighter borders */
-    transition: background 0.2s;
+    border: 1px solid var(--border-light);
+    transition: background 0.3s ease;
 }
 
-.rbc-day-bg+.rbc-day-bg {
-    border-left: 1px solid #f3f4f6;
-}
-
-.rbc-month-row+.rbc-month-row {
-    border-top: 1px solid #f3f4f6;
+.rbc-day-bg:hover {
+    background: rgba(99, 102, 241, 0.02);
 }
 
 .rbc-off-range-bg {
-    background-color: #f9fafb;
-    opacity: 0.5;
+    background: var(--bg-page);
+    opacity: 0.4;
 }
 
 .rbc-today {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.04) 0%, rgba(118, 75, 162, 0.04) 100%) !important;
+    background: rgba(99, 102, 241, 0.05) !important;
 }
 
 /* Date Numbers */
 .rbc-date-cell {
-    padding: 8px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #6b7280;
+    padding: 12px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-secondary);
 }
 
 .rbc-now .rbc-button-link {
-    color: #667eea;
-    font-weight: 800;
+    background: var(--primary);
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: -2px;
 }
 
 /* Events */
 .rbc-event {
     border: none !important;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    padding: 2px 6px !important;
-    margin: 1px 4px !important;
-    width: auto !important;
-    /* Allow proper spacing */
+    border-radius: 8px !important;
+    padding: 4px 8px !important;
+    margin: 2px 6px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
 }
 
 .rbc-event:hover {
-    transform: translateY(-1px) scale(1.01);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
-    z-index: 50;
-    filter: brightness(1.05);
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10;
 }
 
 .rbc-event-content {
-    font-size: 0.8rem;
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 0.75rem;
+    letter-spacing: 0.01em;
+}
+
+.rbc-show-more {
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin: 4px;
+    display: inline-block;
+    transition: all 0.2s;
+}
+
+.rbc-show-more:hover {
+    background: var(--primary);
+    color: white;
+    text-decoration: none !important;
+    transform: scale(1.05);
+}
+
+/* Popover Styling */
+.rbc-overlay {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 20px !important;
+    box-shadow: var(--shadow-xl) !important;
+    padding: 1.5rem !important;
+    z-index: 1000 !important;
+    animation: modalIn 0.2s ease-out;
+}
+
+.rbc-overlay-header {
+    border-bottom: 1px solid var(--border-light) !important;
+    padding-bottom: 0.75rem !important;
+    margin-bottom: 0.75rem !important;
+    font-weight: 800 !important;
+    color: var(--text-primary) !important;
+    font-size: 1rem !important;
+}
+
+.rbc-overlay .rbc-event {
+    margin: 4px 0 !important;
+    padding: 6px 12px !important;
 }
 
 
@@ -195,11 +235,12 @@
 }
 
 .modal-content.calendar-modal {
-    background: #ffffff;
+    background: var(--bg-card);
     width: 95%;
     max-width: 580px;
-    border-radius: 16px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    border-radius: 24px;
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-xl);
     display: flex;
     flex-direction: column;
     max-height: 90vh;
@@ -220,39 +261,40 @@
 }
 
 .modal-header {
-    padding: 2rem 2rem 1.5rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 1.5rem 2rem;
+    background: var(--bg-card);
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
-    border-radius: 16px 16px 0 0;
+    border-radius: 24px 24px 0 0;
+    border-bottom: 1px solid var(--glass-border);
 }
 
 .modal-header h3 {
     margin: 0;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--text-primary);
     letter-spacing: -0.02em;
 }
 
 .close-btn {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--bg-page);
     border: none;
-    color: #ffffff;
+    color: var(--text-muted);
     cursor: pointer;
     padding: 8px;
-    border-radius: 8px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
-    backdrop-filter: blur(10px);
 }
 
 .close-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: #e5e7eb;
+    color: #111827;
     transform: scale(1.05);
 }
 
@@ -287,7 +329,7 @@
     padding: 0.75rem 1rem;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
-    background: #f9fafb;
+    background: #ffffff;
     color: #1f2937;
     font-size: 0.95rem;
     width: 100%;
@@ -318,24 +360,72 @@
 /* Targeting Section Styles */
 .radio-group {
     display: flex;
-    gap: 1.5rem;
+    gap: 2rem;
     padding: 0.5rem 0;
 }
 
 .radio-label {
+    position: relative;
+    padding-left: 28px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #374151;
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 0.9rem;
-    color: var(--text-primary);
-    cursor: pointer;
     user-select: none;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
 }
 
-.radio-label input[type="radio"] {
-    accent-color: var(--primary);
-    width: 16px;
-    height: 16px;
+.radio-label input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.radio-checkmark {
+    position: absolute;
+    left: 0;
+    height: 18px;
+    width: 18px;
+    background-color: #fff;
+    border: 2px solid #d1d5db;
+    border-radius: 50%;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.radio-label:hover input~.radio-checkmark {
+    border-color: #6366f1;
+    background-color: #f9fafb;
+}
+
+.radio-label input:checked~.radio-checkmark {
+    border-color: #6366f1;
+    background-color: #6366f1;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+.radio-checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.radio-label input:checked~.radio-checkmark:after {
+    display: block;
+}
+
+.radio-label .radio-checkmark:after {
+    top: 4px;
+    left: 4px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .modal-actions {

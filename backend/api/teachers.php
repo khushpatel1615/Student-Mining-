@@ -41,7 +41,8 @@ try {
             $stmt = $pdo->prepare("
                 SELECT DISTINCT s.id, s.code, s.name, s.credits, s.semester
                 FROM subjects s
-                WHERE s.teacher_id = ?
+                JOIN teacher_subjects ts ON s.id = ts.subject_id
+                WHERE ts.teacher_id = ?
                 ORDER BY s.semester, s.code
             ");
             $stmt->execute([$user_id]);
@@ -92,25 +93,8 @@ try {
             $enrollment = $stmt->fetch(PDO::FETCH_ASSOC);
 
             // Get average attendance
-            $stmt = $pdo->prepare("
-                SELECT AVG(
-                    CASE 
-                        WHEN total_classes > 0 
-                        THEN (attended_classes / total_classes) * 100 
-                        ELSE 0 
-                    END
-                ) as avg_attendance
-                FROM (
-                    SELECT 
-                        COUNT(CASE WHEN status = 'present' THEN 1 END) as attended_classes,
-                        COUNT(*) as total_classes
-                    FROM attendance
-                    WHERE subject_id = ?
-                    GROUP BY student_id
-                ) as attendance_stats
-            ");
-            $stmt->execute([$subject_id]);
-            $attendance = $stmt->fetch(PDO::FETCH_ASSOC);
+            // Attendance features removed
+            $attendance = ['avg_attendance' => 0];
 
             echo json_encode([
                 'success' => true,

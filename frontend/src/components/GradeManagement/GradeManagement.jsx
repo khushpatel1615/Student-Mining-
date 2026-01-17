@@ -422,7 +422,7 @@ function GradeManagement() {
                                                         {subjectCriteria.map(c => (
                                                             <div key={c.id} className="criteria-row">
                                                                 <div className="criteria-main">
-                                                                    <label className="criteria-label">
+                                                                    <label className="criteria-label" title={c.component_name}>
                                                                         {c.component_name}
                                                                         <span className="max-marks">/{c.max_marks}</span>
                                                                     </label>
@@ -433,7 +433,7 @@ function GradeManagement() {
                                                                         onChange={(e) => updateGrade(enrollment.id, c.id, e.target.value)}
                                                                         min="0"
                                                                         max={c.max_marks}
-                                                                        placeholder="0"
+                                                                        placeholder="-"
                                                                     />
                                                                 </div>
                                                                 <input

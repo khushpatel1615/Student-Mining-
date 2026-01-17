@@ -8,25 +8,51 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--space-xl);
-    background: var(--bg-card);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-light);
+    padding: 3rem;
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-sidebar) 100%);
+    border-radius: 32px;
+    border: 1px solid var(--glass-border);
     margin-bottom: var(--space-xl);
-    animation: fadeIn 0.4s ease-out;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+    backdrop-filter: blur(12px);
+}
+
+.welcome-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 70% 30%, rgba(99, 102, 241, 0.15), transparent 70%);
+    pointer-events: none;
+}
+
+.welcome-banner::after {
+    content: '';
+    position: absolute;
+    top: -20%;
+    right: -10%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, var(--primary-light) 0%, transparent 60%);
+    opacity: 0.3;
+    pointer-events: none;
+    filter: blur(40px);
 }
 
 .welcome-content h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
+    font-size: 2.25rem;
+    font-weight: 800;
     color: var(--text-primary);
     margin: 0 0 var(--space-xs) 0;
+    letter-spacing: -1px;
 }
 
 .welcome-content p {
     color: var(--text-secondary);
     margin: 0;
-    font-size: 0.95rem;
+    font-size: 1.1rem;
+    opacity: 0.9;
 }
 
 /* Stats Grid */
@@ -172,10 +198,17 @@
 /* Content Card */
 .content-card {
     background: var(--bg-card);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-light);
-    padding: var(--space-xl);
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    padding: 0;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
     animation: fadeIn 0.4s ease-out;
+}
+
+/* Ensure children have padding if they don't handle it */
+.content-card>div:not(.calendar-management-container) {
+    padding: var(--space-xl);
 }
 
 /* Animations */

@@ -336,6 +336,7 @@ function handleGet($pdo)
     // Case 3: Get all grades for a user, grouped by subject
     $targetUserId = $userId ?? $user['user_id'];
 
+    // Get only the latest enrollment for each subject (handles retakes/multiple enrollments)
     $sql = "
         SELECT 
             se.id as enrollment_id,
@@ -350,6 +351,13 @@ function handleGet($pdo)
         FROM student_enrollments se
         JOIN subjects s ON se.subject_id = s.id
         WHERE se.user_id = ?
+        AND se.id IN (
+            SELECT MAX(se2.id)
+            FROM student_enrollments se2
+            WHERE se2.user_id = se.user_id
+            AND se2.subject_id = se.subject_id
+            GROUP BY se2.subject_id
+        )
     ";
     $params = [$targetUserId];
 

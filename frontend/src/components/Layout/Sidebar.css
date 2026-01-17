@@ -13,11 +13,12 @@
     left: 0;
     top: 0;
     background: var(--bg-sidebar);
-    border-right: 1px solid var(--border-light);
+    border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
     z-index: 100;
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform var(--transition-normal);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.25);
 }
 
 /* Logo Header */
@@ -109,8 +110,7 @@
 }
 
 .nav-item:hover {
-    background: #f3f4f6;
-    /* Light gray hover */
+    background: var(--bg-hover);
     color: var(--primary);
     transform: translateX(4px);
 }
@@ -144,6 +144,7 @@
 .nav-item.active .nav-icon {
     opacity: 1;
     color: white;
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
 }
 
 .nav-label {
@@ -221,8 +222,8 @@
 
 /* User Card Footer */
 .sidebar-footer {
-    padding: var(--space-md);
-    border-top: 1px solid var(--border-light);
+    padding: var(--space-lg);
+    border-top: 1px solid var(--border-color);
 }
 
 .user-card {

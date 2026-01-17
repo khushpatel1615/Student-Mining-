@@ -3,22 +3,23 @@ import { createContext, useContext, useState, useEffect } from 'react'
 const ThemeContext = createContext()
 
 export function ThemeProvider({ children }) {
-    const [theme, setTheme] = useState(() => {
-        // Check localStorage first, then system preference
-        const saved = localStorage.getItem('theme')
-        if (saved) return saved
-
-        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            return 'dark'
-        }
-        return 'light'
-    })
+    const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+    const [zoom, setZoom] = useState(1);
 
     useEffect(() => {
         // Apply theme to document
-        document.documentElement.setAttribute('data-theme', theme)
-        localStorage.setItem('theme', theme)
-    }, [theme])
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+    }, [theme]);
+
+    useEffect(() => {
+        // Apply zoom to document (supported in modern browsers)
+        document.documentElement.style.zoom = zoom;
+    }, [zoom]);
+
+    const zoomIn = () => setZoom(prev => Math.min(prev + 0.1, 1.3));
+    const zoomOut = () => setZoom(prev => Math.max(prev - 0.1, 0.8));
+    const resetZoom = () => setZoom(1);
 
     const toggleTheme = () => {
         setTheme(prev => prev === 'light' ? 'dark' : 'light')
@@ -28,7 +29,11 @@ export function ThemeProvider({ children }) {
         theme,
         setTheme,
         toggleTheme,
-        isDark: theme === 'dark'
+        isDark: theme === 'dark',
+        zoom,
+        zoomIn,
+        zoomOut,
+        resetZoom
     }
 
     return (

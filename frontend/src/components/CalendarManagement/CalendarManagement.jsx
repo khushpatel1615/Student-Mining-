@@ -264,31 +264,28 @@ const CalendarManagement = ({ role: propRole }) => {
     // Event Styling for React Big Calendar
     const eventPropGetter = (event) => {
         const colors = {
-            exam: '#ef4444',
-            deadline: '#f59e0b',
-            holiday: '#10b981',
-            event: '#6366f1',
-            assignment: '#8b5cf6'
+            exam: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+            deadline: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+            holiday: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+            event: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+            assignment: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)'
         }
 
-        let typeColor = colors[event.type] || '#6366f1'
-        let opacity = 0.9
+        let typeBg = colors[event.type] || colors.event
+        let opacity = 1
         const isPast = new Date(event.event_date) < new Date().setHours(0, 0, 0, 0)
 
         if (isPast) {
-            typeColor = '#94a3b8' // Slate-400 for past events
+            typeBg = 'var(--text-muted)'
             opacity = 0.6
         }
 
         return {
             style: {
-                backgroundColor: typeColor,
-                borderRadius: '4px',
+                background: typeBg,
                 opacity: opacity,
                 color: 'white',
                 border: 'none',
-                display: 'block',
-                fontSize: '0.85rem',
                 textDecoration: isPast ? 'line-through' : 'none'
             }
         }
@@ -298,20 +295,57 @@ const CalendarManagement = ({ role: propRole }) => {
 
     return (
         <div className="calendar-management-container">
-            <div className="calendar-header-actions" style={{ marginBottom: '1.5rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <CalendarIcon size={24} className="text-primary" />
-                    <h2>Academic Calendar</h2>
+            <div className="calendar-header-actions" style={{
+                marginBottom: '2rem',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '0.5rem 1rem'
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '16px',
+                        background: 'rgba(99, 102, 241, 0.1)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--primary)'
+                    }}>
+                        <CalendarIcon size={24} />
+                    </div>
+                    <div>
+                        <h2 style={{ fontSize: '1.5rem', margin: 0 }}>Academic Calendar</h2>
+                        <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Manage your institutional schedule</p>
+                    </div>
                 </div>
 
                 {role !== 'student' && (
-                    <button className="btn-primary" onClick={() => openModal()}>
+                    <button
+                        className="btn-primary"
+                        onClick={() => openModal()}
+                        style={{
+                            padding: '0.75rem 1.5rem',
+                            borderRadius: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            fontWeight: 600,
+                            boxShadow: 'var(--shadow-md)'
+                        }}
+                    >
                         <Plus size={18} /> Add Event
                     </button>
                 )}
             </div>
 
-            <div className="calendar-grid-wrapper" style={{ height: '700px', background: 'var(--bg-card)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
+            <div className="calendar-grid-wrapper" style={{
+                height: '750px',
+                background: 'transparent',
+                borderRadius: '24px',
+                position: 'relative'
+            }}>
                 <DnDCalendar
                     localizer={localizer}
                     events={events
@@ -437,7 +471,9 @@ const CalendarManagement = ({ role: propRole }) => {
                                                                     target_program_id: '',
                                                                     target_semester: ''
                                                                 })}
-                                                            /> All Students
+                                                            />
+                                                            <span className="radio-checkmark"></span>
+                                                            All Students
                                                         </label>
                                                         <label className="radio-label">
                                                             <input
@@ -451,7 +487,9 @@ const CalendarManagement = ({ role: propRole }) => {
                                                                     target_program_id: '',
                                                                     target_semester: ''
                                                                 })}
-                                                            /> Specific Program
+                                                            />
+                                                            <span className="radio-checkmark"></span>
+                                                            Specific Program
                                                         </label>
                                                     </div>
 

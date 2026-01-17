@@ -4,9 +4,10 @@
 
 .student-management {
     animation: fadeIn 0.5s ease-out;
+    width: 100%;
+    padding: 1rem;
 }
 
-/* Header with actions */
 /* Header with actions */
 .student-management-header {
     display: flex;
@@ -23,7 +24,7 @@
     color: var(--text-primary);
 }
 
-/* Search and Filter Bar */
+/* Filter Bar */
 .student-filters {
     display: flex;
     align-items: center;
@@ -66,12 +67,8 @@
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
-.search-input::placeholder {
-    color: var(--text-tertiary);
-}
-
 .filter-select {
-    padding: 0.875rem 2.5rem 0.875rem 1rem;
+    padding: 0.875rem 2rem 0.875rem 1rem;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     background: var(--bg-primary);
@@ -79,19 +76,8 @@
     font-size: 0.95rem;
     cursor: pointer;
     transition: all var(--transition-fast);
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.75rem center;
-    background-size: 1.25rem;
 }
 
-.filter-select:focus {
-    outline: none;
-    border-color: var(--accent-primary);
-}
-
-/* Add Button */
 .btn-add {
     display: flex;
     align-items: center;
@@ -107,32 +93,26 @@
     transition: all var(--transition-fast);
 }
 
-.btn-add:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-}
-
 .btn-add svg {
     width: 18px;
     height: 18px;
 }
 
-/* Students Table */
+/* Table Container */
 .students-table-container {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: var(--shadow-sm);
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 1rem;
 }
 
+/* Table Styles - Enforcing Table Layout */
 .students-table {
     display: table !important;
-    width: 100%;
-    border-collapse: separate;
-    /* Changed from collapse for radius support if needed, but spacing 0 */
-    border-spacing: 0;
-    table-layout: fixed;
+    width: 100% !important;
+    border-collapse: separate !important;
+    /* Allows spacing for card effect */
+    border-spacing: 0 0.8rem !important;
+    min-width: 900px;
 }
 
 .students-table thead {
@@ -150,13 +130,33 @@
 .students-table th,
 .students-table td {
     display: table-cell !important;
-    padding: 1rem 1.5rem;
-    text-align: left;
-    border-bottom: 1px solid var(--border-color);
-    vertical-align: middle;
+    vertical-align: middle !important;
 }
 
-/* Define column widths */
+/* Header Styling */
+.students-table th {
+    background: var(--bg-tertiary);
+    color: var(--text-tertiary);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 1rem 1.5rem;
+    border: none;
+}
+
+/* Rounded header corners */
+.students-table th:first-child {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+
+.students-table th:last-child {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+/* Column Widths */
 .students-table th:nth-child(1) {
     width: 25%;
 }
@@ -178,15 +178,15 @@
 
 /* Dept */
 .students-table th:nth-child(5) {
-    width: 10%;
+    width: 15%;
 }
 
 /* Status */
 .students-table th:nth-child(6) {
-    width: 15%;
+    width: 10%;
 }
 
-/* Last Login */
+/* Login */
 .students-table th:nth-child(7) {
     width: 15%;
     text-align: right;
@@ -194,42 +194,45 @@
 
 /* Actions */
 
-.students-table td:nth-child(7) {
-    text-align: right;
-}
-
-.students-table th {
-    background: var(--bg-tertiary);
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-tertiary);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-}
-
+/* Body Row Styling (Card Look) */
 .students-table tbody tr {
     background: var(--bg-card);
-    transition: background var(--transition-fast);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .students-table tbody tr:hover {
-    background: var(--bg-tertiary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.students-table tbody tr:last-child td {
-    border-bottom: none;
+.students-table td {
+    padding: 1rem 1.5rem;
+    background: var(--bg-card);
+    /* Required for proper border radius masking */
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
 }
 
-/* Student Info Cell */
+.students-table td:first-child {
+    border-left: 1px solid var(--border-color);
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+
+.students-table td:last-child {
+    border-right: 1px solid var(--border-color);
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    text-align: right;
+}
+
+/* Content Styles */
 .student-info {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    max-width: 100%;
-    /* Prevent overflow */
+    gap: 1rem;
 }
 
 .student-avatar {
@@ -242,7 +245,6 @@
     justify-content: center;
     color: white;
     font-weight: 600;
-    font-size: 0.875rem;
     flex-shrink: 0;
 }
 
@@ -256,90 +258,24 @@
 .student-details {
     display: flex;
     flex-direction: column;
-    min-width: 0;
-    /* Enable truncation in flex item */
 }
 
 .student-name {
     font-weight: 500;
-    color: var(--text-primary);
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    font-size: 0.95rem;
 }
 
 .student-email {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: var(--text-tertiary);
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
-/* Status Badge */
-/* Status Toggle Button */
-.status-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    border: none;
-    border-radius: 20px;
+.role-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
     font-size: 0.75rem;
     font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-    white-space: nowrap;
-}
-
-.status-toggle .status-indicator {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    transition: all 0.2s;
-    flex-shrink: 0;
-}
-
-.status-toggle.active {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
-}
-
-.status-toggle.active .status-indicator {
-    background: #10b981;
-    box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
-}
-
-.status-toggle.active:hover {
-    background: rgba(16, 185, 129, 0.2);
-}
-
-.status-toggle.inactive {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-}
-
-.status-toggle.inactive .status-indicator {
-    background: #ef4444;
-}
-
-.status-toggle.inactive:hover {
-    background: rgba(239, 68, 68, 0.2);
-}
-
-/* Role Badge */
-.role-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.25rem 0.75rem;
-    border-radius: var(--radius-full);
-    font-size: 0.75rem;
-    font-weight: 500;
     text-transform: capitalize;
-    white-space: nowrap;
 }
 
 .role-badge.admin {
@@ -352,12 +288,40 @@
     color: #3b82f6;
 }
 
-/* Action Buttons */
+.status-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+    border: none;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+}
+
+.status-toggle.active {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.status-toggle.inactive {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.status-indicator {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
 .action-buttons {
     display: flex;
-    justify-content: flex-end;
-    /* Align right */
     gap: 0.5rem;
+    justify-content: flex-end;
 }
 
 .btn-action {
@@ -366,36 +330,22 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: transparent;
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-secondary);
     cursor: pointer;
-    transition: all var(--transition-fast);
-    color: #64748b;
-    /* Fallback color */
-    flex-shrink: 0;
 }
 
 .btn-action:hover {
     background: var(--bg-tertiary);
-    border-color: var(--border-color-hover);
     color: var(--text-primary);
 }
 
 .btn-action.delete:hover {
+    border-color: #ef4444;
+    color: #ef4444;
     background: rgba(239, 68, 68, 0.1);
-    border-color: var(--error);
-    color: var(--error);
-}
-
-.btn-action svg {
-    width: 16px !important;
-    height: 16px !important;
-    min-width: 16px;
-    min-height: 16px;
-    stroke: currentColor;
-    display: block;
-    /* Ensure it's not inline */
 }
 
 /* Pagination */
@@ -403,9 +353,9 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem 1.25rem;
-    border-top: 1px solid var(--border-color);
-    background: var(--bg-tertiary);
+    padding: 1rem 0;
+    /* Remove border-top as updated layout is separated */
+    margin-top: 1rem;
 }
 
 .pagination-info {
@@ -420,411 +370,76 @@
 
 .btn-page {
     padding: 0.5rem 1rem;
-    background: var(--bg-primary);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    font-size: 0.875rem;
-    color: var(--text-primary);
+    background: var(--bg-primary);
+    border-radius: 6px;
     cursor: pointer;
-    transition: all var(--transition-fast);
 }
 
 .btn-page:hover:not(:disabled) {
     background: var(--bg-secondary);
-    border-color: var(--accent-primary);
 }
 
 .btn-page:disabled {
     opacity: 0.5;
-    cursor: not-allowed;
 }
 
-/* Empty State */
-.empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 3rem;
-    text-align: center;
-}
-
-.empty-state-icon {
-    width: 64px;
-    height: 64px;
-    background: var(--bg-tertiary);
-    border-radius: var(--radius-lg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 1rem;
-}
-
-.empty-state-icon svg {
-    width: 32px;
-    height: 32px;
-    color: var(--text-tertiary);
-}
-
-.empty-state h3 {
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-}
-
-.empty-state p {
-    font-size: 0.875rem;
-    color: var(--text-tertiary);
-}
-
-/* Loading State */
-.loading-overlay {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 3rem;
-}
-
-.spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid var(--border-color);
-    border-top-color: var(--accent-primary);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* Modal Styles */
+/* Modal Styles Reuse */
 .modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    animation: fadeIn 0.2s ease-out;
 }
 
 .modal-content {
     background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
+    border-radius: 12px;
     width: 90%;
     max-width: 500px;
-    max-height: 90vh;
-    overflow-y: auto;
-    animation: slideUp 0.3s ease-out;
+}
+
+.modal-header,
+.modal-footer {
+    padding: 1rem;
+    display: flex;
+    align-items: center;
 }
 
 .modal-header {
-    display: flex;
-    align-items: center;
     justify-content: space-between;
-    padding: 1.25rem 1.5rem;
     border-bottom: 1px solid var(--border-color);
 }
 
-.modal-title {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.modal-close {
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: none;
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    color: var(--text-tertiary);
-    transition: all var(--transition-fast);
-}
-
-.modal-close:hover {
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
-}
-
-.modal-close svg {
-    width: 20px;
-    height: 20px;
+.modal-footer {
+    justify-content: flex-end;
+    gap: 1rem;
+    border-top: 1px solid var(--border-color);
 }
 
 .modal-body {
     padding: 1.5rem;
 }
 
-.modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.75rem;
-    padding: 1rem 1.5rem;
-    border-top: 1px solid var(--border-color);
-    background: var(--bg-tertiary);
-}
-
-/* Form Styles */
 .form-group {
-    margin-bottom: 1.25rem;
+    margin-bottom: 1rem;
 }
 
 .form-label {
     display: block;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-primary);
     margin-bottom: 0.5rem;
+    font-weight: 500;
 }
 
-.form-input {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    font-size: 0.875rem;
-    transition: all var(--transition-fast);
-}
-
-.form-input:focus {
-    outline: none;
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-}
-
-.form-input::placeholder {
-    color: var(--text-tertiary);
-}
-
+.form-input,
 .form-select {
     width: 100%;
-    padding: 0.75rem 1rem;
+    padding: 0.75rem;
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
+    border-radius: 6px;
     background: var(--bg-primary);
     color: var(--text-primary);
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-}
-
-.form-select:focus {
-    outline: none;
-    border-color: var(--accent-primary);
-}
-
-/* Buttons */
-.btn-primary {
-    padding: 0.75rem 1.5rem;
-    background: var(--accent-gradient);
-    color: white;
-    border: none;
-    border-radius: var(--radius-md);
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-}
-
-.btn-primary:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
-}
-
-.btn-primary:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.btn-secondary {
-    padding: 0.75rem 1.5rem;
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-}
-
-.btn-secondary:hover {
-    background: var(--bg-tertiary);
-    border-color: var(--border-color-hover);
-}
-
-.btn-danger {
-    padding: 0.75rem 1.5rem;
-    background: var(--error);
-    color: white;
-    border: none;
-    border-radius: var(--radius-md);
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-}
-
-.btn-danger:hover:not(:disabled) {
-    background: #dc2626;
-    box-shadow: var(--shadow-md);
-}
-
-/* Delete Confirmation Modal */
-.delete-confirmation {
-    text-align: center;
-    padding: 1rem 0;
-}
-
-.delete-confirmation-icon {
-    width: 64px;
-    height: 64px;
-    margin: 0 auto 1rem;
-    background: rgba(239, 68, 68, 0.1);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.delete-confirmation-icon svg {
-    width: 32px;
-    height: 32px;
-    color: var(--error);
-}
-
-.delete-confirmation h3 {
-    font-size: 1.125rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-}
-
-.delete-confirmation p {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .student-management-header {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .student-filters {
-        flex-direction: column;
-    }
-
-    .search-input-wrapper {
-        min-width: 100%;
-    }
-
-    .students-table-container {
-        overflow-x: auto;
-    }
-
-    .students-table {
-        min-width: 700px;
-    }
-
-    .pagination {
-        flex-direction: column;
-        gap: 1rem;
-        text-align: center;
-    }
-}
-
-/* Status Toggle Confirmation Modal */
-.status-confirmation {
-    text-align: center;
-    padding: 1rem 0;
-}
-
-.status-confirmation-icon {
-    width: 64px;
-    height: 64px;
-    margin: 0 auto 1rem;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-}
-
-.status-confirmation-icon svg {
-    width: 32px;
-    height: 32px;
-}
-
-.status-confirmation h3 {
-    font-size: 1.125rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-}
-
-.status-confirmation p {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    line-height: 1.6;
-}
-
-.status-confirmation p strong {
-    color: var(--text-primary);
-    font-weight: 600;
-}
-
-/* Deactivate variant (red) */
-.status-confirmation.deactivate .status-confirmation-icon {
-    background: rgba(239, 68, 68, 0.1);
-}
-
-.status-confirmation.deactivate .status-confirmation-icon svg {
-    color: var(--error);
-}
-
-/* Activate variant (green) */
-.status-confirmation.activate .status-confirmation-icon {
-    background: rgba(16, 185, 129, 0.1);
-}
-
-.status-confirmation.activate .status-confirmation-icon svg {
-    color: #10b981;
-}
-
-/* Success Button */
-.btn-success {
-    padding: 0.75rem 1.5rem;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
-    border: none;
-    border-radius: var(--radius-md);
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-}
-
-.btn-success:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-}
-
-.btn-success:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
 }

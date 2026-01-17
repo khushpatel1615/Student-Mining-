@@ -190,7 +190,7 @@ function AdminOverview() {
             // Calculate additional stats (ensure numbers)
             setSystemStats(prev => ({
                 ...prev,
-                attendanceRate: 87.5,
+
                 engagementScore: 92,
                 pendingActions: 3,
                 totalTeachers: 12,
@@ -316,18 +316,7 @@ function AdminOverview() {
         }
     }
 
-    const getAttendanceChart = () => {
-        return {
-            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-            datasets: [{
-                label: 'Attendance %',
-                data: [92, 88, 95, 91, 85],
-                backgroundColor: 'rgba(99, 102, 241, 0.8)',
-                borderRadius: 8,
-                borderSkipped: false
-            }]
-        }
-    }
+
 
     // Quick Actions Handler
     const handleQuickAction = (action) => {
@@ -365,10 +354,7 @@ function AdminOverview() {
                 setDetailModalType('gpa')
                 setShowDetailModal(true)
                 break
-            case 'attendance':
-                setDetailModalType('attendance')
-                setShowDetailModal(true)
-                break
+
             case 'at-risk':
                 setDetailModalType('at-risk')
                 setShowDetailModal(true)
@@ -570,19 +556,7 @@ function AdminOverview() {
                     </div>
                 </div>
 
-                <div className="kpi-card attendance clickable" onClick={() => handleKPIClick('attendance')}>
-                    <div className="kpi-icon">
-                        <CheckCircle size={24} />
-                    </div>
-                    <div className="kpi-content">
-                        <span className="kpi-label">Attendance Rate</span>
-                        <span className="kpi-value">{systemStats.attendanceRate}%</span>
-                        <div className="kpi-trend positive">
-                            <TrendingUp size={14} />
-                            <span>+2.3% this week</span>
-                        </div>
-                    </div>
-                </div>
+
 
                 <div className="kpi-card at-risk clickable" onClick={() => handleKPIClick('at-risk')}>
                     <div className="kpi-icon">
@@ -722,35 +696,7 @@ function AdminOverview() {
                         </div>
                     </div>
 
-                    {/* Weekly Attendance */}
-                    <div className="chart-card">
-                        <div className="chart-header">
-                            <h3><Target size={18} /> Weekly Attendance</h3>
-                            <span className="chart-subtitle">This week's pattern</span>
-                        </div>
-                        <div className="chart-body">
-                            <Bar
-                                data={getAttendanceChart()}
-                                options={{
-                                    responsive: true,
-                                    maintainAspectRatio: false,
-                                    plugins: {
-                                        legend: { display: false }
-                                    },
-                                    scales: {
-                                        y: {
-                                            min: 0,
-                                            max: 100,
-                                            grid: { color: 'rgba(0,0,0,0.05)' }
-                                        },
-                                        x: {
-                                            grid: { display: false }
-                                        }
-                                    }
-                                }}
-                            />
-                        </div>
-                    </div>
+
                 </div>
 
                 {/* Lower Section - 3 Columns */}

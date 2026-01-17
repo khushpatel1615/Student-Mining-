@@ -163,7 +163,7 @@ function handleGet($pdo)
         $sql .= " AND (ac.target_audience IN ('all', 'teachers') ";
 
         // Get subjects taught by teacher
-        $stmtSubs = $pdo->prepare("SELECT id FROM subjects WHERE teacher_id = ?");
+        $stmtSubs = $pdo->prepare("SELECT subject_id FROM teacher_subjects WHERE teacher_id = ?");
         $stmtSubs->execute([$userId]);
         $teacherSubjectIds = $stmtSubs->fetchAll(PDO::FETCH_COLUMN);
 
@@ -308,6 +308,59 @@ function handlePut($pdo)
         return;
     }
 
+    // 1. Handle Assignments
+    if (strpos($data['id'], 'assign_') === 0) {
+        $realId = substr($data['id'], 7);
+        $stmt = $pdo->prepare("SELECT a.id, a.teacher_id FROM assignments a WHERE a.id = ?");
+        $stmt->execute([$realId]);
+        $item = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$item) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Assignment not found']);
+            return;
+        }
+
+        if ($role !== 'admin' && $item['teacher_id'] != $userId) {
+            http_response_code(403);
+            echo json_encode(['error' => 'You can only edit your own assignments']);
+            return;
+        }
+
+        if (isset($data['event_date'])) {
+            $pdo->prepare("UPDATE assignments SET due_date = ? WHERE id = ?")->execute([$data['event_date'], $realId]);
+        }
+        echo json_encode(['success' => true, 'message' => 'Assignment updated']);
+        return;
+    }
+
+    // 2. Handle Exams
+    if (strpos($data['id'], 'exam_') === 0) {
+        $realId = substr($data['id'], 5);
+        $stmt = $pdo->prepare("SELECT e.id, e.teacher_id FROM exams e WHERE e.id = ?");
+        $stmt->execute([$realId]);
+        $item = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$item) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Exam not found']);
+            return;
+        }
+
+        if ($role !== 'admin' && $item['teacher_id'] != $userId) {
+            http_response_code(403);
+            echo json_encode(['error' => 'You can only edit your own exams']);
+            return;
+        }
+
+        if (isset($data['event_date'])) {
+            $pdo->prepare("UPDATE exams SET start_datetime = ? WHERE id = ?")->execute([$data['event_date'], $realId]);
+        }
+        echo json_encode(['success' => true, 'message' => 'Exam updated']);
+        return;
+    }
+
+    // 3. Handle Standard Calendar Events
     // Check Existence & Ownership
     $stmt = $pdo->prepare("SELECT created_by FROM academic_calendar WHERE id = ?");
     $stmt->execute([$data['id']]);
@@ -372,6 +425,55 @@ function handleDelete($pdo)
         return;
     }
 
+    // 1. Handle Assignments
+    if (strpos($id, 'assign_') === 0) {
+        $realId = substr($id, 7);
+        $stmt = $pdo->prepare("SELECT id, teacher_id FROM assignments WHERE id = ?");
+        $stmt->execute([$realId]);
+        $item = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$item) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Assignment not found']);
+            return;
+        }
+
+        if ($role !== 'admin' && $item['teacher_id'] != $userId) {
+            http_response_code(403);
+            echo json_encode(['error' => 'You can only delete your own assignments']);
+            return;
+        }
+
+        $pdo->prepare("DELETE FROM assignments WHERE id = ?")->execute([$realId]);
+        echo json_encode(['success' => true]);
+        return;
+    }
+
+    // 2. Handle Exams
+    if (strpos($id, 'exam_') === 0) {
+        $realId = substr($id, 5);
+        $stmt = $pdo->prepare("SELECT id, teacher_id FROM exams WHERE id = ?");
+        $stmt->execute([$realId]);
+        $item = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$item) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Exam not found']);
+            return;
+        }
+
+        if ($role !== 'admin' && $item['teacher_id'] != $userId) {
+            http_response_code(403);
+            echo json_encode(['error' => 'You can only delete your own exams']);
+            return;
+        }
+
+        $pdo->prepare("DELETE FROM exams WHERE id = ?")->execute([$realId]);
+        echo json_encode(['success' => true]);
+        return;
+    }
+
+    // 3. Handle Standard Calendar Events
     // Check ownership
     $stmt = $pdo->prepare("SELECT created_by FROM academic_calendar WHERE id = ?");
     $stmt->execute([$id]);

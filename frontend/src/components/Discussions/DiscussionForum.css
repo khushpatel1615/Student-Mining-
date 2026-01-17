@@ -55,7 +55,7 @@
     justify-content: space-between;
     padding: 1.25rem;
     background: var(--bg-card);
-    border: 1px solid var(--bg-glass-border);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     cursor: pointer;
     transition: all 0.3s;
@@ -142,7 +142,7 @@
     gap: 0.5rem;
     padding: 0.5rem 1rem;
     background: var(--bg-hover);
-    border: 1px solid var(--bg-glass-border);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     color: var(--text-primary);
     cursor: pointer;
@@ -158,7 +158,7 @@
 
 .discussion-detail {
     background: var(--bg-card);
-    border: 1px solid var(--bg-glass-border);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-xl);
     padding: 1.5rem;
     margin-bottom: 1.5rem;
@@ -188,7 +188,7 @@
     gap: 1.5rem;
     margin-bottom: 1.5rem;
     padding-bottom: 1rem;
-    border-bottom: 1px solid var(--bg-glass-border);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .author {
@@ -236,7 +236,7 @@
     gap: 1rem;
     margin-top: 1.5rem;
     padding-top: 1rem;
-    border-top: 1px solid var(--bg-glass-border);
+    border-top: 1px solid var(--border-color);
 }
 
 .post-actions button {
@@ -245,7 +245,7 @@
     gap: 0.5rem;
     padding: 0.5rem 1rem;
     background: var(--bg-hover);
-    border: 1px solid var(--bg-glass-border);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     color: var(--text-primary);
     cursor: pointer;
@@ -264,7 +264,7 @@
 /* Replies */
 .replies-section {
     background: var(--bg-card);
-    border: 1px solid var(--bg-glass-border);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-xl);
     padding: 1.5rem;
 }
@@ -304,7 +304,7 @@
     width: 100%;
     min-height: 100px;
     padding: 1rem;
-    border: 1px solid var(--bg-glass-border);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     background: var(--bg-primary);
     color: var(--text-primary);
@@ -367,7 +367,7 @@
 .new-form textarea {
     width: 100%;
     padding: 0.875rem 1rem;
-    border: 1px solid var(--bg-glass-border);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     background: var(--bg-primary);
     color: var(--text-primary);
@@ -389,7 +389,7 @@
 .btn-cancel {
     padding: 0.75rem 1.5rem;
     background: var(--bg-hover);
-    border: 1px solid var(--bg-glass-border);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     color: var(--text-primary);
     cursor: pointer;
@@ -415,7 +415,7 @@
 
 .empty-state {
     background: var(--bg-card);
-    border: 1px dashed var(--bg-glass-border);
+    border: 1px dashed var(--border-color);
     border-radius: var(--radius-xl);
 }
 
@@ -450,4 +450,91 @@
         flex-wrap: wrap;
         gap: 0.75rem;
     }
+}
+
+/* ============================================
+   ANNOUNCEMENTS PAGE SPECIFIC STYLES
+   ============================================ */
+
+.announcements-page .announcements-header h2 {
+    color: #f59e0b;
+}
+
+.announcement-badge {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.announcement-card {
+    border-left: 3px solid #f59e0b;
+}
+
+.announcement-card:hover {
+    border-left-color: #d97706;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+.announcement-card .card-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1));
+    border-radius: 12px;
+    color: #f59e0b;
+    margin-right: 1rem;
+}
+
+.announcement-preview {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0.5rem 0;
+}
+
+.announcement-detail {
+    border-left: 4px solid #f59e0b;
+}
+
+.announcement-content {
+    background: rgba(245, 158, 11, 0.05);
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    border-left: 3px solid #f59e0b;
+}
+
+.author-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.author-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.author-role {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.meta-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-left: auto;
+}
+
+.empty-state h3 {
+    color: var(--text-primary);
+    margin: 0.5rem 0;
+}
+
+.empty-state p {
+    color: var(--text-secondary);
+    margin: 0;
 }

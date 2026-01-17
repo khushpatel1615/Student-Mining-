@@ -132,6 +132,16 @@ function handleGet($pdo)
     // Single user enrollments (student's own or admin viewing specific student)
     $targetUserId = $userId ?? $user['user_id'];
 
+    // Check for current_sem_only flag - Filter by student's current semester
+    if (isset($_GET['current_sem_only']) && $_GET['current_sem_only'] === 'true') {
+        $semStmt = $pdo->prepare("SELECT current_semester FROM users WHERE id = ?");
+        $semStmt->execute([$targetUserId]);
+        $currentSem = $semStmt->fetchColumn();
+        if ($currentSem) {
+            $semester = $currentSem;
+        }
+    }
+
     $sql = "
         SELECT 
             se.id as enrollment_id,
@@ -170,6 +180,13 @@ function handleGet($pdo)
     if ($semester) {
         $sql .= " AND s.semester = ?";
         $params[] = $semester;
+    }
+
+    // Add status filter
+    $status = $_GET['status'] ?? 'active';
+    if ($status !== 'all') {
+        $sql .= " AND se.status = ?";
+        $params[] = $status;
     }
 
     $sql .= " ORDER BY s.semester ASC, s.subject_type DESC, s.name ASC";

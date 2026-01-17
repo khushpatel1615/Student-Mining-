@@ -9,15 +9,15 @@ import ProgramManagement from '../components/ProgramManagement/ProgramManagement
 import SubjectManagement from '../components/SubjectManagement/SubjectManagement'
 import EnrollmentManagement from '../components/EnrollmentManagement/EnrollmentManagement'
 import GradeManagement from '../components/GradeManagement/GradeManagement'
-import AttendanceManagement from '../components/AttendanceManagement/AttendanceManagement'
+import AdminAttendance from '../components/AttendanceManagement/AdminAttendance'
+
 import CalendarManagement from '../components/CalendarManagement/CalendarManagement'
-import AdminAnalyticsDashboard from '../components/Analytics/AdminAnalyticsDashboard'
+
 import AdminOverview from '../components/Overview/AdminOverview'
 import CSVImport from '../components/Import/CSVImport'
 import AssignmentManagement from '../components/AssignmentManagement/AssignmentManagement'
 import ExamManagement from '../components/ExamManagement/ExamManagement'
-import DiscussionForum from '../components/Discussions/DiscussionForum'
-import CourseReviews from '../components/Reviews/CourseReviews'
+import AdminAnnouncements from '../components/Discussions/AdminAnnouncements'
 import VideoLectures from '../components/VideoLectures/VideoLectures'
 
 
@@ -305,8 +305,7 @@ function AdminDashboard() {
         switch (activeTab) {
             case 'overview':
                 return <AdminOverview />
-            case 'analytics':
-                return <AdminAnalyticsDashboard />
+
             case 'students':
                 return <StudentManagement />
             case 'programs':
@@ -318,15 +317,15 @@ function AdminDashboard() {
             case 'grades':
                 return <GradeManagement />
             case 'attendance':
-                return <AttendanceManagement />
+                return <AdminAttendance />
+
             case 'assignments':
                 return <AssignmentManagement />
             case 'exams':
                 return <ExamManagement />
             case 'discussions':
-                return <DiscussionForum />
-            case 'reviews':
-                return <CourseReviews />
+            case 'announcements':
+                return <AdminAnnouncements />
             case 'videos':
                 return <VideoLectures />
             case 'calendar':

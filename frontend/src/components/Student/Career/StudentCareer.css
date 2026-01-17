@@ -113,6 +113,12 @@
 }
 
 /* Score Circle in Hero */
+.hero-score {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .hero-score .score-circle {
     width: 140px;
     height: 140px;
@@ -124,12 +130,14 @@
     justify-content: center;
     background: rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(10px);
+    text-align: center;
 }
 
 .score-val {
     font-size: 2.5rem;
     font-weight: 800;
     line-height: 1;
+    display: block;
 }
 
 .score-label {
@@ -137,6 +145,8 @@
     opacity: 0.8;
     text-transform: uppercase;
     margin-top: 0.25rem;
+    letter-spacing: 1px;
+    display: block;
 }
 
 /* Grid for Other Matches */

@@ -28,6 +28,7 @@ function ExamManagement() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [showModal, setShowModal] = useState(false)
+    const [deleteConfirmation, setDeleteConfirmation] = useState(null)
     const [editingId, setEditingId] = useState(null)
     const [selectedSubject, setSelectedSubject] = useState('')
     const [formData, setFormData] = useState({
@@ -133,17 +134,24 @@ function ExamManagement() {
         setShowModal(true)
     }
 
-    const handleDelete = async (id) => {
-        if (!confirm('Are you sure you want to delete this exam?')) return
+    const handleDelete = (exam) => {
+        setDeleteConfirmation(exam)
+    }
+
+    const confirmDelete = async () => {
+        if (!deleteConfirmation) return
 
         try {
-            const response = await fetch(`${API_BASE}/exams.php?id=${id}`, {
+            const response = await fetch(`${API_BASE}/exams.php?id=${deleteConfirmation.id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             const data = await response.json()
             if (data.success) {
+                setDeleteConfirmation(null)
                 fetchExams()
+            } else {
+                setError(data.error || 'Failed to delete exam')
             }
         } catch (err) {
             setError('Failed to delete exam')
@@ -223,7 +231,7 @@ function ExamManagement() {
                                     <button onClick={() => handleEdit(exam)} title="Edit">
                                         <EditIcon />
                                     </button>
-                                    <button onClick={() => handleDelete(exam.id)} title="Delete" className="delete-btn">
+                                    <button onClick={() => handleDelete(exam)} title="Delete" className="delete-btn">
                                         <TrashIcon />
                                     </button>
                                 </div>
@@ -257,7 +265,33 @@ function ExamManagement() {
                 </div>
             )}
 
-            {/* Modal */}
+            {/* Delete Confirmation Modal */}
+            {deleteConfirmation && (
+                <div className="modal-overlay" onClick={() => setDeleteConfirmation(null)}>
+                    <div className="modal-content delete-modal" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3>Delete Exam</h3>
+                            <button className="modal-close" onClick={() => setDeleteConfirmation(null)}>
+                                <CloseIcon />
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <p>Are you sure you want to delete the exam <strong>{deleteConfirmation.title}</strong>?</p>
+                            <p className="warning-text">This action cannot be undone. All associated results and student grades will be permanently removed.</p>
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn-secondary" onClick={() => setDeleteConfirmation(null)}>
+                                Cancel
+                            </button>
+                            <button type="button" className="btn-danger" onClick={confirmDelete}>
+                                Delete Exam
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit/Create Modal */}
             {showModal && (
                 <div className="modal-overlay" onClick={() => setShowModal(false)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>

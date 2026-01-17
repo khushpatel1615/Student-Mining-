@@ -5,8 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import TeacherAssignments from '../components/Teacher/Assignments/TeacherAssignments'
 import TeacherExams from '../components/Teacher/Exams/TeacherExams'
 import TeacherGrades from '../components/Teacher/Grades/TeacherGrades'
-import TeacherAttendance from '../components/Teacher/Attendance/TeacherAttendance'
-import QRAttendanceGenerator from '../components/Teacher/Attendance/QRAttendanceGenerator'
+
 import CalendarManagement from '../components/CalendarManagement/CalendarManagement'
 import './TeacherDashboard.css'
 
@@ -182,10 +181,7 @@ const TeacherDashboard = () => {
                                                         <span className="label">Students:</span>
                                                         <span className="value">{subject.stats.total_students}</span>
                                                     </div>
-                                                    <div className="stat-item">
-                                                        <span className="label">Avg Attendance:</span>
-                                                        <span className="value">{subject.stats.avg_attendance}%</span>
-                                                    </div>
+
                                                     <div className="stat-item">
                                                         <span className="label">Credits:</span>
                                                         <span className="value">{subject.credits}</span>
@@ -217,17 +213,7 @@ const TeacherDashboard = () => {
                         </div>
                     )}
 
-                    {activeTab === 'attendance' && (
-                        <div className="card">
-                            <TeacherAttendance />
-                        </div>
-                    )}
 
-                    {activeTab === 'qr-attendance' && (
-                        <div className="card">
-                            <QRAttendanceGenerator />
-                        </div>
-                    )}
 
                     {activeTab === 'calendar' && (
                         <div className="card">
