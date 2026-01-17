@@ -119,35 +119,37 @@ function handleGet($pdo)
     $gpa = $gradeCount > 0 ? ($totalPercentage / $gradeCount) / 25 : 0; // Convert to 4.0 scale
 
     // Get available elective courses
-    // Note: is_elective column might not exist, so we'll try both approaches
-    $placeholders = !empty($takenCourseIds) ? implode(',', array_fill(0, count($takenCourseIds), '?')) : '0';
+    // Build query dynamically based on whether student has taken courses
+    $baseQuery = "
+        SELECT 
+            id, code, name, credits, semester, description,
+            NULL as is_elective, NULL as difficulty_level, NULL as prerequisites
+        FROM subjects 
+        WHERE program_id = ?
+    ";
 
-    // First, try with is_elective column
+    // Add NOT IN clause only if student has taken courses
+    if (!empty($takenCourseIds)) {
+        $placeholders = implode(',', array_fill(0, count($takenCourseIds), '?'));
+        $baseQuery .= " AND id NOT IN ($placeholders)";
+    }
+
+    $baseQuery .= " AND semester >= ?";
+
+    // Try with is_elective column first
     try {
-        $stmt = $pdo->prepare("
-            SELECT 
-                id, code, name, credits, semester, description,
-                is_elective, difficulty_level, prerequisites
-            FROM subjects 
-            WHERE program_id = ? 
-            AND is_elective = 1
-            AND id NOT IN ($placeholders)
-            AND semester >= ?
-        ");
+        $query = str_replace("NULL as is_elective", "is_elective", $baseQuery);
+        $query = str_replace("NULL as difficulty_level", "difficulty_level", $query);
+        $query = str_replace("NULL as prerequisites", "prerequisites", $query);
+        $query .= " AND is_elective = 1";
+
+        $stmt = $pdo->prepare($query);
         $params = array_merge([$student['program_id']], $takenCourseIds, [$student['current_semester']]);
         $stmt->execute($params);
         $availableCourses = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
         // is_elective column doesn't exist, get all courses not taken
-        $stmt = $pdo->prepare("
-            SELECT 
-                id, code, name, credits, semester, description,
-                NULL as is_elective, NULL as difficulty_level, NULL as prerequisites
-            FROM subjects 
-            WHERE program_id = ? 
-            AND id NOT IN ($placeholders)
-            AND semester >= ?
-        ");
+        $stmt = $pdo->prepare($baseQuery);
         $params = array_merge([$student['program_id']], $takenCourseIds, [$student['current_semester']]);
         $stmt->execute($params);
         $availableCourses = $stmt->fetchAll(PDO::FETCH_ASSOC);

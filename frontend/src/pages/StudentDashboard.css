@@ -36,6 +36,15 @@
 .welcome-content {
     position: relative;
     z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 2rem;
+}
+
+.welcome-text {
+    flex: 1;
 }
 
 .welcome-content h1 {
@@ -50,6 +59,68 @@
     margin: 0;
     font-size: 0.95rem;
 }
+
+/* Semester Selector */
+.semester-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    align-items: flex-end;
+}
+
+.semester-selector label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.select-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.semester-dropdown {
+    min-width: 180px;
+    padding: 0.625rem 2.25rem 0.625rem 1rem;
+    background: white;
+    border: 1.5px solid var(--border-light);
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.semester-dropdown:hover {
+    border-color: var(--accent-primary);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.semester-dropdown:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.select-icon {
+    position: absolute;
+    right: 0.75rem;
+    pointer-events: none;
+    color: var(--text-muted);
+    transition: transform 0.2s;
+}
+
+.semester-dropdown:focus+.select-icon {
+    transform: rotate(180deg);
+}
+
 
 /* Stats Grid */
 .stats-grid {
@@ -207,6 +278,17 @@
         flex-direction: column;
         align-items: flex-start;
         gap: var(--space-md);
+    }
+
+    .welcome-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.5rem;
+    }
+
+    .semester-selector {
+        width: 100%;
+        min-width: auto;
     }
 
     .stats-grid {
@@ -487,4 +569,225 @@
     gap: 4px;
     font-size: 0.7rem;
     color: var(--text-muted);
+}
+
+/* ============================================
+   NEW UI/UX ENHANCEMENTS
+   ============================================ */
+
+/* OTP-Style Input Boxes */
+.otp-input-wrapper {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.otp-box {
+    width: 45px;
+    height: 52px;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #4f46e5;
+    background: white;
+    border: 2px solid var(--border-light);
+    border-radius: 10px;
+    transition: all 0.2s;
+    caret-color: #6366f1;
+}
+
+.otp-box:focus {
+    outline: none;
+    border-color: #6366f1;
+    background: #faf5ff;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    transform: scale(1.05);
+}
+
+.otp-box:not(:placeholder-shown) {
+    border-color: #22c55e;
+    background: #f0fdf4;
+}
+
+/* Modern Empty States */
+.empty-state-modern {
+    text-align: center;
+    padding: 3rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.empty-icon {
+    color: var(--text-muted);
+    opacity: 0.3;
+}
+
+.empty-icon.success {
+    color: #22c55e;
+    opacity: 0.5;
+}
+
+.empty-state-modern h4 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.empty-state-modern p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0;
+    max-width: 300px;
+}
+
+.cta-button {
+    margin-top: 0.5rem;
+    padding: 0.625rem 1.5rem;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+/* Event Type Badges */
+.item-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+    margin-bottom: 0.25rem;
+}
+
+.event-type-badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.event-type-badge.exam {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.event-type-badge.assignment {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.event-type-badge.holiday {
+    background: #fce7f3;
+    color: #db2777;
+}
+
+/* Urgency Badges with Enhanced Styling */
+.urgency-badge {
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+
+.urgency-badge.critical {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    animation: pulse-critical 2s infinite;
+}
+
+.urgency-badge.urgent {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.urgency-badge.warning {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+@keyframes pulse-critical {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    }
+
+    50% {
+        box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+    }
+}
+
+/* Success Badge */
+.badge.success {
+    background: #d1fae5;
+    color: #059669;
+}
+
+/* Enhanced Button with Icon */
+.btn-mark-attendance {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+/* Spinner Animation */
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Event Item Enhancements */
+.event-item {
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
+}
+
+.event-item:hover {
+    border-left-color: #6366f1;
+    background: rgba(99, 102, 241, 0.05);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .otp-box {
+        width: 40px;
+        height: 48px;
+        font-size: 1.25rem;
+    }
+
+    .otp-input-wrapper {
+        gap: 0.375rem;
+    }
+
+    .empty-state-modern {
+        padding: 2rem 1rem;
+    }
+
+    .item-title-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }

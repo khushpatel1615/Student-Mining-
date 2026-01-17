@@ -4,8 +4,10 @@
 
 .main-header {
     height: var(--header-height);
-    background: var(--bg-card);
-    border-bottom: 1px solid var(--border-light);
+    background: var(--bg-header);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -129,6 +131,41 @@
 .header-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+/* Zoom Controls */
+.zoom-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    background: var(--bg-card);
+    padding: 4px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-light);
+}
+
+.zoom-controls .header-btn {
+    border: none;
+    background: transparent;
+    width: 32px;
+    height: 32px;
+}
+
+.zoom-controls .header-btn:hover {
+    background: var(--bg-hover);
+    color: var(--primary);
+}
+
+.glass-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.glass-btn:hover {
+    background: var(--bg-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
 /* Refresh Spinning */

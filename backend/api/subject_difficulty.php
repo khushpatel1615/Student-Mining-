@@ -57,12 +57,12 @@ function getSubjectDifficultyRankings($pdo, $programId = null)
                 s.name,
                 s.credits,
                 COUNT(DISTINCT se.user_id) as total_students,
-                AVG(g.grade) as average_grade,
-                MIN(g.grade) as lowest_grade,
-                MAX(g.grade) as highest_grade,
-                STDDEV(g.grade) as grade_std_dev,
-                SUM(CASE WHEN g.grade >= 50 THEN 1 ELSE 0 END) as pass_count,
-                SUM(CASE WHEN g.grade < 50 THEN 1 ELSE 0 END) as fail_count,
+                AVG(g.marks_obtained) as average_grade,
+                MIN(g.marks_obtained) as lowest_grade,
+                MAX(g.marks_obtained) as highest_grade,
+                STDDEV(g.marks_obtained) as grade_std_dev,
+                SUM(CASE WHEN g.marks_obtained >= 50 THEN 1 ELSE 0 END) as pass_count,
+                SUM(CASE WHEN g.marks_obtained < 50 THEN 1 ELSE 0 END) as fail_count,
                 AVG(sa.attendance_percentage) as avg_attendance
             FROM subjects s
             LEFT JOIN student_enrollments se ON s.id = se.subject_id AND se.status = 'active'

@@ -65,7 +65,7 @@ try {
             } else {
                 // Get all assignments
                 $query = "
-                    SELECT a.*, s.name as subject_name, s.code as subject_code,
+                    SELECT DISTINCT a.*, s.name as subject_name, s.code as subject_code,
                            u.full_name as teacher_name
                     FROM assignments a
                     LEFT JOIN subjects s ON a.subject_id = s.id
@@ -96,6 +96,19 @@ try {
                 $stmt = $pdo->prepare($query);
                 $stmt->execute($params);
                 $assignments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                // If student, fetch their submissions
+                if ($user_role === 'student') {
+                    foreach ($assignments as &$assignment) {
+                        $stmt = $pdo->prepare("
+                            SELECT * FROM assignment_submissions
+                            WHERE assignment_id = ? AND student_id = ?
+                        ");
+                        $stmt->execute([$assignment['id'], $user_id]);
+                        $submission = $stmt->fetch(PDO::FETCH_ASSOC);
+                        $assignment['my_submission'] = $submission ?: null;
+                    }
+                }
 
                 echo json_encode(['success' => true, 'data' => $assignments]);
             }

@@ -391,24 +391,24 @@ function EnrollmentManagement() {
                                     </tr>
                                     {expandedStudents.includes(student.user_id) && (
                                         <tr className="expanded-row">
-                                            <td colSpan="5" style={{ padding: 0 }}>
-                                                <div style={{ padding: '1rem', background: 'var(--bg-secondary)' }}>
+                                            <td colSpan="5">
+                                                <div className="sub-table-wrapper">
                                                     <table className="sub-table" style={{ width: '100%' }}>
-                                                        <thead style={{ background: 'transparent' }}>
+                                                        <thead>
                                                             <tr>
-                                                                <th style={{ padding: '0.5rem', fontSize: '0.75rem' }}>Subject</th>
-                                                                <th style={{ padding: '0.5rem', fontSize: '0.75rem' }}>Code</th>
-                                                                <th style={{ padding: '0.5rem', fontSize: '0.75rem' }}>Semester</th>
-                                                                <th style={{ padding: '0.5rem', fontSize: '0.75rem' }}>Status</th>
+                                                                <th>Subject</th>
+                                                                <th>Code</th>
+                                                                <th>Semester</th>
+                                                                <th>Status</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
                                                             {student.subjects.map(subject => (
-                                                                <tr key={subject.enrollment_id || subject.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                                                                    <td style={{ padding: '0.5rem' }}>{subject.subject_name}</td>
-                                                                    <td style={{ padding: '0.5rem' }}>{subject.subject_code}</td>
-                                                                    <td style={{ padding: '0.5rem' }}>Semester {subject.semester}</td>
-                                                                    <td style={{ padding: '0.5rem' }}>
+                                                                <tr key={subject.enrollment_id || subject.id}>
+                                                                    <td>{subject.subject_name}</td>
+                                                                    <td>{subject.subject_code}</td>
+                                                                    <td>Semester {subject.semester}</td>
+                                                                    <td>
                                                                         <select
                                                                             className={`status-select ${getStatusColor(subject.status)}`}
                                                                             value={subject.status}

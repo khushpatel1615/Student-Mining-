@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import MainLayout from '../components/Layout/MainLayout'
 import { useAuth } from '../context/AuthContext'
-import StudentAnalyticsDashboard from '../components/Analytics/StudentAnalyticsDashboard'
+
 import CalendarManagement from '../components/CalendarManagement/CalendarManagement'
 import { CircularProgress } from '../components/CircularProgress'
 import GradesTab from '../components/Student/Grades/GradesTab'
@@ -11,18 +11,17 @@ import StudentProfile from '../components/Student/Profile/StudentProfile'
 import StudentSkills from '../components/Student/Skills/StudentSkills'
 
 import StudentCareer from '../components/Student/Career/StudentCareer'
-import StudentAttendance from '../components/Student/Attendance/StudentAttendance'
+
 import StudentAssignments from '../components/Student/Assignments/StudentAssignments'
 import StudentExams from '../components/Student/Exams/StudentExams'
 import CourseRecommendations from '../components/Student/Recommendations/CourseRecommendations'
 import SmartStudyPlanner from '../components/Student/StudyPlanner/SmartStudyPlanner'
-import PerformanceTrends from '../components/Student/Performance/PerformanceTrends'
+
 import SubmissionHistory from '../components/Student/Submissions/SubmissionHistory'
-import SubjectDifficulty from '../components/Student/Difficulty/SubjectDifficulty'
-import AchievementBadges from '../components/Student/Badges/AchievementBadges'
+
 import ReportGenerator from '../components/Reports/ReportGenerator'
-import DiscussionForum from '../components/Discussions/DiscussionForum'
-import CourseReviews from '../components/Reviews/CourseReviews'
+import AnnouncementsPage from '../components/Discussions/AnnouncementsPage'
+import StudentAttendance from '../components/Student/Attendance/StudentAttendance'
 import VideoLectures from '../components/VideoLectures/VideoLectures'
 import './StudentDashboard.css'
 import {
@@ -36,9 +35,8 @@ import {
     AlertCircle,
     CheckCircle,
     XCircle,
-    Wifi,
-    Fingerprint,
-    QrCode
+
+    ChevronDown
 } from 'lucide-react'
 
 const API_BASE = 'http://localhost/StudentDataMining/backend/api'
@@ -55,15 +53,17 @@ const StudentDashboard = () => {
     const [refreshing, setRefreshing] = useState(false)
     const [lastUpdated, setLastUpdated] = useState(new Date())
 
+    // Semester Selection State
+    const [selectedSemester, setSelectedSemester] = useState(null)
+    const [availableSemesters, setAvailableSemesters] = useState([])
+
     // Notifications State
     const [notifications, setNotifications] = useState([])
     const [unreadCount, setUnreadCount] = useState(0)
     const [showNotifications, setShowNotifications] = useState(false)
 
     // WiFi/QR Attendance State
-    const [sessionCode, setSessionCode] = useState('')
-    const [markingStatus, setMarkingStatus] = useState({ state: 'idle', message: '' })
-    const [isAutoMarking, setIsAutoMarking] = useState(false)
+
 
     // Dashboard Data
     const [dashboardData, setDashboardData] = useState({
@@ -125,6 +125,32 @@ const StudentDashboard = () => {
                 const summary = dashData.data.summary;
                 const subjects = dashData.data.subjects;
 
+                // Extract available semesters from subjects with null checks
+                const semesters = [...new Set(
+                    subjects
+                        .map(s => s.subject?.semester)
+                        .filter(sem => sem != null && sem !== undefined)
+                )].sort((a, b) => a - b);
+
+                console.log('Available semesters:', semesters);
+                console.log('User current_semester:', user?.current_semester);
+
+                setAvailableSemesters(semesters);
+
+                // Set default semester to user's current semester or the highest semester
+                if (semesters.length > 0 && !selectedSemester) {
+                    const defaultSem = user?.current_semester && semesters.includes(user.current_semester)
+                        ? user.current_semester
+                        : Math.max(...semesters);
+                    console.log('Setting default semester to:', defaultSem);
+                    setSelectedSemester(defaultSem);
+                } else if (semesters.length === 0 && !selectedSemester) {
+                    // Fallback to semester 1 if no semesters found
+                    console.log('No semesters found, defaulting to 1');
+                    setSelectedSemester(1);
+                    setAvailableSemesters([1]);
+                }
+
                 let upcoming = [];
                 if (calData.success) {
                     const today = new Date();
@@ -146,7 +172,8 @@ const StudentDashboard = () => {
                     attendance: sub.attendance,
                     overall_score: sub.overall_grade,
                     credits: sub.subject.credits,
-                    components: sub.components
+                    components: sub.components,
+                    semester: sub.subject.semester
                 }));
 
                 setDashboardData({
@@ -172,60 +199,11 @@ const StudentDashboard = () => {
         } finally {
             setRefreshing(false)
         }
-    }, [token, fetchNotifications])
+    }, [token, fetchNotifications, selectedSemester, user])
 
-    const handleMarkSelfAttendance = useCallback(async (code) => {
-        const finalCode = code || sessionCode;
-        if (!finalCode || finalCode.length !== 6) return
 
-        setMarkingStatus({ state: 'loading', message: code ? 'Auto-verifying WiFi network...' : 'Verifying network & scanning...' })
-        try {
-            const response = await fetch(`${API_BASE}/attendance.php`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    action: 'mark_self',
-                    session_code: finalCode
-                })
-            })
-            const data = await response.json()
-            if (data.success) {
-                setMarkingStatus({ state: 'success', message: data.message })
-                setSessionCode('')
-                // Remove param from URL
-                if (searchParams.has('attendance_code')) {
-                    searchParams.delete('attendance_code')
-                    setSearchParams(searchParams)
-                }
-                setTimeout(() => {
-                    fetchDashboardData()
-                    setMarkingStatus({ state: 'idle', message: '' })
-                    setIsAutoMarking(false)
-                }, 3000)
-            } else {
-                setMarkingStatus({ state: 'error', message: data.error })
-                setIsAutoMarking(false)
-            }
-        } catch (err) {
-            setMarkingStatus({ state: 'error', message: 'Connection failed' })
-            setIsAutoMarking(false)
-        }
-    }, [token, sessionCode, fetchDashboardData, searchParams, setSearchParams])
 
-    useEffect(() => {
-        fetchDashboardData()
 
-        // Handle QR Scan via URL param
-        const scanCode = searchParams.get('attendance_code')
-        if (scanCode && scanCode.length === 6) {
-            setSessionCode(scanCode)
-            setIsAutoMarking(true)
-            handleMarkSelfAttendance(scanCode)
-        }
-    }, [fetchDashboardData, searchParams, handleMarkSelfAttendance])
 
     // Stats Cards Component
     const StatsCards = () => {
@@ -359,6 +337,26 @@ const StudentDashboard = () => {
         return 'Good Evening'
     }
 
+    // Get semester-filtered courses and calculate semester-specific stats
+    const filteredCourses = selectedSemester
+        ? dashboardData.courses.filter(c => c.semester === selectedSemester)
+        : dashboardData.courses;
+
+    // Calculate semester-specific GPA and attendance
+    const semesterStats = selectedSemester ? {
+        gpa: filteredCourses.length > 0
+            ? (filteredCourses.reduce((sum, c) => sum + (parseFloat(c.overall_score) || 0), 0) / filteredCourses.length / 25).toFixed(2)
+            : 0,
+        attendance: filteredCourses.length > 0
+            ? Math.round(filteredCourses.reduce((sum, c) => sum + (c.attendance?.percentage || 0), 0) / filteredCourses.length)
+            : 0,
+        credits: filteredCourses.reduce((sum, c) => sum + (parseInt(c.credits) || 0), 0)
+    } : {
+        gpa: dashboardData.gpa,
+        attendance: dashboardData.attendance,
+        credits: dashboardData.credits
+    };
+
     return (
         <MainLayout
             role="student"
@@ -373,11 +371,33 @@ const StudentDashboard = () => {
             onLogout={logout}
         >
             <div className="dashboard-content">
-                {/* Welcome Banner */}
+                {/* Welcome Banner with Semester Selector */}
                 <div className="welcome-banner">
                     <div className="welcome-content">
-                        <h1>{getGreeting()}, {user?.full_name}! 👋</h1>
-                        <p>Here's your academic summary for the semester.</p>
+                        <div className="welcome-text">
+                            <h1>{getGreeting()}, {user?.full_name}! 👋</h1>
+                            <p>Here's your academic summary{selectedSemester ? ` for Semester ${selectedSemester}` : ' for the semester'}.</p>
+                        </div>
+                        {availableSemesters.length > 0 && (
+                            <div className="semester-selector">
+                                <label htmlFor="semester-select">View Semester:</label>
+                                <div className="select-wrapper">
+                                    <select
+                                        id="semester-select"
+                                        value={selectedSemester || ''}
+                                        onChange={(e) => setSelectedSemester(Number(e.target.value))}
+                                        className="semester-dropdown"
+                                    >
+                                        {availableSemesters.map(sem => (
+                                            <option key={sem} value={sem}>
+                                                Semester {sem}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <ChevronDown size={18} className="select-icon" />
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -385,78 +405,120 @@ const StudentDashboard = () => {
                 <div className="tab-content">
                     {activeTab === 'overview' && (
                         <>
-                            <div className="top-row-flex" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
-                                <StatsCards />
-
-                                {/* QR Attendance Panel */}
+                            <div className="top-row-flex" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                                {/* Stats Cards with Semester-Specific Data */}
                                 <motion.div
-                                    className={`smart-attendance-card ${isAutoMarking ? 'auto-marking' : ''}`}
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
+                                    className="stats-grid"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ staggerChildren: 0.1 }}
                                 >
-                                    <div className="card-header">
-                                        <div className="icon-wrapper">
-                                            {isAutoMarking ? <QrCode size={20} className="pulse-icon" /> : <Wifi size={20} />}
-                                        </div>
-                                        <div>
-                                            <h4>{isAutoMarking ? 'QR Scan Detected' : 'Smart Attendance'}</h4>
-                                            <p>{isAutoMarking ? 'Verifying location...' : 'Mark presence via QR/WiFi'}</p>
-                                        </div>
-                                    </div>
+                                    {[
+                                        {
+                                            title: selectedSemester ? 'Semester GPA' : 'Current GPA',
+                                            value: semesterStats.gpa,
+                                            subtitle: selectedSemester ? `Semester ${selectedSemester}` : 'Cumulative Grade Point',
+                                            icon: GraduationCap,
+                                            gradient: 'gradient-purple',
+                                            progress: (semesterStats.gpa / 4.0) * 100,
+                                            trend: semesterStats.gpa >= 3.5 ? 'Excellent' : semesterStats.gpa >= 3.0 ? 'Good' : 'Needs Improvement',
+                                            trendUp: semesterStats.gpa >= 3.0
+                                        },
 
-                                    <div className="card-body">
-                                        {!isAutoMarking && (
-                                            <div className="code-input-wrapper">
-                                                <input
-                                                    type="text"
-                                                    placeholder="Enter Code"
-                                                    maxLength={6}
-                                                    value={sessionCode}
-                                                    onChange={(e) => setSessionCode(e.target.value.toUpperCase())}
-                                                    className="session-code-input"
-                                                />
-                                                <Fingerprint className="input-icon" size={18} />
-                                            </div>
-                                        )}
-
-                                        <button
-                                            className="btn-mark-attendance"
-                                            disabled={(!isAutoMarking && sessionCode.length !== 6) || markingStatus.state === 'loading'}
-                                            onClick={() => handleMarkSelfAttendance()}
-                                        >
-                                            {markingStatus.state === 'loading' ? 'Verifying...' : 'Submit Attendance'}
-                                        </button>
-
-                                        <AnimatePresence>
-                                            {markingStatus.message && (
-                                                <motion.div
-                                                    initial={{ opacity: 0, y: 10 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    className={`status-message ${markingStatus.state}`}
-                                                >
-                                                    {markingStatus.state === 'error' ? <AlertCircle size={14} /> : <CheckCircle size={14} />}
-                                                    {markingStatus.message}
-                                                </motion.div>
-                                            )}
-                                        </AnimatePresence>
-                                    </div>
-                                    <div className="card-footer">
-                                        <small><AlertCircle size={12} /> Same-WiFi restricted</small>
-                                    </div>
+                                        {
+                                            title: 'Credits',
+                                            value: semesterStats.credits,
+                                            subtitle: selectedSemester ? `This Semester` : 'Total Earned',
+                                            icon: Award,
+                                            gradient: 'gradient-blue',
+                                            progress: selectedSemester
+                                                ? (semesterStats.credits / 20) * 100
+                                                : (semesterStats.credits / (dashboardData.total_credits || 120)) * 100,
+                                            trend: 'On Track',
+                                            trendUp: true
+                                        },
+                                        {
+                                            title: 'Pending Tasks',
+                                            value: dashboardData.upcoming_assignments.length,
+                                            subtitle: 'Next 14 Days',
+                                            icon: AlertCircle,
+                                            gradient: 'gradient-orange',
+                                            progress: 100 - (dashboardData.upcoming_assignments.length * 10),
+                                            trend: dashboardData.upcoming_assignments.length > 3 ? 'Heavy Workload' : 'Manageable',
+                                            trendUp: dashboardData.upcoming_assignments.length <= 3
+                                        }
+                                    ].map((card, index) => {
+                                        const Icon = card.icon
+                                        return (
+                                            <motion.div
+                                                key={index}
+                                                className="stat-card"
+                                                initial={{ opacity: 0, y: 20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: index * 0.1 }}
+                                                whileHover={{
+                                                    y: -6,
+                                                    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.12)',
+                                                    transition: { duration: 0.2 }
+                                                }}
+                                            >
+                                                <div className="stat-progress-ring">
+                                                    <CircularProgress
+                                                        value={card.progress || 0}
+                                                        size={56}
+                                                        strokeWidth={6}
+                                                        color={
+                                                            card.gradient === 'gradient-purple' ? '#6366f1' :
+                                                                card.gradient === 'gradient-blue' ? '#3b82f6' :
+                                                                    card.gradient === 'gradient-green' ? '#22c55e' :
+                                                                        '#f97316'
+                                                        }
+                                                        trailColor="rgba(0,0,0,0.05)"
+                                                        showValue={false}
+                                                    />
+                                                    <div className={`stat-icon-inner ${card.gradient}`}>
+                                                        <Icon size={20} />
+                                                    </div>
+                                                </div>
+                                                <div className="stat-content">
+                                                    <span className="stat-title">{card.title}</span>
+                                                    <span className="stat-value">{card.value}</span>
+                                                    <div className="stat-footer">
+                                                        <span className="stat-subtitle">{card.subtitle}</span>
+                                                        {card.trend && (
+                                                            <span className={`stat-trend ${card.trendUp ? 'positive' : 'negative'}`}>
+                                                                {card.trendUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                                                                <span className="trend-text">{card.trend}</span>
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        )
+                                    })}
                                 </motion.div>
+
+
                             </div>
 
                             <div className="content-grid">
                                 <div className="card">
                                     <h3>
                                         <BookOpen size={20} className="text-primary" />
-                                        Current Courses
+                                        Current Courses {selectedSemester && `(Semester ${selectedSemester})`}
                                     </h3>
                                     <div className="list-container">
-                                        {dashboardData.courses.length === 0 ? (
-                                            <div className="text-center p-4 text-gray-500">No active courses found.</div>
+                                        {filteredCourses.length === 0 ? (
+                                            <div className="empty-state-modern">
+                                                <BookOpen size={48} className="empty-icon" />
+                                                <h4>No courses found</h4>
+                                                <p>You don't have any courses {selectedSemester ? `in Semester ${selectedSemester}` : 'enrolled yet'}.</p>
+                                                <button className="cta-button" onClick={() => setActiveTab('schedule')}>
+                                                    View Course Catalog
+                                                </button>
+                                            </div>
                                         ) : (
-                                            dashboardData.courses.map(course => (
+                                            filteredCourses.map(course => (
                                                 <div key={course.id} className="list-item">
                                                     <div className="item-info">
                                                         <div className="item-title">{course.name}</div>
@@ -464,7 +526,7 @@ const StudentDashboard = () => {
                                                             <span>Attendance: {course.attendance?.percentage || 0}%</span>
                                                         </div>
                                                     </div>
-                                                    <div className={`badge ${course.grade === 'F' ? 'urgent' : 'pending'}`}>
+                                                    <div className={`badge ${course.grade === 'F' ? 'urgent' : course.grade === 'A' || course.grade === 'A+' ? 'success' : 'pending'}`}>
                                                         Grade: {course.grade}
                                                     </div>
                                                 </div>
@@ -480,16 +542,32 @@ const StudentDashboard = () => {
                                     </h3>
                                     <div className="list-container">
                                         {dashboardData.upcoming_assignments.length === 0 ? (
-                                            <div className="text-center p-4 text-gray-500">No upcoming items.</div>
+                                            <div className="empty-state-modern">
+                                                <CheckCircle size={48} className="empty-icon success" />
+                                                <h4>All caught up!</h4>
+                                                <p>No upcoming events in the next 14 days.</p>
+                                            </div>
                                         ) : (
                                             dashboardData.upcoming_assignments.map(item => (
-                                                <div key={item.id} className="list-item">
+                                                <div key={item.id} className="list-item event-item">
                                                     <div className="item-info">
-                                                        <div className="item-title">{item.title}</div>
+                                                        <div className="item-title-row">
+                                                            <span className="item-title">{item.title}</span>
+                                                            <span className={`event-type-badge ${item.status}`}>
+                                                                {item.status === 'exam' ? '📝 Exam' :
+                                                                    item.status === 'assignment' ? '📄 Assignment' :
+                                                                        item.status === 'holiday' ? '🎉 Holiday' : '📅 Event'}
+                                                            </span>
+                                                        </div>
                                                         <div className="item-meta">Due: {item.due}</div>
                                                     </div>
-                                                    <div className={`badge ${item.days_left <= 3 ? 'urgent' : 'pending'}`}>
-                                                        {item.days_left} days left
+                                                    <div className={`badge urgency-badge ${item.days_left === 0 ? 'critical' :
+                                                        item.days_left <= 3 ? 'urgent' :
+                                                            item.days_left <= 7 ? 'warning' : 'pending'
+                                                        }`}>
+                                                        {item.days_left === 0 ? '🔥 Today!' :
+                                                            item.days_left === 1 ? '⚠️ Tomorrow' :
+                                                                `${item.days_left} days`}
                                                     </div>
                                                 </div>
                                             ))
@@ -500,9 +578,7 @@ const StudentDashboard = () => {
                         </>
                     )}
 
-                    {activeTab === 'analytics' && (
-                        <StudentAnalyticsDashboard studentData={dashboardData} />
-                    )}
+
 
                     {activeTab === 'skills' && (
                         <StudentSkills />
@@ -519,6 +595,11 @@ const StudentDashboard = () => {
                             <CourseRecommendations />
                         </div>
                     )}
+                    {activeTab === 'attendance' && (
+                        <div className="card" style={{ padding: '2rem' }}>
+                            <StudentAttendance />
+                        </div>
+                    )}
 
                     {activeTab === 'study-planner' && (
                         <div className="card">
@@ -526,11 +607,7 @@ const StudentDashboard = () => {
                         </div>
                     )}
 
-                    {activeTab === 'performance' && (
-                        <div className="card">
-                            <PerformanceTrends />
-                        </div>
-                    )}
+
 
                     {activeTab === 'submissions' && (
                         <div className="card">
@@ -538,31 +615,13 @@ const StudentDashboard = () => {
                         </div>
                     )}
 
-                    {activeTab === 'difficulty' && (
-                        <div className="card">
-                            <SubjectDifficulty />
-                        </div>
-                    )}
-
-                    {activeTab === 'badges' && (
-                        <div className="card">
-                            <AchievementBadges />
-                        </div>
-                    )}
-
                     {activeTab === 'profile' && (
                         <StudentProfile />
                     )}
 
-                    {activeTab === 'attendance' && (
-                        <div className="card">
-                            <StudentAttendance />
-                        </div>
-                    )}
-
                     {activeTab === 'grades' && (
                         <div className="card">
-                            <GradesTab />
+                            <GradesTab selectedSemester={selectedSemester} />
                         </div>
                     )}
 
@@ -584,15 +643,9 @@ const StudentDashboard = () => {
                         </div>
                     )}
 
-                    {activeTab === 'discussions' && (
+                    {(activeTab === 'discussions' || activeTab === 'announcements') && (
                         <div className="card">
-                            <DiscussionForum />
-                        </div>
-                    )}
-
-                    {activeTab === 'reviews' && (
-                        <div className="card">
-                            <CourseReviews />
+                            <AnnouncementsPage />
                         </div>
                     )}
 

@@ -12,6 +12,13 @@ const PlusIcon = () => (
     </svg>
 )
 
+const EyeIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+    </svg>
+)
+
 const CloseIcon = () => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <line x1="18" y1="6" x2="6" y2="18" />
@@ -50,6 +57,10 @@ function AssignmentManagement() {
         max_marks: 100
     })
 
+    // Submissions View
+    const [viewingSubmissions, setViewingSubmissions] = useState(null)
+    const [submissions, setSubmissions] = useState([])
+
     useEffect(() => {
         fetchSubjects()
         fetchAssignments()
@@ -87,6 +98,23 @@ function AssignmentManagement() {
             setError('Failed to fetch assignments')
         } finally {
             setLoading(false)
+        }
+    }
+
+    const fetchSubmissions = async (id) => {
+        try {
+            const response = await fetch(`${API_BASE}/submissions.php?action=list&assignment_id=${id}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            const data = await response.json()
+            if (data.success) {
+                setSubmissions(data.data)
+                setViewingSubmissions(id)
+            } else {
+                setError(data.error || 'Failed to load submissions')
+            }
+        } catch (err) {
+            setError('Failed to load submissions')
         }
     }
 
@@ -216,6 +244,9 @@ function AssignmentManagement() {
                                     <span className="subject-badge">{assignment.subject_code}</span>
                                 </div>
                                 <div className="card-actions">
+                                    <button onClick={() => fetchSubmissions(assignment.id)} title="View Submissions">
+                                        <EyeIcon />
+                                    </button>
                                     <button onClick={() => handleEdit(assignment)} title="Edit">
                                         <EditIcon />
                                     </button>
@@ -317,6 +348,65 @@ function AssignmentManagement() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Submissions Modal */}
+            {viewingSubmissions && (
+                <div className="modal-overlay" onClick={() => setViewingSubmissions(null)}>
+                    <div className="modal-content" style={{ maxWidth: '800px' }} onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3>Submissions: {assignments.find(a => a.id === viewingSubmissions)?.title}</h3>
+                            <button className="modal-close" onClick={() => setViewingSubmissions(null)}>
+                                <CloseIcon />
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            {submissions.length === 0 ? (
+                                <p style={{ textAlign: 'center', color: 'gray', padding: '2rem' }}>No submissions yet.</p>
+                            ) : (
+                                <table className="submissions-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                    <thead>
+                                        <tr style={{ borderBottom: '1px solid #eee', textAlign: 'left' }}>
+                                            <th style={{ padding: '0.5rem' }}>Student</th>
+                                            <th style={{ padding: '0.5rem' }}>ID</th>
+                                            <th style={{ padding: '0.5rem' }}>Submitted</th>
+                                            <th style={{ padding: '0.5rem' }}>File</th>
+                                            <th style={{ padding: '0.5rem' }}>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {submissions.map(sub => (
+                                            <tr key={sub.id} style={{ borderBottom: '1px solid #f9f9f9' }}>
+                                                <td style={{ padding: '0.75rem 0.5rem' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                        <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem' }}>
+                                                            {sub.full_name?.charAt(0)}
+                                                        </div>
+                                                        {sub.full_name}
+                                                    </div>
+                                                </td>
+                                                <td style={{ padding: '0.5rem', fontFamily: 'monospace' }}>{sub.student_code || sub.student_id}</td>
+                                                <td style={{ padding: '0.5rem' }}>{formatDate(sub.submitted_at)}</td>
+                                                <td style={{ padding: '0.5rem' }}>
+                                                    {sub.file_path ? (
+                                                        <a href={`http://localhost/StudentDataMining/backend/uploads/${sub.file_path}`} target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1', textDecoration: 'none' }}>
+                                                            View File
+                                                        </a>
+                                                    ) : '-'}
+                                                </td>
+                                                <td style={{ padding: '0.5rem' }}>
+                                                    <span className={`badge ${sub.status === 'late' ? 'urgent' : 'success'}`} style={{ padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem' }}>
+                                                        {sub.status}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}

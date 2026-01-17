@@ -1,5 +1,5 @@
-import React from 'react';
-import { Bell, Sun, Moon, RefreshCw, Menu } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Bell, Sun, Moon, RefreshCw, Menu, ZoomIn, ZoomOut, Maximize, Minimize } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import './Header.css';
 
@@ -7,14 +7,24 @@ const Header = ({
     lastUpdated,
     onRefresh,
     refreshing,
-    notifications = [],
-    unreadCount = 0,
-    showNotifications,
-    setShowNotifications,
-    onMarkAsRead,
     onMobileMenuClick
 }) => {
-    const { theme, toggleTheme } = useTheme();
+    const { theme, toggleTheme, zoomIn, zoomOut, zoom } = useTheme();
+    const [isFullscreen, setIsFullscreen] = useState(false);
+
+    useEffect(() => {
+        const handleFS = () => setIsFullscreen(!!document.fullscreenElement);
+        document.addEventListener('fullscreenchange', handleFS);
+        return () => document.removeEventListener('fullscreenchange', handleFS);
+    }, []);
+
+    const toggleFullScreen = () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+        } else if (document.exitFullscreen) {
+            document.exitFullscreen();
+        }
+    };
 
     return (
         <header className="main-header">
@@ -31,67 +41,35 @@ const Header = ({
                     </span>
                 )}
 
+                {/* First Button: Fullscreen */}
                 <button
-                    className={`header-btn refresh-btn ${refreshing ? 'spinning' : ''}`}
-                    onClick={onRefresh}
-                    disabled={refreshing}
-                    title="Refresh data"
+                    className="header-btn glass-btn"
+                    onClick={toggleFullScreen}
+                    title="Toggle Fullscreen"
                 >
-                    <RefreshCw size={18} />
+                    {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
                 </button>
 
-                {/* Notifications */}
-                <div className="notification-wrapper">
+                {/* Zoom Controls (Instead of Notification) */}
+                <div className="zoom-controls">
                     <button
-                        className="header-btn notification-btn"
-                        onClick={() => setShowNotifications?.(!showNotifications)}
+                        className="header-btn glass-btn"
+                        onClick={zoomOut}
+                        title={`Zoom Out (${Math.round(zoom * 100)}%)`}
                     >
-                        <Bell size={18} />
-                        {unreadCount > 0 && (
-                            <span className="notification-badge">{unreadCount}</span>
-                        )}
+                        <ZoomOut size={18} />
                     </button>
-
-                    {showNotifications && (
-                        <div className="notification-dropdown">
-                            <div className="dropdown-header">
-                                <h4>Notifications</h4>
-                                <button
-                                    className="mark-all-btn"
-                                    onClick={() => onMarkAsRead?.(null)}
-                                >
-                                    Mark all read
-                                </button>
-                            </div>
-                            <div className="notification-list">
-                                {notifications.length === 0 ? (
-                                    <div className="no-notifications">
-                                        <Bell size={24} />
-                                        <p>No notifications</p>
-                                    </div>
-                                ) : (
-                                    notifications.map(n => (
-                                        <div
-                                            key={n.id}
-                                            className={`notification-item ${n.is_read ? 'read' : 'unread'}`}
-                                        >
-                                            <div className="notification-content">
-                                                <h5>{n.title}</h5>
-                                                <p>{n.message}</p>
-                                                <span className="notification-time">
-                                                    {new Date(n.created_at).toLocaleString()}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </div>
-                    )}
+                    <button
+                        className="header-btn glass-btn"
+                        onClick={zoomIn}
+                        title={`Zoom In (${Math.round(zoom * 100)}%)`}
+                    >
+                        <ZoomIn size={18} />
+                    </button>
                 </div>
 
                 <button
-                    className="header-btn theme-btn"
+                    className="header-btn theme-btn glass-btn"
                     onClick={toggleTheme}
                     title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
                 >

@@ -89,7 +89,7 @@ function handleGet($pdo)
 
     // 2. Fetch Subjects for Current Semester
     $stmt = $pdo->prepare("
-        SELECT id, name, code, credits, subject_type 
+        SELECT id, name, code, credits, subject_type, semester 
         FROM subjects 
         WHERE program_id = ? AND semester = ? AND is_active = 1
     ");
@@ -170,38 +170,17 @@ function handleGet($pdo)
                 $gradePoints += $gradeData['points'] * $subject['credits'];
             }
 
-            // Fetch Attendance Stats
-            $stmt = $pdo->prepare("
-                SELECT status, COUNT(*) as count 
-                FROM student_attendance 
-                WHERE enrollment_id = ? 
-                GROUP BY status
-            ");
-            $stmt->execute([$enrollment['id']]);
-            $attStats = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
-
-            $present = $attStats['present'] ?? 0;
-            $absent = $attStats['absent'] ?? 0;
-            $late = $attStats['late'] ?? 0;
-            $optional = $attStats['optional'] ?? 0;
-            $excused = $attStats['excused'] ?? 0;
-
-            $totalClasses = $present + $absent + $late;
-            $percentage = $totalClasses > 0 ? round(($present / $totalClasses) * 100) : 0;
-
+            // Attendance features removed
             $subjectData['attendance'] = [
-                'present' => $present,
-                'absent' => $absent,
-                'late' => $late,
-                'optional' => $optional,
-                'excused' => $excused,
-                'total_classes' => $totalClasses,
-                'percentage' => $percentage,
-                'warning' => $percentage > 0 && $percentage < 75
+                'present' => 0,
+                'absent' => 0,
+                'late' => 0,
+                'optional' => 0,
+                'excused' => 0,
+                'total_classes' => 0,
+                'percentage' => 0,
+                'warning' => false
             ];
-
-            $totalAttendance['present'] += $present;
-            $totalAttendance['total'] += $totalClasses;
         }
 
         $subjectsData[] = $subjectData;

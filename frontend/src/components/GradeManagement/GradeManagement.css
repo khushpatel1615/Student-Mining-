@@ -305,43 +305,53 @@
     font-weight: 600;
 }
 
+/* Horizontal Layout for Criteria */
 .criteria-grades {
     display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 .criteria-row {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
+    flex-direction: column;
+    flex: 1;
+    min-width: 120px;
+    background: var(--bg-tertiary);
+    padding: 0.75rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+.criteria-main {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
 }
 
 .criteria-label {
-    flex: 1;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-.criteria-label .max-marks {
-    color: var(--text-tertiary);
+    width: 100%;
     font-size: 0.75rem;
-    margin-left: 0.25rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .grade-input-compact {
-    width: 80px;
+    width: 100%;
     padding: 0.5rem;
     border: 1px solid var(--border-color);
     border-radius: 6px;
     background: var(--bg-primary);
     color: var(--text-primary);
-    font-size: 0.9rem;
+    font-size: 1rem;
     font-weight: 600;
-    text-align: center;
     transition: all 0.2s;
 }
 
@@ -351,131 +361,57 @@
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
+/* Spinner Buttons on Hover */
 .grade-input-compact::-webkit-inner-spin-button,
 .grade-input-compact::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
+    height: auto;
 }
 
+.grade-input-compact:hover::-webkit-inner-spin-button,
+.grade-input-compact:hover::-webkit-outer-spin-button {
+    -webkit-appearance: inner-spin-button !important;
+    opacity: 1;
+    cursor: pointer;
+    height: 100%;
+    position: absolute;
+    right: 4px;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+}
+
+/* Ensure FF supports appearance */
 .grade-input-compact[type=number] {
     -moz-appearance: textfield;
     appearance: textfield;
 }
 
-.subject-card-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 1rem;
-    border-top: 2px solid var(--border-color);
-}
-
-.total-display {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.total-display .label {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    font-weight: 600;
-}
-
-.total-display .value {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--text-primary);
-}
-
-.percentage-display {
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-size: 0.95rem;
-    font-weight: 700;
-}
-
-.percentage-display.pass {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.15) 100%);
-    color: #059669;
-}
-
-.percentage-display.fail {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.15) 100%);
-    color: #dc2626;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .grade-management-header {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .grade-filters {
-        flex-direction: column;
-    }
-}
-
-/* Remarks Update */
-.grade-cell-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    align-items: center;
-}
-
-.remark-input-mini {
-    width: 60px;
-    /* Match grade input */
-    padding: 0.2rem;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    font-size: 0.7rem;
-    text-align: center;
-    background: var(--bg-primary);
-    color: var(--text-secondary);
-    transition: all 0.2s ease;
-}
-
-.remark-input-mini:focus {
-    outline: none;
-    border-color: 764ba2;
-    /* Accent */
-    color: var(--text-primary);
-    width: 140px;
-    /* Expand on focus */
-    position: relative;
-    z-index: 5;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.criteria-row {
-    flex-wrap: wrap;
-}
-
-.criteria-main {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    align-items: center;
+.grade-input-compact[type=number]:hover {
+    -moz-appearance: number-input;
+    appearance: auto;
 }
 
 .remark-input-compact {
     width: 100%;
-    margin-top: 0.5rem;
-    padding: 0.4rem;
-    border: 1px dashed var(--border-color);
+    margin-top: auto;
+    padding: 0.35rem;
+    border: 1px solid transparent;
     border-radius: 4px;
-    font-size: 0.8rem;
-    background: transparent;
+    font-size: 0.75rem;
+    background: rgba(0, 0, 0, 0.03);
     color: var(--text-secondary);
     transition: all 0.2s;
 }
 
+.remark-input-compact:hover {
+    background: var(--bg-primary);
+    border-color: var(--border-color);
+}
+
 .remark-input-compact:focus {
     background: var(--bg-primary);
-    border-style: solid;
     border-color: #764ba2;
     outline: none;
     color: var(--text-primary);
