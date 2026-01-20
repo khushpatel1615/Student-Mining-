@@ -62,7 +62,7 @@ const StudentDashboard = () => {
     const [unreadCount, setUnreadCount] = useState(0)
     const [showNotifications, setShowNotifications] = useState(false)
 
-    // WiFi/QR Attendance State
+
 
 
     // Dashboard Data

@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import SkeletonTable from '../SkeletonTable/SkeletonTable'
+import EmptyState from '../EmptyState/EmptyState'
 import './EnrollmentManagement.css'
 
 // Icons
@@ -68,6 +70,24 @@ function EnrollmentManagement() {
     const [saving, setSaving] = useState(false)
     const [expandedStudents, setExpandedStudents] = useState([])
     const [viewStatus, setViewStatus] = useState('all') // 'all', 'active' or 'completed'
+
+    // Helper to format names to Sentence Case
+    const toSentenceCase = (str) => {
+        if (!str) return '';
+        return str.toLowerCase().split(' ').map(word => {
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        }).join(' ');
+    }
+
+    const getInitials = (name) => {
+        if (!name) return '??';
+        return name
+            .split(' ')
+            .map(n => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2)
+    }
 
     const toggleStudentExpand = (studentId) => {
         setExpandedStudents(prev =>
@@ -318,34 +338,30 @@ function EnrollmentManagement() {
             {/* Enrollments Table */}
             <div className="enrollments-table-container">
                 {loading ? (
-                    <div className="loading-overlay">
-                        <div className="spinner"></div>
-                    </div>
+                    <SkeletonTable rows={8} columns={5} />
                 ) : !selectedProgram ? (
-                    <div className="empty-state">
-                        <div className="empty-state-icon">
-                            <UsersIcon />
-                        </div>
-                        <h3>Select a Program</h3>
-                        <p>Choose a program to view enrollments.</p>
-                    </div>
+                    <EmptyState
+                        icon={UsersIcon}
+                        title="Select a Program"
+                        description="Choose a program from the filters above to view and manage student enrollments."
+                    />
                 ) : enrollments.length === 0 ? (
-                    <div className="empty-state">
-                        <div className="empty-state-icon">
-                            <UsersIcon />
-                        </div>
-                        <h3>No enrollments found</h3>
-                        <p>Use "Bulk Enroll" to enroll students in subjects.</p>
-                    </div>
+                    <EmptyState
+                        icon={CheckIcon}
+                        title="No Enrollments Found"
+                        description="There are no students enrolled in the selected program and semester. Use 'Bulk Enroll' to get started."
+                        actionText="Bulk Enroll"
+                        onAction={() => setShowBulkModal(true)}
+                    />
                 ) : (
                     <table className="enrollments-table">
                         <thead>
                             <tr>
-                                <th>Student</th>
-                                <th>Student ID</th>
-                                <th>Subjects</th>
-                                <th>Academic Year</th>
-                                <th>Action</th>
+                                <th className="text-left">Student</th>
+                                <th className="text-right">Student ID</th>
+                                <th className="text-center">Subjects</th>
+                                <th className="text-center">Academic Year</th>
+                                <th className="text-center">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -362,19 +378,28 @@ function EnrollmentManagement() {
                                     >
                                         <td>
                                             <div className="student-info">
-                                                <span className="student-name">{student.student_name}</span>
+                                                <div className="student-avatar">
+                                                    {student.avatar_url ? (
+                                                        <img src={student.avatar_url} alt={student.student_name} />
+                                                    ) : (
+                                                        getInitials(student.student_name)
+                                                    )}
+                                                </div>
+                                                <div className="student-details">
+                                                    <span className="student-name">{toSentenceCase(student.student_name)}</span>
+                                                </div>
                                             </div>
                                         </td>
-                                        <td>
+                                        <td className="text-right tabular-nums">
                                             <span className="student-id">{student.student_id}</span>
                                         </td>
-                                        <td>
+                                        <td className="text-center">
                                             <span className="badge">
                                                 {student.subjects.length} Subjects
                                             </span>
                                         </td>
-                                        <td>{student.academic_year || '-'}</td>
-                                        <td>
+                                        <td className="text-center tabular-nums">{student.academic_year || '-'}</td>
+                                        <td className="text-center">
                                             <button className="btn-icon">
                                                 <svg
                                                     viewBox="0 0 24 24"
@@ -396,19 +421,19 @@ function EnrollmentManagement() {
                                                     <table className="sub-table" style={{ width: '100%' }}>
                                                         <thead>
                                                             <tr>
-                                                                <th>Subject</th>
-                                                                <th>Code</th>
-                                                                <th>Semester</th>
-                                                                <th>Status</th>
+                                                                <th className="text-left">Subject</th>
+                                                                <th className="text-left">Code</th>
+                                                                <th className="text-center">Semester</th>
+                                                                <th className="text-center">Status</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
                                                             {student.subjects.map(subject => (
                                                                 <tr key={subject.enrollment_id || subject.id}>
-                                                                    <td>{subject.subject_name}</td>
-                                                                    <td>{subject.subject_code}</td>
-                                                                    <td>Semester {subject.semester}</td>
-                                                                    <td>
+                                                                    <td className="text-left">{subject.subject_name}</td>
+                                                                    <td className="text-left tabular-nums">{subject.subject_code}</td>
+                                                                    <td className="text-center">Semester {subject.semester}</td>
+                                                                    <td className="text-center">
                                                                         <select
                                                                             className={`status-select ${getStatusColor(subject.status)}`}
                                                                             value={subject.status}
@@ -509,8 +534,8 @@ function EnrollmentManagement() {
                                                 {selectedStudents.includes(student.id) && <CheckIcon />}
                                             </div>
                                             <div className="student-details">
-                                                <span className="student-name">{student.full_name}</span>
-                                                <span className="student-id">{student.student_id || student.email}</span>
+                                                <span className="student-name">{toSentenceCase(student.full_name)}</span>
+                                                <span className="student-id tabular-nums">{student.student_id || student.email}</span>
                                             </div>
                                         </div>
                                     ))}

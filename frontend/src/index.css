@@ -73,7 +73,44 @@
 
     /* Semantic Helpers */
     --bg-hover: rgba(0, 0, 0, 0.04);
+
+    /* Semantic Status Colors */
+    --status-active-bg: rgba(16, 185, 129, 0.1);
+    --status-active-text: #10b981;
+    --status-inactive-bg: rgba(148, 163, 184, 0.1);
+    --status-inactive-text: #94a3b8;
+    --status-error-bg: rgba(239, 68, 68, 0.1);
+    --status-error-text: #ef4444;
 }
+
+/* Global Utilities */
+.tabular-nums {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.sentence-case {
+    text-transform: lowercase;
+}
+
+.sentence-case::first-letter {
+    text-transform: uppercase;
+}
+
+/* Note: CSS capitalize doesn't handle all-caps to sentence case well, 
+   so we'll mostly handle this in JS for better control as requested. */
 
 /* Dark Theme Overrides */
 [data-theme='dark'] {

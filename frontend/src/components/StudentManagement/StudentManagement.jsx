@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import SkeletonTable from '../SkeletonTable/SkeletonTable'
+import EmptyState from '../EmptyState/EmptyState'
 import './StudentManagement.css'
 
 // Icons
@@ -228,6 +230,14 @@ function StudentManagement() {
     const [page, setPage] = useState(1)
     const [pagination, setPagination] = useState({ total: 0, totalPages: 1 })
     const [debouncedSearch, setDebouncedSearch] = useState('')
+
+    // Helper to format names to Sentence Case
+    const toSentenceCase = (str) => {
+        if (!str) return '';
+        return str.toLowerCase().split(' ').map(word => {
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        }).join(' ');
+    }
 
     // Debounce search
     useEffect(() => {
@@ -533,29 +543,27 @@ function StudentManagement() {
             {/* Table */}
             <div className="students-table-container">
                 {loading ? (
-                    <div className="loading-overlay">
-                        <div className="spinner"></div>
-                    </div>
+                    <SkeletonTable rows={10} columns={7} />
                 ) : students.length === 0 ? (
-                    <div className="empty-state">
-                        <div className="empty-state-icon">
-                            <UsersIcon />
-                        </div>
-                        <h3>No students found</h3>
-                        <p>Try adjusting your search or filter criteria.</p>
-                    </div>
+                    <EmptyState
+                        icon={UsersIcon}
+                        title="No Students Found"
+                        description="We couldn't find any students matching your current search or filters. Try adjusting your criteria or adding a new student."
+                        actionText="Add New Student"
+                        onAction={() => setShowAddModal(true)}
+                    />
                 ) : (
                     <>
                         <table className="students-table">
                             <thead>
                                 <tr>
-                                    <th>Student</th>
-                                    <th>Student ID</th>
-                                    <th>Role</th>
-                                    <th>Dept.</th>
-                                    <th>Status</th>
-                                    <th>Last Login</th>
-                                    <th>Actions</th>
+                                    <th className="text-left">Student</th>
+                                    <th className="text-right">Student ID</th>
+                                    <th className="text-center">Role</th>
+                                    <th className="text-left">Dept.</th>
+                                    <th className="text-center">Status</th>
+                                    <th className="text-right">Last Login</th>
+                                    <th className="text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -571,23 +579,23 @@ function StudentManagement() {
                                                     )}
                                                 </div>
                                                 <div className="student-details">
-                                                    <span className="student-name">{student.full_name}</span>
+                                                    <span className="student-name">{toSentenceCase(student.full_name)}</span>
                                                     <span className="student-email">{student.email}</span>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td>{student.student_id || '-'}</td>
-                                        <td>
+                                        <td className="text-right tabular-nums">{student.student_id || '-'}</td>
+                                        <td className="text-center">
                                             <span className={`role-badge ${student.role}`}>
                                                 {student.role}
                                             </span>
                                         </td>
-                                        <td>
+                                        <td className="text-left">
                                             <span style={{ fontWeight: '500', color: 'var(--text-secondary)' }}>
                                                 {student.program_code || '-'}
                                             </span>
                                         </td>
-                                        <td>
+                                        <td className="text-center">
                                             <button
                                                 className={`status-toggle ${student.is_active ? 'active' : 'inactive'}`}
                                                 onClick={() => handleToggleStatus(student)}
@@ -597,8 +605,8 @@ function StudentManagement() {
                                                 {student.is_active ? 'Active' : 'Inactive'}
                                             </button>
                                         </td>
-                                        <td>{formatDate(student.last_login)}</td>
-                                        <td>
+                                        <td className="text-right tabular-nums">{formatDate(student.last_login)}</td>
+                                        <td className="text-center">
                                             <div className="action-buttons">
                                                 <button
                                                     className="btn-action"
