@@ -30,7 +30,8 @@
     align-items: center;
     gap: 1rem;
     flex-wrap: wrap;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
+    /* Sync with enrollment-filters */
 }
 
 .search-input-wrapper {
@@ -52,13 +53,15 @@
 
 .search-input {
     width: 100%;
-    padding: 0.875rem 1rem 0.875rem 2.75rem;
+    padding: 0.75rem 1rem 0.75rem 2.75rem;
+    /* Reduced height to match enrollment buttons */
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     background: var(--bg-primary);
     color: var(--text-primary);
     font-size: 0.95rem;
     transition: all var(--transition-fast);
+    box-shadow: var(--shadow-sm);
 }
 
 .search-input:focus {
@@ -68,7 +71,8 @@
 }
 
 .filter-select {
-    padding: 0.875rem 2rem 0.875rem 1rem;
+    padding: 0.75rem 2rem 0.75rem 1rem;
+    /* Reduced height */
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     background: var(--bg-primary);
@@ -76,6 +80,7 @@
     font-size: 0.95rem;
     cursor: pointer;
     transition: all var(--transition-fast);
+    box-shadow: var(--shadow-sm);
 }
 
 .btn-add {
@@ -91,6 +96,17 @@
     font-weight: 500;
     cursor: pointer;
     transition: all var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-add:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    filter: brightness(1.1);
+}
+
+.btn-add:active {
+    transform: translateY(0);
 }
 
 .btn-add svg {
@@ -111,7 +127,8 @@
     width: 100% !important;
     border-collapse: separate !important;
     /* Allows spacing for card effect */
-    border-spacing: 0 0.8rem !important;
+    border-spacing: 0 0.4rem !important;
+    /* Reduced from 0.8rem for density */
     min-width: 900px;
 }
 
@@ -135,13 +152,18 @@
 
 /* Header Styling */
 .students-table th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
     background: var(--bg-tertiary);
-    color: var(--text-tertiary);
+    color: var(--text-primary);
+    /* Brighter from text-tertiary */
     font-weight: 600;
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    padding: 1rem 1.5rem;
+    padding: 0.75rem 1.5rem;
+    /* Reduced from 1rem */
     border: none;
 }
 
@@ -207,7 +229,8 @@
 }
 
 .students-table td {
-    padding: 1rem 1.5rem;
+    padding: 0.6rem 1.5rem;
+    /* Reduced from 1rem for density */
     background: var(--bg-card);
     /* Required for proper border radius masking */
     border-top: 1px solid var(--border-color);
@@ -340,12 +363,14 @@
 .btn-action:hover {
     background: var(--bg-tertiary);
     color: var(--text-primary);
+    transform: scale(1.1);
 }
 
 .btn-action.delete:hover {
     border-color: #ef4444;
     color: #ef4444;
     background: rgba(239, 68, 68, 0.1);
+    transform: scale(1.1);
 }
 
 /* Pagination */

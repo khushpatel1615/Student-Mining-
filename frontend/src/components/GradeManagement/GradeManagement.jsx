@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import EmptyState from '../EmptyState/EmptyState'
 import './GradeManagement.css'
 
 // Icons
@@ -20,6 +21,13 @@ const BookIcon = () => (
 )
 
 const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+
+const toSentenceCase = (str) => {
+    if (!str) return '';
+    return str.toLowerCase().split(' ').map(word => {
+        return word.charAt(0).toUpperCase() + word.slice(1);
+    }).join(' ');
+}
 
 function GradeManagement() {
     const { token } = useAuth()
@@ -350,21 +358,17 @@ function GradeManagement() {
                         <div className="spinner"></div>
                     </div>
                 ) : !selectedSubject ? (
-                    <div className="empty-state">
-                        <div className="empty-state-icon">
-                            <BookIcon />
-                        </div>
-                        <h3>Select a Subject</h3>
-                        <p>Choose a subject to manage student grades.</p>
-                    </div>
+                    <EmptyState
+                        icon={BookIcon}
+                        title="Select a Subject"
+                        description="Choose a subject from the filters above to manage and enter student grades."
+                    />
                 ) : enrollments.length === 0 ? (
-                    <div className="empty-state">
-                        <div className="empty-state-icon">
-                            <BookIcon />
-                        </div>
-                        <h3>No enrollments found</h3>
-                        <p>No students are enrolled in this subject yet.</p>
-                    </div>
+                    <EmptyState
+                        icon={BookIcon}
+                        title="No Enrollments Found"
+                        description="No students are currently enrolled in this subject. Please check the enrollment management section."
+                    />
                 ) : selectedSubject === 'all' ? (
                     // Grouped view for All Subjects
                     <div className="all-subjects-view">
@@ -397,8 +401,8 @@ function GradeManagement() {
                                 <div key={student.student_id} className="student-subjects-card">
                                     <div className="student-card-header">
                                         <div className="student-info-large">
-                                            <h3>{student.student_name}</h3>
-                                            <span className="student-id-badge">{student.student_id}</span>
+                                            <h3>{toSentenceCase(student.student_name)}</h3>
+                                            <span className="student-id-badge tabular-nums">{student.student_id}</span>
                                         </div>
                                         <span className="subjects-count">{student.subjects.length} Subjects</span>
                                     </div>
@@ -511,9 +515,9 @@ function GradeManagement() {
                                                             }}
                                                             title="View all grades for this student"
                                                         >
-                                                            {enrollment.student_name}
+                                                            {toSentenceCase(enrollment.student_name)}
                                                         </span>
-                                                        <span className="student-id">{enrollment.student_id}</span>
+                                                        <span className="student-id tabular-nums">{enrollment.student_id}</span>
                                                     </div>
                                                 </td>
                                                 {criteria.map(c => (
