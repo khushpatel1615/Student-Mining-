@@ -22,15 +22,11 @@ import {
     Briefcase,
     FileText,
     ClipboardCheck,
-    Clock,
-    TrendingUp,
     QrCode,
-    Award,
     MessageSquare,
-    Star,
-    Video,
     Download,
-    Bell
+    Bell,
+    Video
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -45,16 +41,12 @@ const Sidebar = ({ role = 'student', onLogout, collapsed, mobileMenuOpen, onTogg
         { id: 'skills', label: 'Skills Map', icon: Brain, tab: 'skills' },
         { id: 'career', label: 'Career Fit', icon: Briefcase, tab: 'career' },
         { id: 'recommendations', label: 'Course Picks', icon: Layers, tab: 'recommendations' },
-        { id: 'study-planner', label: 'Study Planner', icon: CalendarDays, tab: 'study-planner' },
-        { id: 'submissions', label: 'Submissions', icon: Clock, tab: 'submissions' },
         { id: 'grades', label: 'Grades', icon: GraduationCap, tab: 'grades' },
-
         { id: 'assignments', label: 'Assignments', icon: FileText, tab: 'assignments' },
         { id: 'exams', label: 'Exams', icon: ClipboardCheck, tab: 'exams' },
         { id: 'reports', label: 'Reports', icon: Download, tab: 'reports' },
         { id: 'attendance', label: 'Attendance', icon: CheckSquare, tab: 'attendance' },
         { id: 'announcements', label: 'Announcements', icon: Bell, tab: 'announcements' },
-        { id: 'videos', label: 'Videos', icon: Video, tab: 'videos' },
         { id: 'profile', label: 'Profile', icon: User, tab: 'profile' },
         { id: 'calendar', label: 'Calendar', icon: CalendarDays, tab: 'calendar' }
     ];

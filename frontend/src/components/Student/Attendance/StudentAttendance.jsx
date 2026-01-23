@@ -17,17 +17,29 @@ const StudentAttendance = () => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                // Fetch enrollments to get active subjects
-                // We can use enrollments.php?status=active&current_sem_only=true
-                const res = await fetch(`${API_BASE}/enrollments.php?status=active&current_sem_only=true`, {
+                // Fetch enrollments for current semester (all statuses)
+                // Backend defaults to 'active', so we explicitly request 'all' to include completed/failed
+                const res = await fetch(`${API_BASE}/enrollments.php?status=all&current_sem_only=true`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await res.json();
 
                 if (data.success) {
-                    setSubjects(data.data);
-                    // 2. Fetch attendance for each subject
-                    data.data.forEach(sub => {
+                    // Deduplicate subjects - keep only most recent enrollment per subject_id
+                    const subjectMap = new Map();
+                    data.data.forEach(enrollment => {
+                        const subId = enrollment.subject_id;
+                        // Keep the enrollment with higher enrollment_id (more recent)
+                        if (!subjectMap.has(subId) || enrollment.enrollment_id > subjectMap.get(subId).enrollment_id) {
+                            subjectMap.set(subId, enrollment);
+                        }
+                    });
+
+                    const uniqueSubjects = Array.from(subjectMap.values());
+                    setSubjects(uniqueSubjects);
+
+                    // 2. Fetch attendance for each unique subject
+                    uniqueSubjects.forEach(sub => {
                         fetchSubjectAttendance(sub.subject_id);
                     });
                 }
@@ -38,8 +50,10 @@ const StudentAttendance = () => {
             }
         };
 
-        fetchData();
-    }, []);
+        if (token) {
+            fetchData();
+        }
+    }, [token]);
 
     const fetchSubjectAttendance = async (subjectId) => {
         try {
@@ -77,77 +91,111 @@ const StudentAttendance = () => {
 
     return (
         <div className="student-attendance">
-            <h2>My Attendance</h2>
+            <div className="attendance-header">
+                <h2>My Attendance</h2>
+                <div className="attendance-view-toggle">
+                    {/* Placeholder for future toggle: List / Grid */}
+                </div>
+            </div>
 
             {subjects.length === 0 ? (
-                <div className="empty-state">No active subjects found.</div>
-            ) : subjects.map(sub => {
-                const records = attendanceData[sub.subject_id] || [];
-                const stats = getStats(records);
-                const isExpanded = expandedSubjects[sub.subject_id];
+                <div className="empty-state">
+                    <div className="empty-icon-wrapper">
+                        <AlertTriangle size={48} />
+                    </div>
+                    <h3>No active subjects found</h3>
+                    <p>It seems you are not enrolled in any subjects for this semester yet.</p>
+                </div>
+            ) : (
+                <div className="subjects-grid">
+                    {subjects.map(sub => {
+                        const records = attendanceData[sub.subject_id] || [];
+                        const stats = getStats(records);
+                        const isExpanded = expandedSubjects[sub.subject_id];
 
-                return (
-                    <div key={sub.subject_id} className="subject-attendance-card">
-                        <div className="subject-header" onClick={() => toggleExpand(sub.subject_id)} style={{ cursor: 'pointer' }}>
-                            <div className="subject-title">
-                                <h3>
-                                    {sub.subject_name}
-                                    <span className="subject-code">{sub.subject_code}</span>
-                                </h3>
-                                <div style={{ fontSize: '0.85rem', color: 'gray', marginTop: '0.25rem' }}>
-                                    Attendance: <span style={{
-                                        fontWeight: 'bold',
-                                        color: stats.percentage < 75 ? 'red' : 'green'
-                                    }}>{stats.percentage}%</span>
-                                </div>
-                            </div>
-                            <div>
-                                {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                            </div>
-                        </div>
+                        return (
+                            <div key={sub.subject_id} className={`subject-attendance-card ${isExpanded ? 'expanded' : ''}`}>
+                                <div className="subject-header" onClick={() => toggleExpand(sub.subject_id)}>
+                                    <div className="subject-info">
+                                        <div className="subject-top">
+                                            <h3>{sub.subject_name}</h3>
+                                            <span className="subject-code">{sub.subject_code}</span>
+                                        </div>
 
-                        {isExpanded && (
-                            <>
-                                <div className="attendance-stats">
-                                    <div className="stat-item">
-                                        <span className="stat-label">Total Classes</span>
-                                        <span className="stat-value">{stats.total}</span>
-                                    </div>
-                                    <div className="stat-item">
-                                        <span className="stat-label">Present</span>
-                                        <span className="stat-value high">{stats.present}</span>
-                                    </div>
-                                    <div className="stat-item">
-                                        <span className="stat-label">Absent</span>
-                                        <span className="stat-value low">{stats.total - stats.present}</span>
-                                    </div>
-                                </div>
-
-                                <div className="history-list">
-                                    <h4 style={{ fontSize: '0.9rem', marginBottom: '0.5rem', color: 'gray' }}>History</h4>
-                                    {records.length === 0 ? (
-                                        <div style={{ fontStyle: 'italic', color: 'gray' }}>No records yet.</div>
-                                    ) : (
-                                        [...records].reverse().map((rec, idx) => (
-                                            <div key={idx} className="history-item">
-                                                <span>{rec.date}</span>
-                                                <span className={`attendance-badge ${rec.status === 'P' ? 'present' :
-                                                    rec.status === 'A' ? 'absent' :
-                                                        rec.status === 'E' ? 'exception' : ''
-                                                    }`}>
-                                                    {rec.status === 'P' ? 'Present' :
-                                                        rec.status === 'A' ? 'Absent' :
-                                                            rec.status === 'E' ? 'Exception' : '-'}
+                                        <div className="progress-container">
+                                            <div className="progress-labels">
+                                                <span className="progress-text">Attendance</span>
+                                                <span className={`progress-percentage ${stats.percentage < 75 ? 'danger' : 'success'}`}>
+                                                    {stats.percentage}%
                                                 </span>
                                             </div>
-                                        ))
-                                    )}
+                                            <div className="progress-bar-bg">
+                                                <div
+                                                    className={`progress-bar-fill ${stats.percentage < 75 ? 'danger' : 'success'}`}
+                                                    style={{ width: `${stats.percentage}%` }}
+                                                ></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="expand-icon">
+                                        {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                                    </div>
                                 </div>
-                            </>
-                        )}
-                    </div>
-                );
-            })}
+
+                                {isExpanded && (
+                                    <div className="card-content">
+                                        <div className="stats-row">
+                                            <div className="stat-box">
+                                                <div className="stat-icon total"><Calendar size={18} /></div>
+                                                <div className="stat-details">
+                                                    <span className="stat-label">Total Classes</span>
+                                                    <span className="stat-value">{stats.total}</span>
+                                                </div>
+                                            </div>
+                                            <div className="stat-box">
+                                                <div className="stat-icon present"><CheckCircle size={18} /></div>
+                                                <div className="stat-details">
+                                                    <span className="stat-label">Present</span>
+                                                    <span className="stat-value success">{stats.present}</span>
+                                                </div>
+                                            </div>
+                                            <div className="stat-box">
+                                                <div className="stat-icon absent"><XCircle size={18} /></div>
+                                                <div className="stat-details">
+                                                    <span className="stat-label">Absent</span>
+                                                    <span className="stat-value danger">{stats.total - stats.present}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="history-section">
+                                            <h4>Recent History</h4>
+                                            {records.length === 0 ? (
+                                                <div className="no-history">No attendance records yet.</div>
+                                            ) : (
+                                                <div className="history-list-scroll">
+                                                    {[...records].reverse().map((rec, idx) => (
+                                                        <div key={idx} className="history-item">
+                                                            <span className="history-date">{rec.date}</span>
+                                                            <span className={`status-badge ${rec.status === 'P' ? 'present' :
+                                                                    rec.status === 'A' ? 'absent' : 'exception'
+                                                                }`}>
+                                                                {rec.status === 'P' ? 'Present' :
+                                                                    rec.status === 'A' ? 'Absent' : 'Excused'}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
         </div>
     );
 };
