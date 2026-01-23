@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import NotificationCenter from '../Notifications/NotificationCenter';
+import AdminAIChat from '../Admin/AIChat/AdminAIChat';
 import './MainLayout.css';
 
 const MainLayout = ({
@@ -69,9 +70,11 @@ const MainLayout = ({
 
             {/* Notification Center */}
             <NotificationCenter
-                isOpen={showNotifications}
                 onClose={() => setShowNotifications?.(false)}
             />
+
+            {/* AI Assistant - Admin Only */}
+            {role === 'admin' && <AdminAIChat />}
         </div>
     );
 };

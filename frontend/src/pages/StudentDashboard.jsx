@@ -15,14 +15,12 @@ import StudentCareer from '../components/Student/Career/StudentCareer'
 import StudentAssignments from '../components/Student/Assignments/StudentAssignments'
 import StudentExams from '../components/Student/Exams/StudentExams'
 import CourseRecommendations from '../components/Student/Recommendations/CourseRecommendations'
-import SmartStudyPlanner from '../components/Student/StudyPlanner/SmartStudyPlanner'
-
-import SubmissionHistory from '../components/Student/Submissions/SubmissionHistory'
 
 import ReportGenerator from '../components/Reports/ReportGenerator'
 import AnnouncementsPage from '../components/Discussions/AnnouncementsPage'
 import StudentAttendance from '../components/Student/Attendance/StudentAttendance'
-import VideoLectures from '../components/VideoLectures/VideoLectures'
+import QuickActions from '../components/Student/Overview/QuickActions'
+import ActivityFeed from '../components/Student/Overview/ActivityFeed'
 import './StudentDashboard.css'
 import {
     BookOpen,
@@ -405,7 +403,7 @@ const StudentDashboard = () => {
                 <div className="tab-content">
                     {activeTab === 'overview' && (
                         <>
-                            <div className="top-row-flex" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                            <div className="top-row-flex" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '2rem', marginBottom: '2rem' }}>
                                 {/* Stats Cards with Semester-Specific Data */}
                                 <motion.div
                                     className="stats-grid"
@@ -420,7 +418,6 @@ const StudentDashboard = () => {
                                             subtitle: selectedSemester ? `Semester ${selectedSemester}` : 'Cumulative Grade Point',
                                             icon: GraduationCap,
                                             gradient: 'gradient-purple',
-                                            progress: (semesterStats.gpa / 4.0) * 100,
                                             trend: semesterStats.gpa >= 3.5 ? 'Excellent' : semesterStats.gpa >= 3.0 ? 'Good' : 'Needs Improvement',
                                             trendUp: semesterStats.gpa >= 3.0
                                         },
@@ -431,9 +428,6 @@ const StudentDashboard = () => {
                                             subtitle: selectedSemester ? `This Semester` : 'Total Earned',
                                             icon: Award,
                                             gradient: 'gradient-blue',
-                                            progress: selectedSemester
-                                                ? (semesterStats.credits / 20) * 100
-                                                : (semesterStats.credits / (dashboardData.total_credits || 120)) * 100,
                                             trend: 'On Track',
                                             trendUp: true
                                         },
@@ -443,7 +437,6 @@ const StudentDashboard = () => {
                                             subtitle: 'Next 14 Days',
                                             icon: AlertCircle,
                                             gradient: 'gradient-orange',
-                                            progress: 100 - (dashboardData.upcoming_assignments.length * 10),
                                             trend: dashboardData.upcoming_assignments.length > 3 ? 'Heavy Workload' : 'Manageable',
                                             trendUp: dashboardData.upcoming_assignments.length <= 3
                                         }
@@ -457,25 +450,11 @@ const StudentDashboard = () => {
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ delay: index * 0.1 }}
                                                 whileHover={{
-                                                    y: -6,
-                                                    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.12)',
-                                                    transition: { duration: 0.2 }
+                                                    y: -8,
+                                                    transition: { duration: 0.3 }
                                                 }}
                                             >
-                                                <div className="stat-progress-ring">
-                                                    <CircularProgress
-                                                        value={card.progress || 0}
-                                                        size={56}
-                                                        strokeWidth={6}
-                                                        color={
-                                                            card.gradient === 'gradient-purple' ? '#6366f1' :
-                                                                card.gradient === 'gradient-blue' ? '#3b82f6' :
-                                                                    card.gradient === 'gradient-green' ? '#22c55e' :
-                                                                        '#f97316'
-                                                        }
-                                                        trailColor="rgba(0,0,0,0.05)"
-                                                        showValue={false}
-                                                    />
+                                                <div className="stat-icon-wrapper">
                                                     <div className={`stat-icon-inner ${card.gradient}`}>
                                                         <Icon size={20} />
                                                     </div>
@@ -487,7 +466,6 @@ const StudentDashboard = () => {
                                                         <span className="stat-subtitle">{card.subtitle}</span>
                                                         {card.trend && (
                                                             <span className={`stat-trend ${card.trendUp ? 'positive' : 'negative'}`}>
-                                                                {card.trendUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
                                                                 <span className="trend-text">{card.trend}</span>
                                                             </span>
                                                         )}
@@ -501,6 +479,13 @@ const StudentDashboard = () => {
 
                             </div>
 
+
+                            {/* Quick Actions & Activity Feed Row */}
+                            <div className="content-grid" style={{ marginBottom: '1.5rem', gridTemplateColumns: '2fr 1fr' }}>
+                                <ActivityFeed />
+                                <QuickActions setActiveTab={setActiveTab} />
+                            </div>
+
                             <div className="content-grid">
                                 <div className="card">
                                     <h3>
@@ -510,10 +495,12 @@ const StudentDashboard = () => {
                                     <div className="list-container">
                                         {filteredCourses.length === 0 ? (
                                             <div className="empty-state-modern">
-                                                <BookOpen size={48} className="empty-icon" />
+                                                <div className="empty-illustration">
+                                                    <BookOpen size={120} className="empty-icon-large" />
+                                                </div>
                                                 <h4>No courses found</h4>
                                                 <p>You don't have any courses {selectedSemester ? `in Semester ${selectedSemester}` : 'enrolled yet'}.</p>
-                                                <button className="cta-button" onClick={() => setActiveTab('schedule')}>
+                                                <button className="cta-button primary-cta" onClick={() => setActiveTab('schedule')}>
                                                     View Course Catalog
                                                 </button>
                                             </div>
@@ -543,7 +530,9 @@ const StudentDashboard = () => {
                                     <div className="list-container">
                                         {dashboardData.upcoming_assignments.length === 0 ? (
                                             <div className="empty-state-modern">
-                                                <CheckCircle size={48} className="empty-icon success" />
+                                                <div className="empty-illustration">
+                                                    <CheckCircle size={120} className="empty-icon-large success-alpha" />
+                                                </div>
                                                 <h4>All caught up!</h4>
                                                 <p>No upcoming events in the next 14 days.</p>
                                             </div>
@@ -601,19 +590,7 @@ const StudentDashboard = () => {
                         </div>
                     )}
 
-                    {activeTab === 'study-planner' && (
-                        <div className="card">
-                            <SmartStudyPlanner />
-                        </div>
-                    )}
 
-
-
-                    {activeTab === 'submissions' && (
-                        <div className="card">
-                            <SubmissionHistory />
-                        </div>
-                    )}
 
                     {activeTab === 'profile' && (
                         <StudentProfile />
@@ -649,11 +626,7 @@ const StudentDashboard = () => {
                         </div>
                     )}
 
-                    {activeTab === 'videos' && (
-                        <div className="card">
-                            <VideoLectures />
-                        </div>
-                    )}
+
 
                     {(activeTab === 'schedule' || activeTab === 'calendar') && (
                         <div className="card">
