@@ -146,9 +146,12 @@ function AdminOverview() {
                     totalStudents: system_overview?.total_students || 0,
                     totalPrograms: system_overview?.total_programs || 0,
                     totalSubjects: system_overview?.total_subjects || 0,
+                    totalTeachers: system_overview?.total_teachers || 0,
                     averageGPA: Number(system_overview?.system_gpa || 0),
                     passRate: Number(system_overview?.pass_rate || 0),
-                    atRiskCount: at_risk_students?.length || 0
+                    atRiskCount: at_risk_students?.length || 0,
+                    engagementScore: Number(system_overview?.engagement_score || 0),
+                    pendingActions: Number(system_overview?.pending_actions || 0)
                 }))
 
                 setPerformanceData(performance_distribution)
@@ -188,13 +191,9 @@ function AdminOverview() {
             }
 
             // Calculate additional stats (ensure numbers)
+            // Ensure averageGPA is a number 
             setSystemStats(prev => ({
                 ...prev,
-
-                engagementScore: 92,
-                pendingActions: 3,
-                totalTeachers: 12,
-                // Ensure averageGPA is a number 
                 averageGPA: Number(prev.averageGPA || 0)
             }))
 

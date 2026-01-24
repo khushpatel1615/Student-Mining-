@@ -264,8 +264,6 @@ function StudentManagement() {
         email: '',
         student_id: '',
         role: 'student',
-        student_id: '',
-        role: 'student',
         program_id: '', // Add program_id to form data
         password: ''
     })
@@ -353,7 +351,6 @@ function StudentManagement() {
             role: 'student',
             student_id: '',
             role: 'student',
-            program_id: '',
             password: ''
         })
         setModalMode('add')
@@ -365,8 +362,6 @@ function StudentManagement() {
         setFormData({
             full_name: student.full_name,
             email: student.email,
-            student_id: student.student_id || '',
-            role: student.role,
             student_id: student.student_id || '',
             role: student.role,
             program_id: student.program_id || '', // Populate program_id for editing

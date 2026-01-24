@@ -8,13 +8,8 @@ import CalendarManagement from '../components/CalendarManagement/CalendarManagem
 import { CircularProgress } from '../components/CircularProgress'
 import GradesTab from '../components/Student/Grades/GradesTab'
 import StudentProfile from '../components/Student/Profile/StudentProfile'
-import StudentSkills from '../components/Student/Skills/StudentSkills'
-
-import StudentCareer from '../components/Student/Career/StudentCareer'
-
 import StudentAssignments from '../components/Student/Assignments/StudentAssignments'
 import StudentExams from '../components/Student/Exams/StudentExams'
-import CourseRecommendations from '../components/Student/Recommendations/CourseRecommendations'
 
 import ReportGenerator from '../components/Reports/ReportGenerator'
 import AnnouncementsPage from '../components/Discussions/AnnouncementsPage'
@@ -569,23 +564,8 @@ const StudentDashboard = () => {
 
 
 
-                    {activeTab === 'skills' && (
-                        <StudentSkills />
-                    )}
-
-
-
-                    {activeTab === 'career' && (
-                        <StudentCareer />
-                    )}
-
-                    {activeTab === 'recommendations' && (
-                        <div className="card">
-                            <CourseRecommendations />
-                        </div>
-                    )}
                     {activeTab === 'attendance' && (
-                        <div className="card" style={{ padding: '2rem' }}>
+                        <div className="card card-padded-lg">
                             <StudentAttendance />
                         </div>
                     )}

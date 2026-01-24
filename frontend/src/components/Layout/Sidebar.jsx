@@ -38,9 +38,6 @@ const Sidebar = ({ role = 'student', onLogout, collapsed, mobileMenuOpen, onTogg
 
     const studentMenuItems = [
         { id: 'overview', label: 'Overview', icon: LayoutDashboard, tab: 'overview' },
-        { id: 'skills', label: 'Skills Map', icon: Brain, tab: 'skills' },
-        { id: 'career', label: 'Career Fit', icon: Briefcase, tab: 'career' },
-        { id: 'recommendations', label: 'Course Picks', icon: Layers, tab: 'recommendations' },
         { id: 'grades', label: 'Grades', icon: GraduationCap, tab: 'grades' },
         { id: 'assignments', label: 'Assignments', icon: FileText, tab: 'assignments' },
         { id: 'exams', label: 'Exams', icon: ClipboardCheck, tab: 'exams' },
