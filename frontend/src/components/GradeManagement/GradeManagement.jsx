@@ -168,8 +168,10 @@ function GradeManagement() {
                     gradesObj[enrollment.id] = {}
                     remarksObj[enrollment.id] = {}
                     data.data.criteria?.forEach(c => {
-                        const existingGrade = enrollment.grades?.find(g => g.criteria_id === c.id)
-                        gradesObj[enrollment.id][c.id] = existingGrade?.marks_obtained || ''
+                        const existingGrade = enrollment.grades?.find(g => String(g.criteria_id) === String(c.id))
+                        gradesObj[enrollment.id][c.id] = (existingGrade?.marks_obtained !== undefined && existingGrade?.marks_obtained !== null)
+                            ? existingGrade.marks_obtained
+                            : ''
                         remarksObj[enrollment.id][c.id] = existingGrade?.remarks || ''
                     })
                 })
@@ -487,16 +489,33 @@ function GradeManagement() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {enrollments
-                                    .filter(enrollment => {
+                                {(() => {
+                                    const filteredEnrollments = enrollments.filter(enrollment => {
                                         if (!searchQuery) return true
                                         const query = searchQuery.toLowerCase()
                                         return (
                                             enrollment.student_name.toLowerCase().includes(query) ||
                                             String(enrollment.student_id).toLowerCase().includes(query)
                                         )
-                                    })
-                                    .map(enrollment => {
+                                    });
+
+                                    if (filteredEnrollments.length === 0) {
+                                        return (
+                                            <tr>
+                                                <td colSpan={criteria.length + 3} style={{ textAlign: 'center', padding: '3rem' }}>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', color: 'var(--text-secondary)' }}>
+                                                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                                            <circle cx="11" cy="11" r="8"></circle>
+                                                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                                        </svg>
+                                                        <span>No students match your search: "{searchQuery}"</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    }
+
+                                    return filteredEnrollments.map(enrollment => {
                                         const total = calculateTotal(enrollment.id)
                                         const maxTotal = criteria.reduce((sum, c) => sum + c.max_marks, 0)
                                         const percentage = maxTotal > 0 ? ((total / maxTotal) * 100).toFixed(1) : 0
@@ -553,7 +572,8 @@ function GradeManagement() {
                                                 </td>
                                             </tr>
                                         )
-                                    })}
+                                    })
+                                })()}
                             </tbody>
                         </table>
                     </div>

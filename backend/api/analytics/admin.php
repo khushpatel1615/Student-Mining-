@@ -38,6 +38,10 @@ try {
     $stmt = $pdo->query("SELECT COUNT(*) FROM subjects WHERE is_active = 1");
     $stats['total_subjects'] = $stmt->fetchColumn();
 
+    // Total Teachers
+    $stmt = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'teacher'");
+    $stats['total_teachers'] = $stmt->fetchColumn();
+
     // 3. Performance Metrics using vw_student_performance
     // The view likely has column `grade` or `final_percentage` or `marks_obtained`.
     // Let's assume `final_percentage` or `grade_points` based on typical standard. 
@@ -87,6 +91,16 @@ try {
     }
     $stats['pass_rate'] = round($passRate, 1);
 
+    // Engagement Score (Average Attendance)
+    $engScore = 0;
+    try {
+        $stmt = $pdo->query("SELECT AVG(attendance_percentage) FROM vw_student_performance");
+        $engScore = $stmt->fetchColumn();
+    } catch (Exception $e) {
+        $engScore = 0;
+    }
+    $stats['engagement_score'] = $engScore ? round($engScore) : 0;
+
     // 4. At Risk Students
     // Students with GPA < 2.0 (approx < 50%) or Attendance < 75%
     // Using view makes this easier
@@ -113,6 +127,17 @@ try {
     } catch (Exception $e) {
         // Fallback or empty
     }
+
+    // Pending Actions
+    // Sum of At Risk Students + Pending Enrollments
+    $pendingCount = count($atRiskStudents);
+    try {
+        // Check for pending enrollments if table/status exists
+        $stmt = $pdo->query("SELECT COUNT(*) FROM student_enrollments WHERE status = 'pending'");
+        $pendingCount += $stmt->fetchColumn();
+    } catch (Exception $e) {
+    }
+    $stats['pending_actions'] = $pendingCount;
 
     // 5. Performance Distribution
     $distribution = [
