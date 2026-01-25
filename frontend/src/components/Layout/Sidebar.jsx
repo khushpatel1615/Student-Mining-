@@ -51,6 +51,8 @@ const Sidebar = ({ role = 'student', onLogout, collapsed, mobileMenuOpen, onTogg
 
     const adminMenuItems = [
         { id: 'overview', label: 'Overview', icon: LayoutDashboard, tab: 'overview' },
+        { id: 'risk-center', label: 'Risk Center', icon: Brain, tab: 'risk-center' },
+        { id: 'insights', label: 'Insights', icon: Briefcase, tab: 'insights' },
         { id: 'students', label: 'Students', icon: Users, tab: 'students' },
         { id: 'programs', label: 'Programs', icon: Layers, tab: 'programs' },
         { id: 'subjects', label: 'Subjects', icon: BookOpen, tab: 'subjects' },

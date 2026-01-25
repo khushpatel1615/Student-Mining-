@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom'
 
 const AuthContext = createContext()
 
-// API base URL - adjust based on your XAMPP setup
-const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+import { API_BASE } from '../config'
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null)
@@ -203,3 +202,4 @@ export function useAuth() {
 }
 
 export default AuthContext
+

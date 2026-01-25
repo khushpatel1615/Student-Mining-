@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config';
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import SkeletonTable from '../SkeletonTable/SkeletonTable'
@@ -34,7 +35,7 @@ const CheckIcon = () => (
     </svg>
 )
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+
 
 function EnrollmentManagement() {
     const { token } = useAuth()
@@ -562,3 +563,6 @@ function EnrollmentManagement() {
 }
 
 export default EnrollmentManagement
+
+
+

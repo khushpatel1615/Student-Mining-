@@ -1,3 +1,4 @@
+import { API_BASE } from '../config';
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import MainLayout from '../components/Layout/MainLayout'
@@ -9,7 +10,7 @@ import TeacherGrades from '../components/Teacher/Grades/TeacherGrades'
 import CalendarManagement from '../components/CalendarManagement/CalendarManagement'
 import './TeacherDashboard.css'
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+
 
 const TeacherDashboard = () => {
     const { user, token, logout } = useAuth()
@@ -227,3 +228,6 @@ const TeacherDashboard = () => {
 }
 
 export default TeacherDashboard
+
+
+

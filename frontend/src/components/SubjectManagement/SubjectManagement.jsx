@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config';
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import './SubjectManagement.css'
@@ -12,7 +13,7 @@ const CloseIcon = X
 const BookIcon = BookOpen
 const AlertIcon = AlertCircle
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+
 
 // Default evaluation criteria
 const DEFAULT_CRITERIA = [
@@ -596,3 +597,6 @@ function SubjectManagement() {
 }
 
 export default SubjectManagement
+
+
+

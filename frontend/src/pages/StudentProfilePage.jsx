@@ -1,3 +1,4 @@
+import { API_BASE } from '../config';
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -17,11 +18,13 @@ import {
     Award,
     BarChart2,
     X,
-    Trash2
+    Trash2,
+    Zap
 } from 'lucide-react'
+import StudentMiningProfile from '../components/Analytics/StudentMiningProfile'
 import './StudentProfilePage.css'
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+
 
 function StudentProfilePage() {
     const { studentId } = useParams()
@@ -449,6 +452,12 @@ function StudentProfilePage() {
                 )}
             </div>
 
+            {/* Mining Profile Section */}
+            <div className="enrollments-section mining-section">
+                <h3><Zap size={20} /> Data Mining Profile</h3>
+                <StudentMiningProfile studentId={studentId} />
+            </div>
+
             <div className="quick-actions">
                 <button
                     className="action-btn primary"
@@ -564,3 +573,6 @@ function StudentProfilePage() {
 }
 
 export default StudentProfilePage
+
+
+

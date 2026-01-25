@@ -55,6 +55,22 @@
     opacity: 0.9;
 }
 
+/* Compact Banner Variant */
+.welcome-banner.compact {
+    padding: 1.5rem 2rem;
+    border-radius: 16px;
+    margin-bottom: var(--space-lg);
+}
+
+.welcome-banner.compact h1 {
+    font-size: 1.5rem;
+    letter-spacing: -0.5px;
+}
+
+.welcome-banner.compact p {
+    font-size: 0.9rem;
+}
+
 /* Stats Grid */
 .stats-grid {
     display: grid;

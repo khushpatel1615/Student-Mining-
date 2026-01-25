@@ -1,9 +1,10 @@
+import { API_BASE } from '../../../config';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { Calendar, CheckCircle, XCircle, AlertTriangle, ChevronDown, ChevronUp, Loader } from 'lucide-react';
 import './StudentAttendance.css';
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api';
+
 
 const StudentAttendance = () => {
     const { token } = useAuth();
@@ -201,3 +202,6 @@ const StudentAttendance = () => {
 };
 
 export default StudentAttendance;
+
+
+

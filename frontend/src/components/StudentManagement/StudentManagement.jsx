@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config';
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
@@ -75,7 +76,7 @@ const UploadIcon = () => (
 
 import * as XLSX from 'xlsx'
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+
 
 function StudentManagement() {
     const { token } = useAuth()
@@ -347,8 +348,6 @@ function StudentManagement() {
         setFormData({
             full_name: '',
             email: '',
-            student_id: '',
-            role: 'student',
             student_id: '',
             role: 'student',
             password: ''
@@ -900,3 +899,6 @@ function StudentManagement() {
 }
 
 export default StudentManagement
+
+
+

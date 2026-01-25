@@ -23,6 +23,8 @@ import VideoLectures from '../components/VideoLectures/VideoLectures'
 
 import ActivityFeed from '../components/ActivityFeed/ActivityFeed'
 import MainLayout from '../components/Layout/MainLayout'
+import RiskCenter from '../components/Analytics/RiskCenter'
+import InsightsDashboard from '../components/Analytics/InsightsDashboard'
 import { CircularProgress } from '../components/CircularProgress'
 import {
     Users,
@@ -34,7 +36,7 @@ import {
 } from 'lucide-react'
 import './AdminDashboard.css'
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+import { API_BASE } from '../config'
 
 function AdminDashboard() {
     const { user, token, logout } = useAuth()
@@ -305,6 +307,10 @@ function AdminDashboard() {
         switch (activeTab) {
             case 'overview':
                 return <AdminOverview />
+            case 'risk-center':
+                return <RiskCenter />
+            case 'insights':
+                return <InsightsDashboard />
 
             case 'students':
                 return <StudentManagement />
@@ -365,13 +371,15 @@ function AdminDashboard() {
                 onMarkAsRead={markAsRead}
                 onLogout={() => setShowLogoutModal(true)}
             >
-                {/* Welcome Banner */}
-                <div className="welcome-banner">
-                    <div className="welcome-content">
-                        <h1>{getGreeting()}, {user?.full_name?.split(' ')[0]}! 🎯</h1>
-                        <p>Welcome to the administration dashboard. Monitor and manage student performance.</p>
+                {/* Compact Welcome Banner - Only show on overview tab */}
+                {activeTab === 'overview' && (
+                    <div className="welcome-banner compact">
+                        <div className="welcome-content">
+                            <h1>{getGreeting()}, {user?.full_name || 'Administrator'}</h1>
+                            <p>Welcome to the administration dashboard. Monitor and manage student performance.</p>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* Stats Cards removed - AdminAnalyticsDashboard has its own overview cards */}
 
@@ -391,3 +399,4 @@ function AdminDashboard() {
 }
 
 export default AdminDashboard
+

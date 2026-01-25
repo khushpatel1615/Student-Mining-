@@ -1,9 +1,10 @@
+import { API_BASE } from '../../config';
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import EmptyState from '../EmptyState/EmptyState'
 import './TeacherManagement.css'
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+
 
 // Icons
 const UserIcon = () => (
@@ -472,3 +473,6 @@ function TeacherManagement() {
 }
 
 export default TeacherManagement
+
+
+

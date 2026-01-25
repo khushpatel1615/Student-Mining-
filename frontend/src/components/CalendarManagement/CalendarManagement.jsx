@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config';
 import { useState, useEffect } from 'react'
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar'
 import { format, parse, startOfWeek, getDay } from 'date-fns'
@@ -11,7 +12,7 @@ import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop'
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'
 import './CalendarManagement.css'
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+
 
 // Setup the localizer for react-big-calendar
 const locales = {
@@ -632,3 +633,6 @@ const CalendarManagement = ({ role: propRole }) => {
 }
 
 export default CalendarManagement
+
+
+

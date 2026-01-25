@@ -8,32 +8,27 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
 
-setCORSHeaders();
+// Enforce Method
+requireMethod('POST');
 
-// Only accept POST requests
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    jsonResponse(['success' => false, 'error' => 'Method not allowed'], 405);
-}
-
-// Get JSON input
-$input = json_decode(file_get_contents('php://input'), true);
-
+// Get Input
+$input = getJsonInput();
 if (!$input) {
-    jsonResponse(['success' => false, 'error' => 'Invalid JSON input'], 400);
+    sendError('Invalid JSON input', 400);
 }
 
-// Validate required fields
+// Validate fields
 $studentId = trim($input['student_id'] ?? '');
 $password = $input['password'] ?? '';
 
 if (empty($studentId) || empty($password)) {
-    jsonResponse(['success' => false, 'error' => 'Student ID and password are required'], 400);
+    sendError('Student ID and password are required', 400);
 }
 
 try {
     $pdo = getDBConnection();
 
-    // First, check if user exists (regardless of active status)
+    // Check if user exists
     $stmt = $pdo->prepare("
         SELECT id, email, student_id, password_hash, full_name, role, avatar_url, is_active, current_semester 
         FROM users 
@@ -43,41 +38,54 @@ try {
     $user = $stmt->fetch();
 
     if (!$user) {
-        jsonResponse(['success' => false, 'error' => 'Account not found. Please check your credentials.'], 401);
+        sendError('Account not found. Please check your credentials.', 401);
     }
 
-    // Check if account is inactive
+    // Check if inactive
     if (!$user['is_active']) {
-        jsonResponse([
+        sendResponse([
             'success' => false,
+            'status' => 'error',
             'error' => 'Your account has been deactivated. Please contact the administrator for assistance.',
             'accountInactive' => true
         ], 403);
     }
 
-    // Check if user has a password set (might be OAuth-only user)
+    // Check if no password (OAuth only)
     if (empty($user['password_hash'])) {
-        jsonResponse([
+        sendResponse([
             'success' => false,
-            'error' => 'No password set for this account. Please sign in with Google, then set a password in your profile settings.',
+            'status' => 'error',
+            'error' => 'No password set for this account. Please sign in with Google.',
             'requiresGoogle' => true
         ], 401);
     }
 
     // Verify password
     if (!password_verify($password, $user['password_hash'])) {
-        jsonResponse(['success' => false, 'error' => 'Invalid password. Please try again.'], 401);
+        sendError('Invalid password. Please try again.', 401);
     }
 
     // Update last login
     $updateStmt = $pdo->prepare("UPDATE users SET last_login = NOW() WHERE id = :id");
     $updateStmt->execute(['id' => $user['id']]);
 
+    // Log Activity (fail-safe)
+    try {
+        $logStmt = $pdo->prepare("INSERT INTO activity_logs (user_id, action, details, ip_address) VALUES (:uid, 'login', 'User logged in', :ip)");
+        $logStmt->execute([
+            'uid' => $user['id'],
+            'ip' => $_SERVER['REMOTE_ADDR']
+        ]);
+    } catch (Exception $e) {
+        // Continue login even if log fails
+    }
+
     // Generate JWT token
     $token = generateToken($user['id'], $user['email'], $user['role'], $user['full_name']);
 
-    // Return success response
-    jsonResponse([
+    // Success Response
+    sendResponse([
         'success' => true,
         'message' => 'Login successful',
         'token' => $token,
@@ -89,11 +97,11 @@ try {
             'role' => $user['role'],
             'avatar_url' => $user['avatar_url'],
             'current_semester' => $user['current_semester'],
-            'hasPassword' => true  // If they're logging in with password, they obviously have one
+            'hasPassword' => true
         ]
     ]);
 
 } catch (PDOException $e) {
-    jsonResponse(['success' => false, 'error' => 'Database error occurred'], 500);
+    sendError('Database error occurred', 500, $e->getMessage());
 }
 ?>

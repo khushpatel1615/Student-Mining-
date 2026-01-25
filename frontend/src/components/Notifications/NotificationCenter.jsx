@@ -1,9 +1,10 @@
+import { API_BASE } from '../../config';
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import './NotificationCenter.css'
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+
 
 // Icons
 const BellIcon = () => (
@@ -247,3 +248,6 @@ function NotificationCenter({ isOpen, onClose }) {
 }
 
 export default NotificationCenter
+
+
+

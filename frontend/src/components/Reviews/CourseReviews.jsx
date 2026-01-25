@@ -1,10 +1,11 @@
+import { API_BASE } from '../../config';
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { Star, ThumbsUp, MessageCircle, TrendingUp, Award, ChevronDown } from 'lucide-react'
 import toast from 'react-hot-toast'
 import './CourseReviews.css'
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+
 
 function CourseReviews({ subjectId = null, subjectName = '' }) {
     const { token, user } = useAuth()
@@ -261,3 +262,6 @@ function CourseReviews({ subjectId = null, subjectName = '' }) {
 }
 
 export default CourseReviews
+
+
+

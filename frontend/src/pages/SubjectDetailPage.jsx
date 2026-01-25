@@ -1,3 +1,4 @@
+import { API_BASE } from '../config';
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -67,7 +68,7 @@ const CheckCircleIcon = () => (
     </svg>
 )
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+
 
 function SubjectDetailPage() {
     const { subjectId } = useParams()
@@ -514,3 +515,6 @@ function SubjectDetailPage() {
 }
 
 export default SubjectDetailPage
+
+
+

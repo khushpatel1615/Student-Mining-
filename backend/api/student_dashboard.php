@@ -1,49 +1,86 @@
 <?php
+/**
+ * Student Dashboard API
+ * Returns summary, subjects, grades and attendance for the logged-in student
+ */
+
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
 
-setCORSHeaders();
+// Enforce Student Role
+requireRole('student');
 
 $method = $_SERVER['REQUEST_METHOD'];
 $pdo = getDBConnection();
+$DATA_DIR = __DIR__ . '/../data/attendance';
 
 try {
     if ($method === 'GET') {
-        handleGet($pdo);
+        handleGet($pdo, $DATA_DIR);
     } else {
-        throw new Exception('Invalid request method');
+        sendError('Method not allowed', 405);
     }
 } catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    sendError($e->getMessage(), 500);
 }
 
-function handleGet($pdo)
+/**
+ * Helper to get attendance stats from CSV
+ */
+function getSubjectAttendanceFromCsv($dataDir, $subjectId, $studentIdKey)
 {
-    // Get token from header and verify it
-    $token = getTokenFromHeader();
-    if (!$token) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'error' => 'No token provided']);
-        return;
+    $file = $dataDir . "/attendance_subject_{$subjectId}.csv";
+    $stats = [
+        'present' => 0,
+        'absent' => 0,
+        'late' => 0,
+        'excused' => 0,
+        'total_classes' => 0,
+        'percentage' => 0,
+        'records' => []
+    ];
+
+    if (file_exists($file)) {
+        if (($handle = fopen($file, "r")) !== FALSE) {
+            $header = fgetcsv($handle);
+            if ($header && count($header) > 2) {
+                $dates = array_slice($header, 2);
+                while (($row = fgetcsv($handle)) !== FALSE) {
+                    if ($row[0] === $studentIdKey) {
+                        foreach ($dates as $i => $date) {
+                            $status = $row[$i + 2] ?? '-';
+                            if ($status === '-')
+                                continue;
+
+                            $stats['total_classes']++;
+                            if ($status === 'P')
+                                $stats['present']++;
+                            elseif ($status === 'A')
+                                $stats['absent']++;
+                            elseif ($status === 'E' || $status === 'L')
+                                $stats['excused']++; // Simplified
+
+                            $stats['records'][] = ['date' => $date, 'status' => $status];
+                        }
+                        break;
+                    }
+                }
+            }
+            fclose($handle);
+        }
     }
 
-    $result = verifyToken($token);
-    if (!$result['valid']) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'error' => $result['error']]);
-        return;
+    if ($stats['total_classes'] > 0) {
+        $stats['percentage'] = round(($stats['present'] / $stats['total_classes']) * 100);
     }
 
-    $user = $result['payload'];
+    return $stats;
+}
 
-    if ($user['role'] !== 'student') {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'error' => 'Unauthorized - Student access only']);
-        return;
-    }
-
-    $userId = $user['user_id'];  // JWT uses user_id, not id
+function handleGet($pdo, $dataDir)
+{
+    $auth = getAuthUser();
+    $userId = $auth['user_id'];
 
     // 1. Get Complete Student Profile
     $stmt = $pdo->prepare("
@@ -58,16 +95,23 @@ function handleGet($pdo)
     $stmt->execute([$userId]);
     $student = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$student || !$student['program_id']) {
-        echo json_encode([
+    if (!$student) {
+        sendError('User not found', 404);
+    }
+
+    // Determine CSV key (consistent with attendance.php)
+    $studentIdKey = $student['student_id'] ?: $student['email'];
+
+    if (!$student['program_id']) {
+        sendResponse([
             'success' => true,
             'data' => [
                 'enrolled' => false,
                 'student' => [
-                    'name' => $student['full_name'] ?? $user['full_name'],
-                    'email' => $student['email'] ?? $user['email'],
-                    'student_id' => $student['student_id'] ?? null,
-                    'enrollment_date' => $student['enrollment_date'] ?? null
+                    'name' => $student['full_name'],
+                    'email' => $student['email'],
+                    'student_id' => $student['student_id'],
+                    'enrollment_date' => $student['enrollment_date']
                 ]
             ]
         ]);
@@ -75,19 +119,13 @@ function handleGet($pdo)
     }
 
     $programId = $student['program_id'];
-
-    // Determine semester to fetch (default to current, or use requested)
     $currentSemester = $student['current_semester'] ?? 1;
     $requestedSemester = isset($_GET['semester']) ? intval($_GET['semester']) : $currentSemester;
 
-    // Validate requested semester
-    if ($requestedSemester < 1 || $requestedSemester > $currentSemester) {
-        $requestedSemester = $currentSemester;
-    }
-
+    // Use requested semester for fetching subjects
     $semester = $requestedSemester;
 
-    // 2. Fetch Subjects for Current Semester
+    // 2. Fetch Subjects for Selected Semester
     $stmt = $pdo->prepare("
         SELECT id, name, code, credits, subject_type, semester 
         FROM subjects 
@@ -96,12 +134,13 @@ function handleGet($pdo)
     $stmt->execute([$programId, $semester]);
     $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // 3. Process each subject for grades and attendance
+    // 3. Process each subject
     $subjectsData = [];
-    $totalAttendance = ['present' => 0, 'total' => 0];
+    $totalPresentOverall = 0;
+    $totalClassesOverall = 0;
     $totalCredits = 0;
     $earnedCredits = 0;
-    $gradePoints = 0; // For GPA calculation
+    $gradePointsSum = 0;
 
     foreach ($subjects as $subject) {
         // Get Enrollment
@@ -120,13 +159,13 @@ function handleGet($pdo)
             'overall_grade' => null,
             'grade_letter' => null,
             'components' => [],
-            'attendance' => ['present' => 0, 'absent' => 0, 'late' => 0, 'optional' => 0, 'percentage' => 0, 'total_classes' => 0]
+            'attendance' => ['present' => 0, 'total_classes' => 0, 'percentage' => 0]
         ];
 
         if ($enrollment) {
             $totalCredits += $subject['credits'];
 
-            // Fetch Component Grades with professor remarks
+            // Fetch Component Grades
             $stmt = $pdo->prepare("
                 SELECT ec.component_name, ec.max_marks, ec.weight_percentage, sg.marks_obtained, sg.remarks, sg.graded_at
                 FROM evaluation_criteria ec
@@ -137,7 +176,7 @@ function handleGet($pdo)
             $stmt->execute([$enrollment['id'], $subject['id']]);
             $subjectData['components'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // Calculate overall grade dynamically from components (weighted average)
+            // Grade Calculation logic
             $totalWeight = 0;
             $weightedScore = 0;
             foreach ($subjectData['components'] as $comp) {
@@ -148,64 +187,38 @@ function handleGet($pdo)
                 }
             }
 
-            // Calculate overall percentage (normalize to total graded weight)
             if ($totalWeight > 0) {
                 $overallPercentage = round(($weightedScore / $totalWeight) * 100, 2);
                 $subjectData['overall_grade'] = $overallPercentage;
 
-                // Calculate Grade Letter and Grade Points
-                $gradeData = calculateGrade($overallPercentage);
+                $gradeData = calculateGrade($overallPercentage); // Returns letter and points (0-10)
                 $subjectData['grade_letter'] = $gradeData['letter'];
-            } else {
-                $subjectData['overall_grade'] = null;
-                $subjectData['grade_letter'] = null;
+
+                // Track for GPA (weighted by credits)
+                $gradePointsSum += ($gradeData['points'] * $subject['credits']);
+                $earnedCredits += $subject['credits'];
             }
 
-            // Count towards GPA if actively enrolled
-            if ($enrollment['status'] === 'active' && $totalWeight > 0) {
-                $earnedCredits += $subject['credits'];
-                $gradePoints += $gradeData['points'] * $subject['credits'];
-            } elseif ($enrollment['status'] === 'completed') {
-                $earnedCredits += $subject['credits'];
-                $gradePoints += $gradeData['points'] * $subject['credits'];
-            }
+            // Real Attendance from CSV
+            $attStats = getSubjectAttendanceFromCsv($dataDir, $subject['id'], $studentIdKey);
+            $subjectData['attendance'] = $attStats;
 
-            // Attendance features removed
-            $subjectData['attendance'] = [
-                'present' => 0,
-                'absent' => 0,
-                'late' => 0,
-                'optional' => 0,
-                'excused' => 0,
-                'total_classes' => 0,
-                'percentage' => 0,
-                'warning' => false
-            ];
+            $totalPresentOverall += $attStats['present'];
+            $totalClassesOverall += $attStats['total_classes'];
         }
 
         $subjectsData[] = $subjectData;
     }
 
-    // Calculate Overall Stats
-    $overallAttendance = $totalAttendance['total'] > 0
-        ? round(($totalAttendance['present'] / $totalAttendance['total']) * 100)
+    // Final Stats
+    $overallAttendancePercent = $totalClassesOverall > 0
+        ? round(($totalPresentOverall / $totalClassesOverall) * 100)
         : 0;
 
-    $gpa = $earnedCredits > 0 ? round($gradePoints / $earnedCredits, 2) : 0;
-    $gpaGrade = getGPAGrade($gpa);
+    $gpa10 = $earnedCredits > 0 ? round($gradePointsSum / $earnedCredits, 2) : 0;
+    $gpa4 = round($gpa10 / 2.5, 2); // Quick conversion from 10.0 to 4.0
 
-    // 4. Get All-Time Stats (all semesters)
-    $stmt = $pdo->prepare("
-        SELECT 
-            COUNT(DISTINCT se.subject_id) as total_subjects_enrolled,
-            SUM(CASE WHEN se.status = 'completed' THEN 1 ELSE 0 END) as completed_subjects
-        FROM student_enrollments se
-        WHERE se.user_id = ?
-    ");
-    $stmt->execute([$userId]);
-    $allTimeStats = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    echo json_encode([
+    sendResponse([
         'success' => true,
         'data' => [
             'enrolled' => true,
@@ -220,19 +233,17 @@ function handleGet($pdo)
             ],
             'program' => [
                 'name' => $student['program_name'],
-                'code' => $student['program_code'],
-                'duration' => $student['duration_years']
+                'code' => $student['program_code']
             ],
             'semester' => $semester,
             'subjects' => $subjectsData,
             'summary' => [
-                'gpa' => $gpa,
-                'gpa_grade' => $gpaGrade,
+                'gpa' => $gpa10,          // 10.0 scale for backward compat or detailed view
+                'gpa_4' => $gpa4,         // 4.0 scale for frontend cards
+                'gpa_text' => getGPAGrade($gpa10),
                 'total_credits' => $totalCredits,
                 'earned_credits' => $earnedCredits,
-                'overall_attendance' => $overallAttendance,
-                'attendance_status' => $overallAttendance >= 75 ? 'good' : 'warning',
-                'subjects_completed' => $allTimeStats['completed_subjects'] ?? 0,
+                'overall_attendance' => $overallAttendancePercent,
                 'subjects_enrolled' => count($subjectsData)
             ]
         ]

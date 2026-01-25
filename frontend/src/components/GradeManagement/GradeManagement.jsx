@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config';
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
@@ -20,7 +21,7 @@ const BookIcon = () => (
     </svg>
 )
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+
 
 const toSentenceCase = (str) => {
     if (!str) return '';
@@ -584,3 +585,6 @@ function GradeManagement() {
 }
 
 export default GradeManagement
+
+
+

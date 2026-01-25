@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config';
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import './ProgramManagement.css'
@@ -46,7 +47,7 @@ const AlertIcon = () => (
     </svg>
 )
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+
 
 function ProgramManagement() {
     const { token } = useAuth()
@@ -425,3 +426,6 @@ function ProgramManagement() {
 }
 
 export default ProgramManagement
+
+
+
