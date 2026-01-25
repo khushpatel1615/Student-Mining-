@@ -1,104 +1,90 @@
 <?php
 /**
- * Migration Runner
- * Executes all pending database migrations
+ * Migration Runner v2
+ * Executes all pending database migrations in alphanumeric order
  */
 
 require_once __DIR__ . '/../../backend/config/database.php';
 
 try {
     $pdo = getDBConnection();
-
     echo "=== Student Data Mining - Database Migration Runner ===\n\n";
 
-    // Migration files in order
-    $migrations = [
-        '001_remove_teacher_role.sql',
-        '002_enhanced_analytics_schema.sql'
-    ];
+    // 1. Get List of Migrations Dynamically
+    $files = scandir(__DIR__);
+    $migrations = [];
+    foreach ($files as $file) {
+        if (preg_match('/^\d{3}_.*\.sql$/', $file)) {
+            $migrations[] = $file;
+        }
+    }
+    sort($migrations); // Ensure 001, 002, 003 order
 
+    // 2. Run Each Migration
     foreach ($migrations as $migrationFile) {
         $filepath = __DIR__ . '/' . $migrationFile;
+        echo "📄 Checking migration: $migrationFile\n";
 
-        if (!file_exists($filepath)) {
-            echo "⚠️  Migration file not found: $migrationFile\n";
-            continue;
-        }
-
-        echo "📄 Running migration: $migrationFile\n";
-
-        // Read SQL file
+        // Read SQL
         $sql = file_get_contents($filepath);
 
-        // Split by semicolons to execute multiple statements
-        $statements = array_filter(
-            array_map('trim', explode(';', $sql)),
-            function ($stmt) {
-                return !empty($stmt) &&
-                    !preg_match('/^--/', $stmt) &&
-                    !preg_match('/^\/\*/', $stmt);
-            }
-        );
+        // Split by semicolon, handling simple cases
+        // A robust parser would be better, but for this project's scope, a simple split + regex filter works
+        // We prevent splitting inside comments or quoted strings if we really wanted to be fancy, 
+        // but let's stick to the previous simple logic which worked fairly well for basic SQL.
+
+        // Normalize line endings
+        $sql = str_replace("\r\n", "\n", $sql);
+
+        $rawStatements = explode(';', $sql);
+        $statements = [];
+
+        foreach ($rawStatements as $stmt) {
+            $stmt = trim($stmt);
+            if (empty($stmt))
+                continue;
+            // potential simple comment skipping
+            if (strpos($stmt, '--') === 0 && strpos($stmt, "\n") === false)
+                continue;
+
+            $statements[] = $stmt;
+        }
 
         $successCount = 0;
         $failCount = 0;
 
         foreach ($statements as $statement) {
             try {
+                // Skip comment-only chunks that might have survived
+                if (preg_match('/^--/', $statement) || preg_match('/^\/\*/', $statement))
+                    continue;
+
                 $pdo->exec($statement);
                 $successCount++;
             } catch (PDOException $e) {
-                // Some errors are acceptable (like table already exists)
+                // Ignore "exists" errors or "duplicate column" which happen on re-runs
+                $msg = $e->getMessage();
                 if (
-                    strpos($e->getMessage(), 'already exists') === false &&
-                    strpos($e->getMessage(), 'Duplicate') === false
+                    strpos($msg, 'already exists') !== false ||
+                    strpos($msg, 'Duplicate column') !== false ||
+                    strpos($msg, 'Duplicate key') !== false
                 ) {
-                    echo "   ⚠️  Error: " . $e->getMessage() . "\n";
+                    // echo "   ℹ️  Skipped (Already exists)\n";
+                } else {
+                    echo "   ⚠️  Error in $migrationFile: " . $msg . "\n";
+                    echo "   Query: " . substr($statement, 0, 50) . "...\n";
                     $failCount++;
                 }
             }
         }
 
-        echo "   ✅ Executed $successCount statements";
-        if ($failCount > 0) {
-            echo " ($failCount warnings)";
-        }
-        echo "\n\n";
+        echo "   -> Processed (Success: $successCount)\n";
     }
 
-    echo "=== Migration Complete! ===\n\n";
-
-    // Show current database status
-    echo "📊 Database Status:\n";
-
-    $stmt = $pdo->query("SELECT role, COUNT(*) as count FROM users GROUP BY role");
-    $roles = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    echo "   Users by role:\n";
-    foreach ($roles as $role) {
-        echo "   - {$role['role']}: {$role['count']}\n";
-    }
-
-    echo "\n   Tables created:\n";
-    $tables = [
-        'student_analytics',
-        'program_analytics',
-        'subject_analytics',
-        'predictions',
-        'recommendations',
-        'grade_history',
-        'import_logs'
-    ];
-
-    foreach ($tables as $table) {
-        $stmt = $pdo->query("SHOW TABLES LIKE '$table'");
-        $exists = $stmt->rowCount() > 0;
-        $status = $exists ? '✅' : '❌';
-        echo "   $status $table\n";
-    }
+    echo "\n=== Migration Process Complete ===\n";
 
 } catch (PDOException $e) {
-    echo "❌ Migration failed: " . $e->getMessage() . "\n";
+    echo "❌ Fatal DB Error: " . $e->getMessage() . "\n";
     exit(1);
 }
 ?>

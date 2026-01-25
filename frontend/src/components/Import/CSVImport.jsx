@@ -1,10 +1,11 @@
+import { API_BASE } from '../../config';
 import { useState, useRef } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { Upload, FileText, CheckCircle, AlertCircle, Download, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import './CSVImport.css'
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+
 
 function CSVImport({ onClose, onSuccess }) {
     const { token } = useAuth()
@@ -201,3 +202,6 @@ function CSVImport({ onClose, onSuccess }) {
 }
 
 export default CSVImport
+
+
+

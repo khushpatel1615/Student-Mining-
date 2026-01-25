@@ -1,3 +1,4 @@
+import { API_BASE } from '../../../config';
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -8,7 +9,7 @@ import {
 import { useAuth } from '../../../context/AuthContext';
 import './GradesTab.css';
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api';
+
 
 const GradesTab = ({ selectedSemester }) => {
     const { user, token } = useAuth();
@@ -490,3 +491,6 @@ const SubjectCardModern = ({ subject, expanded, onToggle }) => {
 };
 
 export default GradesTab;
+
+
+

@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config';
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
@@ -59,7 +60,7 @@ ChartJS.register(
     Filler
 )
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+
 
 // Safe number formatter to prevent crashes on undefined/null/NaN values
 const safeToFixed = (value, decimals = 2) => {
@@ -1280,3 +1281,6 @@ function AdminOverview() {
 }
 
 export default AdminOverview
+
+
+

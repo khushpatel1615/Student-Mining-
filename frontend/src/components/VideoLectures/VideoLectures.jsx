@@ -1,10 +1,11 @@
+import { API_BASE } from '../../config';
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { Play, CheckCircle, Clock, Video, Plus, Trash2, Edit2, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import './VideoLectures.css'
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+
 
 function VideoLectures({ subjectId = null }) {
     const { token, user } = useAuth()
@@ -226,3 +227,6 @@ function VideoLectures({ subjectId = null }) {
 }
 
 export default VideoLectures
+
+
+

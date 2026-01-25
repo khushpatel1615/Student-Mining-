@@ -1,9 +1,10 @@
+import { API_BASE } from '../../../config';
 import React, { useState, useRef, useEffect } from 'react';
 import { Camera, Save, Lock, User, Mail, Hash, AlertCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import './StudentProfile.css';
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api';
+
 
 const StudentProfile = () => {
     const { user, token, setPassword } = useAuth(); // setPassword is for setting initial password, we might need manual fetch here
@@ -294,3 +295,6 @@ const StudentProfile = () => {
 };
 
 export default StudentProfile;
+
+
+

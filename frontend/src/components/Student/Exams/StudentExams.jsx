@@ -1,8 +1,9 @@
+import { API_BASE } from '../../../config';
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../context/AuthContext'
 import './StudentExams.css'
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+
 
 function StudentExams() {
     const { token } = useAuth()
@@ -169,3 +170,6 @@ function StudentExams() {
 }
 
 export default StudentExams
+
+
+

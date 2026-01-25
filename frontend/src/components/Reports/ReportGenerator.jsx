@@ -1,10 +1,11 @@
+import { API_BASE } from '../../config';
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { FileText, Download, Loader, GraduationCap, Calendar, TrendingUp, Award } from 'lucide-react'
 import toast from 'react-hot-toast'
 import './ReportGenerator.css'
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+
 
 function ReportGenerator() {
     const { token } = useAuth()
@@ -458,3 +459,6 @@ function ReportGenerator() {
 }
 
 export default ReportGenerator
+
+
+

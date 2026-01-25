@@ -7,7 +7,10 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
 
-setCORSHeaders();
+// Enforce Admin Role for all actions in this file
+// (Or granularly per method if needed, but this file seems admin-focused)
+// We'll allow GET for teachers maybe? For now, stick to Admin as per previous logic.
+requireRole('admin');
 
 $method = $_SERVER['REQUEST_METHOD'];
 $pdo = getDBConnection();
@@ -27,26 +30,17 @@ try {
             handleDelete($pdo);
             break;
         default:
-            http_response_code(405);
-            echo json_encode(['error' => 'Method not allowed']);
+            sendError('Method not allowed', 405);
     }
 } catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
+    sendError($e->getMessage(), 500);
 }
 
 /**
- * GET - List students with pagination, search, and filters
+ * GET - List students
  */
 function handleGet($pdo)
 {
-    $user = verifyAdminToken();
-    if (!$user) {
-        http_response_code(401);
-        echo json_encode(['error' => 'Unauthorized. Admin access required.']);
-        return;
-    }
-
     $studentId = $_GET['id'] ?? null;
 
     if ($studentId) {
@@ -63,14 +57,12 @@ function handleGet($pdo)
         $student = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$student) {
-            http_response_code(404);
-            echo json_encode(['error' => 'Student not found']);
-            return;
+            sendError('Student not found', 404);
         }
 
-        echo json_encode(['success' => true, 'data' => $student]);
+        sendResponse(['success' => true, 'data' => $student]);
     } else {
-        // List students with pagination and filters
+        // List students
         $page = max(1, intval($_GET['page'] ?? 1));
         $limit = min(100, max(1, intval($_GET['limit'] ?? 20)));
         $offset = ($page - 1) * $limit;
@@ -82,26 +74,22 @@ function handleGet($pdo)
         $conditions = [];
         $params = [];
 
-        // Search filter
         if (!empty($search)) {
             $conditions[] = "(full_name LIKE ? OR email LIKE ? OR student_id LIKE ?)";
             $searchTerm = "%{$search}%";
             $params = array_merge($params, [$searchTerm, $searchTerm, $searchTerm]);
         }
 
-        // Role filter
-        if (!empty($role) && in_array($role, ['student', 'admin'])) {
+        if (!empty($role) && in_array($role, ['student', 'admin', 'teacher'])) {
             $conditions[] = "role = ?";
             $params[] = $role;
         }
 
-        // Active filter
         if ($activeOnly !== null) {
             $conditions[] = "is_active = ?";
             $params[] = $activeOnly ? 1 : 0;
         }
 
-        // Program filter
         $programId = $_GET['program_id'] ?? null;
         if (!empty($programId)) {
             $conditions[] = "program_id = ?";
@@ -110,13 +98,12 @@ function handleGet($pdo)
 
         $whereClause = count($conditions) > 0 ? 'WHERE ' . implode(' AND ', $conditions) : '';
 
-        // Get total count
-        $countSql = "SELECT COUNT(*) as total FROM users $whereClause";
-        $countStmt = $pdo->prepare($countSql);
+        // Total count
+        $countStmt = $pdo->prepare("SELECT COUNT(*) as total FROM users $whereClause");
         $countStmt->execute($params);
         $total = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
 
-        // Get students
+        // Fetch data
         $sql = "
             SELECT u.id, u.email, u.student_id, u.full_name, u.role, u.avatar_url, 
                    u.is_active, u.created_at, u.updated_at, u.last_login,
@@ -135,7 +122,7 @@ function handleGet($pdo)
         $stmt->execute($params);
         $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        echo json_encode([
+        sendResponse([
             'success' => true,
             'data' => $students,
             'pagination' => [
@@ -149,58 +136,42 @@ function handleGet($pdo)
 }
 
 /**
- * POST - Create new student
+ * POST - Create student
  */
 function handlePost($pdo)
 {
-    $user = verifyAdminToken();
-    if (!$user) {
-        http_response_code(401);
-        echo json_encode(['error' => 'Unauthorized. Admin access required.']);
-        return;
-    }
+    $data = getJsonInput();
 
-    $data = json_decode(file_get_contents('php://input'), true);
-
-    // Validate required fields
     if (empty($data['email']) || empty($data['full_name'])) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Email and full name are required']);
-        return;
+        sendError('Email and full name are required');
     }
 
-    // Validate email format
     if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Invalid email format']);
-        return;
+        sendError('Invalid email format');
     }
 
-    // Check for duplicate email
+    // Duplicate Email
     $checkStmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
     $checkStmt->execute([$data['email']]);
     if ($checkStmt->fetch()) {
-        http_response_code(409);
-        echo json_encode(['error' => 'A user with this email already exists']);
-        return;
+        sendError('A user with this email already exists', 409);
     }
 
-    // Check for duplicate student_id if provided
+    // Duplicate Student ID
     if (!empty($data['student_id'])) {
         $checkStmt = $pdo->prepare("SELECT id FROM users WHERE student_id = ?");
         $checkStmt->execute([$data['student_id']]);
         if ($checkStmt->fetch()) {
-            http_response_code(409);
-            echo json_encode(['error' => 'A user with this student ID already exists']);
-            return;
+            sendError('A user with this student ID already exists', 409);
         }
     }
 
-    // Hash password if provided, otherwise set a default
     $password = $data['password'] ?? 'password123';
     $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
-    $role = in_array($data['role'] ?? 'student', ['student', 'admin']) ? ($data['role'] ?? 'student') : 'student';
+    // Validate Role (Ensure we allow 'teacher' now!)
+    $validRoles = ['student', 'admin', 'teacher'];
+    $role = in_array($data['role'] ?? 'student', $validRoles) ? ($data['role'] ?? 'student') : 'student';
 
     $stmt = $pdo->prepare("
         INSERT INTO users (email, student_id, password_hash, full_name, role, is_active, program_id)
@@ -216,13 +187,11 @@ function handlePost($pdo)
         $data['program_id'] ?? null
     ]);
 
-    $newId = $pdo->lastInsertId();
-
-    echo json_encode([
+    sendResponse([
         'success' => true,
-        'message' => 'Student created successfully',
-        'data' => ['id' => $newId]
-    ]);
+        'message' => 'User created successfully',
+        'data' => ['id' => $pdo->lastInsertId()]
+    ], 201);
 }
 
 /**
@@ -230,61 +199,42 @@ function handlePost($pdo)
  */
 function handlePut($pdo)
 {
-    $user = verifyAdminToken();
-    if (!$user) {
-        http_response_code(401);
-        echo json_encode(['error' => 'Unauthorized. Admin access required.']);
-        return;
-    }
-
-    $data = json_decode(file_get_contents('php://input'), true);
+    $data = getJsonInput();
 
     if (empty($data['id'])) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Student ID is required']);
-        return;
+        sendError('User ID is required');
     }
 
-    // Check if student exists
+    // Exists check
     $checkStmt = $pdo->prepare("SELECT id FROM users WHERE id = ?");
     $checkStmt->execute([$data['id']]);
     if (!$checkStmt->fetch()) {
-        http_response_code(404);
-        echo json_encode(['error' => 'Student not found']);
-        return;
+        sendError('User not found', 404);
     }
 
     $fields = [];
     $params = [];
 
     if (isset($data['email'])) {
-        // Validate email format
         if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Invalid email format']);
-            return;
+            sendError('Invalid email format');
         }
-        // Check for duplicate email
+        // Unique check
         $checkStmt = $pdo->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
         $checkStmt->execute([$data['email'], $data['id']]);
         if ($checkStmt->fetch()) {
-            http_response_code(409);
-            echo json_encode(['error' => 'A user with this email already exists']);
-            return;
+            sendError('Email already in use', 409);
         }
         $fields[] = 'email = ?';
         $params[] = $data['email'];
     }
 
     if (isset($data['student_id'])) {
-        // Check for duplicate student_id
         if (!empty($data['student_id'])) {
             $checkStmt = $pdo->prepare("SELECT id FROM users WHERE student_id = ? AND id != ?");
             $checkStmt->execute([$data['student_id'], $data['id']]);
             if ($checkStmt->fetch()) {
-                http_response_code(409);
-                echo json_encode(['error' => 'A user with this student ID already exists']);
-                return;
+                sendError('Student ID already in use', 409);
             }
         }
         $fields[] = 'student_id = ?';
@@ -296,7 +246,7 @@ function handlePut($pdo)
         $params[] = $data['full_name'];
     }
 
-    if (isset($data['role']) && in_array($data['role'], ['student', 'admin'])) {
+    if (isset($data['role']) && in_array($data['role'], ['student', 'admin', 'teacher'])) {
         $fields[] = 'role = ?';
         $params[] = $data['role'];
     }
@@ -306,7 +256,7 @@ function handlePut($pdo)
         $params[] = $data['is_active'] ? 1 : 0;
     }
 
-    if (isset($data['password']) && !empty($data['password'])) {
+    if (!empty($data['password'])) {
         $fields[] = 'password_hash = ?';
         $params[] = password_hash($data['password'], PASSWORD_DEFAULT);
     }
@@ -317,9 +267,7 @@ function handlePut($pdo)
     }
 
     if (empty($fields)) {
-        http_response_code(400);
-        echo json_encode(['error' => 'No fields to update']);
-        return;
+        sendError('No fields to update');
     }
 
     $params[] = $data['id'];
@@ -327,72 +275,28 @@ function handlePut($pdo)
     $stmt = $pdo->prepare("UPDATE users SET " . implode(', ', $fields) . " WHERE id = ?");
     $stmt->execute($params);
 
-    echo json_encode(['success' => true, 'message' => 'Student updated successfully']);
+    sendResponse(['success' => true, 'message' => 'User updated successfully']);
 }
 
 /**
- * DELETE - Soft delete student
+ * DELETE - Soft delete
  */
 function handleDelete($pdo)
 {
-    $user = verifyAdminToken();
-    if (!$user) {
-        http_response_code(401);
-        echo json_encode(['error' => 'Unauthorized. Admin access required.']);
-        return;
-    }
-
     $studentId = $_GET['id'] ?? null;
-
     if (!$studentId) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Student ID is required']);
-        return;
+        sendError('ID is required');
     }
 
-    // Check if student exists
-    $checkStmt = $pdo->prepare("SELECT id, role FROM users WHERE id = ?");
-    $checkStmt->execute([$studentId]);
-    $student = $checkStmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$student) {
-        http_response_code(404);
-        echo json_encode(['error' => 'Student not found']);
-        return;
+    // Check self-delete
+    $currentUser = getAuthUser();
+    if ($currentUser && $currentUser['user_id'] == $studentId) {
+        sendError('You cannot delete your own account');
     }
 
-    // Prevent deleting yourself
-    if ($student['id'] == $user['sub']) {
-        http_response_code(400);
-        echo json_encode(['error' => 'You cannot delete your own account']);
-        return;
-    }
-
-    // Soft delete by setting is_active to false
     $stmt = $pdo->prepare("UPDATE users SET is_active = FALSE WHERE id = ?");
     $stmt->execute([$studentId]);
 
-    echo json_encode(['success' => true, 'message' => 'Student deactivated successfully']);
+    sendResponse(['success' => true, 'message' => 'User deactivated successfully']);
 }
-
-/**
- * Helper: Verify admin token
- */
-function verifyAdminToken()
-{
-    $headers = getallheaders();
-    $authHeader = $headers['Authorization'] ?? '';
-
-    if (empty($authHeader) || !preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches)) {
-        return null;
-    }
-
-    $token = $matches[1];
-    $result = verifyToken($token);
-
-    if (!$result['valid'] || $result['payload']['role'] !== 'admin') {
-        return null;
-    }
-
-    return $result['payload'];
-}
+?>

@@ -1,8 +1,9 @@
+import { API_BASE } from '../../config';
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import './NotificationBell.css'
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+
 
 function NotificationBell({ onClick }) {
     const { token } = useAuth()
@@ -43,3 +44,6 @@ function NotificationBell({ onClick }) {
 }
 
 export default NotificationBell
+
+
+

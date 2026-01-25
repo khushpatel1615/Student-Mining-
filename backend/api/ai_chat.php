@@ -4,63 +4,48 @@
  * Handles communication with Google Gemini API
  */
 
-// Headers
-// Headers
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Max-Age: 3600");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
-
-// Handle OPTIONS request
-if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
+// Headers and CORS are handled by database.php -> cors.php
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/jwt.php';
 
-// Load .env helper function
-function loadEnv($path)
-{
-    if (!file_exists($path)) {
-        return false;
-    }
-    $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    foreach ($lines as $line) {
-        if (strpos(trim($line), '#') === 0) {
-            continue;
+// 1. Authentication & Role Check
+$userPayload = requireRole('admin'); // Only admins can access this tool
+
+// 2. Rate Limiting (Simple File-Based)
+$rateLimitFile = sys_get_temp_dir() . '/ai_chat_limit_' . md5($userPayload['user_id']);
+$limitWindow = 60; // 60 seconds
+$limitCount = 10; // 10 requests per minute
+
+$currentAccess = [
+    'time' => time(),
+    'count' => 1
+];
+
+if (file_exists($rateLimitFile)) {
+    $data = json_decode(file_get_contents($rateLimitFile), true);
+    if ($data && ($data['time'] > time() - $limitWindow)) {
+        if ($data['count'] >= $limitCount) {
+            http_response_code(429);
+            echo json_encode(['status' => 'error', 'message' => 'Rate limit exceeded. Please try again later.']);
+            exit;
         }
-        list($name, $value) = explode('=', $line, 2);
-        $name = trim($name);
-        $value = trim($value);
-        if (!array_key_exists($name, $_SERVER) && !array_key_exists($name, $_ENV)) {
-            putenv(sprintf('%s=%s', $name, $value));
-            $_ENV[$name] = $value;
-            $_SERVER[$name] = $value;
-        }
+        $currentAccess = [
+            'time' => $data['time'], // Keep window start
+            'count' => $data['count'] + 1
+        ];
     }
-    return true;
 }
+file_put_contents($rateLimitFile, json_encode($currentAccess));
 
-// Load environment variables
-loadEnv(__DIR__ . '/../.env');
-
+// 3. Environment Variables
 $apiKey = getenv('GEMINI_API_KEY');
-// Make sure Gemini API Key is loaded
-if (!$apiKey && isset($_ENV['GEMINI_API_KEY'])) {
-    $apiKey = $_ENV['GEMINI_API_KEY'];
-}
-
 if (!$apiKey) {
-    // Attempt to load from alternative location or hardcoded for dev (not recommended but useful for debug ifenv fails)
-    // $apiKey = "YOUR_KEY";
     http_response_code(500);
-    echo json_encode(["status" => "error", "message" => "API key not configured."]);
+    echo json_encode(["status" => "error", "message" => "AI service not configured."]);
     exit();
 }
 
-// Get POST data
+// 4. Input Validation & Sanitization
 $data = json_decode(file_get_contents("php://input"));
 
 if (!isset($data->message)) {
@@ -69,115 +54,68 @@ if (!isset($data->message)) {
     exit();
 }
 
-$userMessage = $data->message;
-$history = isset($data->history) ? $data->history : [];
+// Limit input size (max 2000 chars)
+$userMessage = substr(trim(strip_tags($data->message)), 0, 2000);
+$history = isset($data->history) && is_array($data->history) ? $data->history : [];
 
-// ---------------------------------------------------------
-// Gather System Context from Database
-// ---------------------------------------------------------
-// ---------------------------------------------------------
-// Gather System Context from Database
-// ---------------------------------------------------------
-$contextData = "";
+if (empty($userMessage)) {
+    http_response_code(400);
+    echo json_encode(["status" => "error", "message" => "Message cannot be empty."]);
+    exit();
+}
 
+// 5. System Context (Safe & Generic)
+$contextData = "System Status: Online";
 try {
     $pdo = getDBConnection();
-    // Count Students
-    $stmt = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'student' AND is_active = 1");
-    $studentCount = $stmt->fetchColumn();
+    // Use parametrized queries safe from injection (though we are just counting here)
+    $s_count = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'student' AND is_active = 1")->fetchColumn();
+    $t_count = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'teacher' AND is_active = 1")->fetchColumn();
+    $sub_count = $pdo->query("SELECT COUNT(*) FROM subjects")->fetchColumn();
 
-    // Count Teachers
-    $stmt = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'teacher' AND is_active = 1");
-    $teacherCount = $stmt->fetchColumn();
-
-    // Count Courses/Subjects (assuming table is 'subjects')
-    $stmt = $pdo->query("SELECT COUNT(*) FROM subjects");
-    $subjectCount = $stmt->fetchColumn();
-
-    // Programs
-    $stmt = $pdo->query("SELECT COUNT(*) FROM programs");
-    $programCount = $stmt->fetchColumn();
-
-    // Recent Enrollments (Last 7 days) if table exists
-    // We'll just stick to totals to avoid errors if tables vary
-
-    $contextData = "
-    Current System Stats:
-    - Active Students: $studentCount
-    - Active Teachers: $teacherCount
-    - Total Subjects: $subjectCount
-    - Total Programs: $programCount
-    ";
-
+    $contextData = "Stats: $s_count Students, $t_count Teachers, $sub_count Subjects.";
 } catch (Exception $e) {
-    // If DB fails, just proceed without stats
-    $contextData = "System stats unavailable: " . $e->getMessage();
+    // Fail silently on stats
+    error_log("AI Chat DB Stats Error: " . $e->getMessage());
 }
 
-// ---------------------------------------------------------
-// Build System Prompt
-// ---------------------------------------------------------
 $systemPrompt = "You are an intelligent Admin Assistant for the 'Student Data Mining' application. 
 Your goal is to help the administrator manage the university dashboard.
-
 $contextData
+Please be professional, concise, and helpful. Format your responses in Markdown.";
 
-Your Capabilities:
-1. Explain how to manage students, teachers, and subjects.
-2. Provide insights based on the stats above.
-3. If the user asks to perform an action (like 'add student'), explain the steps or provide a JSON action block (future feature).
-4. Be professional, concise, and helpful. Format your responses in Markdown.
-";
-
-// ---------------------------------------------------------
-// Prepare Gemini API Request
-// ---------------------------------------------------------
-
-$url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=" . $apiKey;
+// 6. Prepare Gemini API Request
+$url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" . $apiKey;
 
 $contents = [];
-
-// History
+// Reconstruct history with role validation
+// Gemini 1.5 expects 'user' or 'model' roles
 foreach ($history as $msg) {
-    $contents[] = [
-        "role" => $msg->role === 'user' ? 'user' : 'model',
-        "parts" => [
-            ["text" => $msg->content]
-        ]
-    ];
+    if (isset($msg->role) && isset($msg->content)) {
+        $role = ($msg->role === 'user' || $msg->role === 'model') ? $msg->role : 'user';
+        $contents[] = [
+            "role" => $role,
+            "parts" => [["text" => substr(strip_tags($msg->content), 0, 1000)]]
+        ];
+    }
 }
 
-// Current Message with System Context
-// We prepend the system prompt only to the relevant turn if history is empty, 
-// OR we can rely on the model to "remember" if we put it in the first message of history.
-// Simplified approach: Prepend to the LATEST message if history is short, 
-// or if history exists, we trust the context was established (not ideal for stateless rest calls unless history is passed back fully).
-// Better approach for single-turn logic here: Prepend system prompt to the User's LATEST message to ensure it's always in context.
-// (Gemini API 1.5 allows System Instructions properly, but for simple 'generateContent' we often mix it into the prompt).
-
-$finalUserMessage = $systemPrompt . "\n\nUser Question: " . $userMessage;
-
-// If history is empty, use the combined message. 
-// If history exists, we might need to inject system prompt differently. 
-// Let's just create a new structure where the first message is the system prompt (simulated as user or model?).
-// Safest for 'generateContent' without dedicated 'system' role in 1.0/1.5 beta sometimes:
-// Just put it in the last user message.
-
-$contents[] = [
-    "role" => "user",
-    "parts" => [
-        ["text" => $finalUserMessage]
-    ]
-];
-
-// Note: If reusing history, we should be careful not to duplicate prompts. 
-// Ideally, the frontend sends history that DOES NOT include the hidden system prompt, 
-// and we only prepend it here for the current inference.
-// The code above appends the NEW message with the prompt. 
-// This is fine for now.
+// Add System Instruction (Gemini 1.5 supports system_instruction, but for simplicity/compat we can prepend to first user message or handle via prompt)
+// For 'generateContent', strictly we pass contents. 
+// We will prepend the system prompt to the context if history is empty, OR pass it as a separate system_instruction if using that specific API version/field.
+// Let's stick to the reliable 'prepend to last user message' or 'system_instruction' field if available.
+// NOTE: 1.5-flash supports 'systemInstruction'.
 
 $payload = [
-    "contents" => $contents
+    "systemInstruction" => [
+        "parts" => [["text" => $systemPrompt]]
+    ],
+    "contents" => array_merge($contents, [
+        [
+            "role" => "user",
+            "parts" => [["text" => $userMessage]]
+        ]
+    ])
 ];
 
 $options = [
@@ -185,11 +123,11 @@ $options = [
         'header' => "Content-Type: application/json\r\n",
         'method' => 'POST',
         'content' => json_encode($payload),
-        'ignore_errors' => true // Fetch content even on 4xx/5xx
+        'ignore_errors' => true
     ],
     'ssl' => [
-        'verify_peer' => false,
-        'verify_peer_name' => false
+        'verify_peer' => true,      // RE-ENABLED
+        'verify_peer_name' => true  // RE-ENABLED
     ]
 ];
 
@@ -197,39 +135,29 @@ $context = stream_context_create($options);
 $response = file_get_contents($url, false, $context);
 
 if ($response === FALSE) {
-    http_response_code(500);
-    echo json_encode(["status" => "error", "message" => "Request to Gemini API failed."]);
+    http_response_code(502);
+    echo json_encode(["status" => "error", "message" => "External service unavailable."]);
     exit();
 }
-
-// Check for HTTP error codes in $http_response_header (magic variable populated by file_get_contents)
-$statusLine = $http_response_header[0];
-preg_match('{HTTP\/\S*\s(\d{3})}', $statusLine, $match);
-$httpCode = $match[1];
 
 $responseData = json_decode($response, true);
 
-if ($httpCode != 200) {
-    http_response_code(500);
-    $details = isset($responseData['error']['message']) ? $responseData['error']['message'] : $response;
-    echo json_encode([
-        "status" => "error",
-        "message" => "API Error ($httpCode)",
-        "details" => $details
-    ]);
-    exit();
-}
-
-// Extract the text response
-$aiReply = "";
+// Check if valid response
 if (isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
     $aiReply = $responseData['candidates'][0]['content']['parts'][0]['text'];
+    echo json_encode([
+        "status" => "success",
+        "reply" => $aiReply
+    ]);
 } else {
-    $aiReply = "I'm sorry, I encountered an issue interpreting the response.";
-}
+    // Log actual error safely
+    $errorDetails = isset($responseData['error']) ? json_encode($responseData['error']) : 'Unknown';
+    error_log("Gemini API Error: " . $errorDetails);
 
-echo json_encode([
-    "status" => "success",
-    "reply" => $aiReply
-]);
+    http_response_code(500);
+    echo json_encode([
+        "status" => "error",
+        "message" => "I'm sorry, I couldn't process that request right now."
+    ]);
+}
 

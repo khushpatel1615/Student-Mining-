@@ -1,8 +1,9 @@
+import { API_BASE } from '../../../config';
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../context/AuthContext'
 import './TeacherExams.css'
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+
 
 // Icons (reusing from assignments)
 const PlusIcon = () => (
@@ -551,3 +552,6 @@ function TeacherExams() {
 }
 
 export default TeacherExams
+
+
+

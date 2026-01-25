@@ -1,10 +1,11 @@
+import { API_BASE } from '../../config';
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { Bell, Pin, Eye, ArrowLeft, Clock, Megaphone } from 'lucide-react'
 import toast from 'react-hot-toast'
 import './DiscussionForum.css'
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+
 
 function AnnouncementsPage() {
     const { token, user } = useAuth()
@@ -158,3 +159,6 @@ function AnnouncementsPage() {
 }
 
 export default AnnouncementsPage
+
+
+

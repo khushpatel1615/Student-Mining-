@@ -1,10 +1,11 @@
+import { API_BASE } from '../../../config';
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../context/AuthContext'
 import { Upload, FileText, CheckCircle, Clock, AlertCircle, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import './StudentAssignments.css'
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+
 
 function StudentAssignments() {
     const { token } = useAuth()
@@ -323,3 +324,6 @@ function StudentAssignments() {
 }
 
 export default StudentAssignments
+
+
+

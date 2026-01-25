@@ -1,8 +1,9 @@
+import { API_BASE } from '../../../config';
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../context/AuthContext'
 import './TeacherGrades.css'
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+
 
 // Icons
 const DownloadIcon = () => (
@@ -390,3 +391,6 @@ function TeacherGrades() {
 }
 
 export default TeacherGrades
+
+
+

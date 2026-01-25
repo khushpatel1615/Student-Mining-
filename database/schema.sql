@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) DEFAULT NULL,
     google_id VARCHAR(255) DEFAULT NULL,
     full_name VARCHAR(255) NOT NULL,
-    role ENUM('student', 'admin') NOT NULL DEFAULT 'student',
+    role ENUM('student', 'admin', 'teacher') NOT NULL DEFAULT 'student',
     avatar_url VARCHAR(500) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

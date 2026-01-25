@@ -32,7 +32,7 @@ import {
     ChevronDown
 } from 'lucide-react'
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+import { API_BASE } from '../config'
 
 const StudentDashboard = () => {
     const { user, token, logout } = useAuth()
@@ -104,7 +104,9 @@ const StudentDashboard = () => {
     const fetchDashboardData = useCallback(async () => {
         setRefreshing(true)
         try {
-            const dashRes = await fetch(`${API_BASE}/student_dashboard.php`, {
+            // Include semester in query if selected
+            const params = selectedSemester ? `?semester=${selectedSemester}` : '';
+            const dashRes = await fetch(`${API_BASE}/student_dashboard.php${params}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const dashData = await dashRes.json();
@@ -118,30 +120,19 @@ const StudentDashboard = () => {
                 const summary = dashData.data.summary;
                 const subjects = dashData.data.subjects;
 
-                // Extract available semesters from subjects with null checks
+                // Extract available semesters logic improved by backend supporting full data
+                // For now keep the frontend logic but ensure it uses the data from subjects
                 const semesters = [...new Set(
                     subjects
                         .map(s => s.subject?.semester)
-                        .filter(sem => sem != null && sem !== undefined)
+                        .filter(sem => sem != null)
                 )].sort((a, b) => a - b);
-
-                console.log('Available semesters:', semesters);
-                console.log('User current_semester:', user?.current_semester);
 
                 setAvailableSemesters(semesters);
 
-                // Set default semester to user's current semester or the highest semester
                 if (semesters.length > 0 && !selectedSemester) {
-                    const defaultSem = user?.current_semester && semesters.includes(user.current_semester)
-                        ? user.current_semester
-                        : Math.max(...semesters);
-                    console.log('Setting default semester to:', defaultSem);
+                    const defaultSem = dashData.data.semester || 1;
                     setSelectedSemester(defaultSem);
-                } else if (semesters.length === 0 && !selectedSemester) {
-                    // Fallback to semester 1 if no semesters found
-                    console.log('No semesters found, defaulting to 1');
-                    setSelectedSemester(1);
-                    setAvailableSemesters([1]);
                 }
 
                 let upcoming = [];
@@ -161,7 +152,7 @@ const StudentDashboard = () => {
                     name: sub.subject.name,
                     code: sub.subject.code,
                     grade: sub.grade_letter || 'N/A',
-                    progress: sub.status === 'completed' ? 100 : (sub.attendance.percentage || 0),
+                    progress: sub.attendance?.percentage || 0,
                     attendance: sub.attendance,
                     overall_score: sub.overall_grade,
                     credits: sub.subject.credits,
@@ -171,6 +162,8 @@ const StudentDashboard = () => {
 
                 setDashboardData({
                     gpa: summary.gpa,
+                    gpa_4: summary.gpa_4,
+                    gpa_text: summary.gpa_text,
                     attendance: summary.overall_attendance,
                     credits: summary.earned_credits,
                     total_credits: summary.total_credits,
@@ -198,77 +191,18 @@ const StudentDashboard = () => {
 
 
 
-    // Stats Cards Component
+    const getProgressColor = (gradient) => {
+        switch (gradient) {
+            case 'gradient-purple': return '#6366f1'
+            case 'gradient-blue': return '#3b82f6'
+            case 'gradient-green': return '#22c55e'
+            case 'gradient-orange': return '#f97316'
+            default: return '#6366f1'
+        }
+    }
+
+    // Stats Cards Component (Legacy - using inline now but keeping structure)
     const StatsCards = () => {
-        const containerVariants = {
-            hidden: { opacity: 0 },
-            visible: {
-                opacity: 1,
-                transition: { staggerChildren: 0.1 }
-            }
-        }
-
-        const cardVariants = {
-            hidden: { opacity: 0, y: 20 },
-            visible: {
-                opacity: 1,
-                y: 0,
-                transition: { type: 'spring', stiffness: 100, damping: 15 }
-            }
-        }
-
-        const cards = [
-            {
-                title: 'Current GPA',
-                value: dashboardData.gpa,
-                subtitle: 'Cumulative Grade Point',
-                icon: GraduationCap,
-                gradient: 'gradient-purple',
-                progress: (dashboardData.gpa / 4.0) * 100,
-                trend: 'Latest Semester',
-                trendUp: true
-            },
-            {
-                title: 'Attendance',
-                value: `${dashboardData.attendance}%`,
-                subtitle: 'Overall Attendance',
-                icon: Clock,
-                gradient: 'gradient-green',
-                progress: dashboardData.attendance,
-                trend: dashboardData.attendance >= 75 ? 'Good Standing' : 'Warning',
-                trendUp: dashboardData.attendance >= 75
-            },
-            {
-                title: 'Credits Earned',
-                value: dashboardData.credits,
-                subtitle: `Total Earned`,
-                icon: Award,
-                gradient: 'gradient-blue',
-                progress: (dashboardData.credits / (dashboardData.total_credits || 120)) * 100,
-                trend: 'Academic Progress',
-                trendUp: true
-            },
-            {
-                title: 'Pending Tasks',
-                value: dashboardData.upcoming_assignments.length,
-                subtitle: 'Next 14 Days',
-                icon: AlertCircle,
-                gradient: 'gradient-orange',
-                progress: 100 - (dashboardData.upcoming_assignments.length * 10),
-                trend: dashboardData.upcoming_assignments.length > 3 ? 'Heavy Workload' : 'Manageable',
-                trendUp: dashboardData.upcoming_assignments.length <= 3
-            }
-        ]
-
-        const getProgressColor = (gradient) => {
-            switch (gradient) {
-                case 'gradient-purple': return '#6366f1'
-                case 'gradient-blue': return '#3b82f6'
-                case 'gradient-green': return '#22c55e'
-                case 'gradient-orange': return '#f97316'
-                default: return '#6366f1'
-            }
-        }
 
         return (
             <motion.div
@@ -409,21 +343,32 @@ const StudentDashboard = () => {
                                     {[
                                         {
                                             title: selectedSemester ? 'Semester GPA' : 'Current GPA',
-                                            value: semesterStats.gpa,
-                                            subtitle: selectedSemester ? `Semester ${selectedSemester}` : 'Cumulative Grade Point',
+                                            value: dashboardData.gpa,
+                                            subtitle: `Scale 10.0`,
                                             icon: GraduationCap,
                                             gradient: 'gradient-purple',
-                                            trend: semesterStats.gpa >= 3.5 ? 'Excellent' : semesterStats.gpa >= 3.0 ? 'Good' : 'Needs Improvement',
-                                            trendUp: semesterStats.gpa >= 3.0
+                                            progress: (dashboardData.gpa / 10.0) * 100,
+                                            trend: dashboardData.gpa_text,
+                                            trendUp: dashboardData.gpa >= 6.0
                                         },
-
+                                        {
+                                            title: 'GPA (4.0)',
+                                            value: dashboardData.gpa_4,
+                                            subtitle: 'US Standard',
+                                            icon: TrendingUp,
+                                            gradient: 'gradient-green',
+                                            progress: (dashboardData.gpa_4 / 4.0) * 100,
+                                            trend: 'On Track',
+                                            trendUp: true
+                                        },
                                         {
                                             title: 'Credits',
-                                            value: semesterStats.credits,
+                                            value: dashboardData.credits,
                                             subtitle: selectedSemester ? `This Semester` : 'Total Earned',
                                             icon: Award,
                                             gradient: 'gradient-blue',
-                                            trend: 'On Track',
+                                            progress: (dashboardData.credits / (dashboardData.total_credits || 1)) * 100,
+                                            trend: 'Academic Progress',
                                             trendUp: true
                                         },
                                         {
@@ -432,6 +377,7 @@ const StudentDashboard = () => {
                                             subtitle: 'Next 14 Days',
                                             icon: AlertCircle,
                                             gradient: 'gradient-orange',
+                                            progress: 100 - (dashboardData.upcoming_assignments.length * 10),
                                             trend: dashboardData.upcoming_assignments.length > 3 ? 'Heavy Workload' : 'Manageable',
                                             trendUp: dashboardData.upcoming_assignments.length <= 3
                                         }
@@ -449,8 +395,16 @@ const StudentDashboard = () => {
                                                     transition: { duration: 0.3 }
                                                 }}
                                             >
-                                                <div className="stat-icon-wrapper">
-                                                    <div className={`stat-icon-inner ${card.gradient}`}>
+                                                <div className="stat-progress-ring" style={{ marginBottom: '1rem', width: '56px', height: '56px', position: 'relative' }}>
+                                                    <CircularProgress
+                                                        value={card.progress || 0}
+                                                        size={56}
+                                                        strokeWidth={6}
+                                                        color={getProgressColor(card.gradient)}
+                                                        trailColor="rgba(0,0,0,0.05)"
+                                                        showValue={false}
+                                                    />
+                                                    <div className={`stat-icon-inner ${card.gradient}`} style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', borderRadius: '50%', padding: '8px' }}>
                                                         <Icon size={20} />
                                                     </div>
                                                 </div>

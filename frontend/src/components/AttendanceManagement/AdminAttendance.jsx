@@ -1,10 +1,11 @@
+import { API_BASE } from '../../config';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Save, CheckCircle, XCircle, AlertTriangle, Calendar, Filter, Loader } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './AdminAttendance.css';
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api';
+
 
 const AdminAttendance = () => {
     const { token } = useAuth();
@@ -343,3 +344,6 @@ const AdminAttendance = () => {
 };
 
 export default AdminAttendance;
+
+
+

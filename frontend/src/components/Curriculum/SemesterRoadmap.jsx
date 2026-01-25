@@ -1,8 +1,9 @@
+import { API_BASE } from '../../config';
 import { useState, useEffect } from 'react'
 import SubjectCard from './SubjectCard'
 import './SemesterRoadmap.css'
 
-const API_BASE = 'http://localhost/StudentDataMining/backend/api'
+
 
 function SemesterRoadmap({ programId = 1 }) {
     const [semesters, setSemesters] = useState([])
@@ -126,3 +127,6 @@ function SemesterRoadmap({ programId = 1 }) {
 }
 
 export default SemesterRoadmap
+
+
+

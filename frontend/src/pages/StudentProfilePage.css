@@ -235,6 +235,10 @@
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
 }
 
+.student-profile-page .enrollments-section.mining-section h3 svg {
+    color: #6366f1;
+}
+
 .student-profile-page .enrollments-section h3 {
     display: flex;
     align-items: center;

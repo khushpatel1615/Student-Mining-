@@ -8,23 +8,48 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
+// Load EnvLoader
+require_once __DIR__ . '/EnvLoader.php';
+
+// Load environment variables
+EnvLoader::load(__DIR__ . '/../.env');
+
+// Required Environment Variables
+$requiredVars = ['DB_HOST', 'DB_NAME', 'DB_USER', 'JWT_SECRET'];
+foreach ($requiredVars as $var) {
+    if (!getenv($var) && !isset($_ENV[$var])) {
+        http_response_code(500);
+        die(json_encode(['success' => false, 'error' => 'Server configuration error: Missing required environment variables.']));
+    }
+}
+
 // Database credentials
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'student_data_mining');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+define('DB_NAME', getenv('DB_NAME') ?: 'student_data_mining');
+define('DB_USER', getenv('DB_USER') ?: 'root');
+define('DB_PASS', getenv('DB_PASS') ?: '');
 define('DB_CHARSET', 'utf8mb4');
 
 // JWT Configuration
-define('JWT_SECRET', 'student-data-mining-secret-key-2024-change-in-production');
-define('JWT_EXPIRY', 86400); // 24 hours in seconds
+define('JWT_SECRET', getenv('JWT_SECRET'));
+define('JWT_EXPIRY', getenv('JWT_EXPIRY') ?: 86400); // 24 hours in seconds
 
 // Google OAuth Configuration
-define('GOOGLE_CLIENT_ID', '558182958130-dd2vsg1k4vrgheuua9oe1h0534586ps5.apps.googleusercontent.com');
-define('GOOGLE_CLIENT_SECRET', 'YOUR_GOOGLE_CLIENT_SECRET');
+define('GOOGLE_CLIENT_ID', getenv('GOOGLE_CLIENT_ID'));
+define('GOOGLE_CLIENT_SECRET', getenv('GOOGLE_CLIENT_SECRET'));
 
 // CORS Configuration
-define('ALLOWED_ORIGIN', 'http://localhost:5173');
+// CORS Configuration
+// CORS Configuration
+define('ALLOWED_ORIGIN', getenv('ALLOWED_ORIGIN') ?: 'http://localhost:5173');
+
+// Load and Validate CORS
+require_once __DIR__ . '/cors.php';
+handleCORS();
+
+// Load API Helpers
+require_once __DIR__ . '/../includes/api_helpers.php';
+
 
 // PDO Database Connection
 function getDBConnection()
@@ -37,7 +62,7 @@ function getDBConnection()
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES => false,
-            PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true, // Enable buffered queries for migrations
+            PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
         ];
 
         try {
@@ -52,18 +77,10 @@ function getDBConnection()
     return $pdo;
 }
 
-// Set CORS headers - NOW HANDLED BY .htaccess
+// Deprecated: setCORSHeaders - kept for backward compat if called explicitly, but empty as handled globally
 function setCORSHeaders()
 {
-    // Clear any output buffers
-    if (ob_get_level())
-        ob_clean();
-
-    // CORS headers are now set by Apache .htaccess to prevent duplicate headers
-    // Keeping only Content-Type header for JSON responses
-    header('Content-Type: application/json; charset=utf-8');
-
-    // OPTIONS requests are handled by .htaccess
+    // CORS is now handled globally by handleCORS() on include
 }
 
 // JSON response helper
