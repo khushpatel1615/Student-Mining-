@@ -1,0 +1,2 @@
+# This file ensures the attendance data directory exists
+# CSV attendance files stored here won't be committed (see .gitignore)

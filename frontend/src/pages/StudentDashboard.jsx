@@ -10,6 +10,15 @@ import GradesTab from '../components/Student/Grades/GradesTab'
 import StudentProfile from '../components/Student/Profile/StudentProfile'
 import StudentAssignments from '../components/Student/Assignments/StudentAssignments'
 import StudentExams from '../components/Student/Exams/StudentExams'
+import Analytics from '../components/Student/Analytics/Analytics'
+import SkillsMap from '../components/Student/SkillsMap/SkillsMap'
+import CareerFit from '../components/Student/CareerFit/CareerFit'
+import CoursePicks from '../components/Student/CoursePicks/CoursePicks'
+import StudyPlanner from '../components/Student/StudyPlanner/StudyPlanner'
+import Performance from '../components/Student/Performance/Performance'
+import Submissions from '../components/Student/Submissions/Submissions'
+import Difficulty from '../components/Student/Difficulty/Difficulty'
+import Badges from '../components/Student/Badges/Badges'
 
 import ReportGenerator from '../components/Reports/ReportGenerator'
 import AnnouncementsPage from '../components/Discussions/AnnouncementsPage'
@@ -565,6 +574,60 @@ const StudentDashboard = () => {
                     {(activeTab === 'schedule' || activeTab === 'calendar') && (
                         <div className="card">
                             <CalendarManagement role="student" />
+                        </div>
+                    )}
+
+                    {activeTab === 'analytics' && (
+                        <div className="card">
+                            <Analytics />
+                        </div>
+                    )}
+
+                    {activeTab === 'skills-map' && (
+                        <div className="card">
+                            <SkillsMap />
+                        </div>
+                    )}
+
+                    {activeTab === 'career-fit' && (
+                        <div className="card">
+                            <CareerFit />
+                        </div>
+                    )}
+
+                    {activeTab === 'course-picks' && (
+                        <div className="card">
+                            <CoursePicks />
+                        </div>
+                    )}
+
+                    {activeTab === 'study-planner' && (
+                        <div className="card">
+                            <StudyPlanner />
+                        </div>
+                    )}
+
+                    {activeTab === 'performance' && (
+                        <div className="card">
+                            <Performance />
+                        </div>
+                    )}
+
+                    {activeTab === 'submissions' && (
+                        <div className="card">
+                            <Submissions />
+                        </div>
+                    )}
+
+                    {activeTab === 'difficulty' && (
+                        <div className="card">
+                            <Difficulty />
+                        </div>
+                    )}
+
+                    {activeTab === 'badges' && (
+                        <div className="card">
+                            <Badges />
                         </div>
                     )}
                 </div>

@@ -138,3 +138,65 @@
     "user": "khushpatel1615@gmail.com"
 }
 ----------------------------------------
+[2026-01-26 23:44:41] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc2OTM1NTExNSwiZXhwIjoxNzY5NDQxNTE1LCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.V8XFKFuZUlMhZ7JFfwU_4ZP1VDFe6Qe3dLtOxZhznZo",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Sec-Purpose": "prefetch;prerender",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-01-26 23:44:41] [VERIFY-TOKEN] Token verification result
+{
+    "valid": false,
+    "error": "Token expired"
+}
+----------------------------------------
+[2026-01-26 23:44:41] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc2OTM1NTExNSwiZXhwIjoxNzY5NDQxNTE1LCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.V8XFKFuZUlMhZ7JFfwU_4ZP1VDFe6Qe3dLtOxZhznZo",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Sec-Purpose": "prefetch;prerender",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-01-26 23:44:41] [VERIFY-TOKEN] Token verification result
+{
+    "valid": false,
+    "error": "Token expired"
+}
+----------------------------------------
