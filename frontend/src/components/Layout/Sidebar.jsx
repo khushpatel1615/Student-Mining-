@@ -38,9 +38,18 @@ const Sidebar = ({ role = 'student', onLogout, collapsed, mobileMenuOpen, onTogg
 
     const studentMenuItems = [
         { id: 'overview', label: 'Overview', icon: LayoutDashboard, tab: 'overview' },
+        { id: 'analytics', label: 'Analytics', icon: BarChart3, tab: 'analytics' },
+        { id: 'skills-map', label: 'Skills Map', icon: Brain, tab: 'skills-map' },
+        { id: 'career-fit', label: 'Career Fit', icon: Briefcase, tab: 'career-fit' },
+        { id: 'course-picks', label: 'Course Picks', icon: BookOpen, tab: 'course-picks' },
+        { id: 'study-planner', label: 'Study Planner', icon: Calendar, tab: 'study-planner' },
         { id: 'grades', label: 'Grades', icon: GraduationCap, tab: 'grades' },
+        { id: 'performance', label: 'Performance', icon: BarChart3, tab: 'performance' },
         { id: 'assignments', label: 'Assignments', icon: FileText, tab: 'assignments' },
+        { id: 'submissions', label: 'Submissions', icon: ClipboardList, tab: 'submissions' },
         { id: 'exams', label: 'Exams', icon: ClipboardCheck, tab: 'exams' },
+        { id: 'difficulty', label: 'Difficulty', icon: Layers, tab: 'difficulty' },
+        { id: 'badges', label: 'Badges', icon: QrCode, tab: 'badges' },
         { id: 'reports', label: 'Reports', icon: Download, tab: 'reports' },
         { id: 'attendance', label: 'Attendance', icon: CheckSquare, tab: 'attendance' },
         { id: 'announcements', label: 'Announcements', icon: Bell, tab: 'announcements' },

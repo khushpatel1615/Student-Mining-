@@ -1,34 +1,135 @@
-# Dependencies
-node_modules
-/frontend/node_modules
-/backend/vendor
+# ============================================
+# Dependencies & Packages
+# ============================================
+node_modules/
+**/node_modules/
+vendor/
+bower_components/
+package-lock.json
+yarn.lock
+composer.lock
 
-# Environment variables
+# ============================================
+# Environment Variables (NEVER COMMIT!)
+# ============================================
 .env
+.env.*
 .env.local
-.env.*.local
+.env.production
+.env.development
+backend/.env
+frontend/.env
+**/.env
+**/.env.*
 
-# IDE
-.vscode
-.idea
+# ============================================
+# IDE & Editor Files
+# ============================================
+.vscode/
+.idea/
 *.swp
 *.swo
+*.swn
+*~
+.DS_Store
+Thumbs.db
+*.sublime-project
+*.sublime-workspace
+.editorconfig
 
-# Build output
-dist
-build
-/frontend/dist
+# ============================================
+# Build Output & Distribution
+# ============================================
+dist/
+build/
+/frontend/dist/
+/frontend/build/
+*.min.css
+*.min.js
+*.map
 
-# Logs
+# ============================================
+# Logs & Error Files
+# ============================================
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 error_log
+php_errors.log
+debug.log
+/backend/debug/
 
-# User Uploads
+# ============================================
+# User Uploads & Generated Content
+# ============================================
 /backend/uploads/*
 !/backend/uploads/.gitkeep
+/backend/data/attendance/*.csv
+!/backend/data/attendance/.gitkeep
 
-# Debug & Temp
-/backend/debug/
+# ============================================
+# Testing & Coverage
+# ============================================
+coverage/
+.nyc_output/
+*.test.js
+*.spec.js
+
+# ============================================
+# OS System Files
+# ============================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ============================================
+# Temporary & Cache Files
+# ============================================
+*.tmp
+*.temp
+*.cache
+.cache/
+tmp/
+temp/
+.sass-cache/
+
+# ============================================
+# Documentation (Optional - Comment out if needed)
+# ============================================
 /docs/
+
+# ============================================
+# Archive/Backup Files
+# ============================================
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+*.bak
+*.backup
+*.old
+*.orig
+
+# ============================================
+# Database Backups (Optional)
+# ============================================
+*.sql.gz
+backup_*.sql
+database_backup_*.sql
+
+# ============================================
+# Additional Patterns
+# ============================================
+# Git submodules
+.git/modules/
+
+# Keep empty directories
+!.gitkeep
+!**/.gitkeep
