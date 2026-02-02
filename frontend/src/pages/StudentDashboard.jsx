@@ -589,9 +589,7 @@ const StudentDashboard = () => {
                     )}
 
                     {activeTab === 'analytics' && (
-                        <div className="card">
-                            <Analytics />
-                        </div>
+                        <Analytics />
                     )}
 
                     {activeTab === 'skills-map' && (
