@@ -6022,3 +6022,1167 @@
     "user": "khushpatel1615@gmail.com"
 }
 ----------------------------------------
+[2026-02-02 04:34:57] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 04:34:57] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 04:34:57] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 04:34:57] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 04:34:57] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 04:34:57] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 04:35:02] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 04:35:02] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 04:35:02] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 04:35:02] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 04:35:02] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 04:35:02] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 04:35:20] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 04:35:20] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 04:35:20] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 04:35:20] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 04:35:20] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 04:35:20] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 04:37:57] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 04:37:57] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 04:37:57] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 04:37:57] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 04:37:57] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 04:37:57] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 04:51:16] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 04:51:16] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 04:51:16] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 04:51:16] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 04:51:16] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 04:51:16] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 04:51:27] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 04:51:27] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 04:51:27] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 04:51:27] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 04:51:27] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 04:51:27] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 04:51:29] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 04:51:29] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 04:51:29] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 04:51:29] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 04:51:29] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 04:51:49] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 04:51:49] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 04:51:49] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 04:51:49] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 04:51:49] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 04:51:49] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 04:51:53] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 04:51:53] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 04:51:53] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 04:51:53] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 04:51:53] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 04:51:53] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 05:16:03] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 05:16:03] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 05:16:03] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 05:16:03] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 05:16:03] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 05:16:03] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 05:16:19] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 05:16:19] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 05:16:19] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 05:16:19] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 05:16:19] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 05:16:19] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 05:16:23] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 05:16:23] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 05:16:23] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 05:16:23] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 05:16:23] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 05:19:02] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 05:19:02] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 05:19:02] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 05:19:02] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 05:19:02] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 05:19:19] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 05:19:19] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 05:19:19] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 05:19:19] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 05:19:19] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 05:19:19] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 05:19:21] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 05:19:21] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 05:19:21] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 05:19:21] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 05:19:21] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 05:19:21] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 05:19:24] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 05:19:24] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 05:19:24] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 05:19:24] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 05:19:24] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 05:19:24] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 05:19:25] [VERIFY-TOKEN] Token verification request
+{
+    "token_present": true,
+    "method": "GET",
+    "headers": {
+        "Host": "localhost",
+        "Connection": "keep-alive",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTdHVkZW50RGF0YU1pbmluZyIsImlhdCI6MTc3MDAwMTg4MiwiZXhwIjoxNzcwMDg4MjgyLCJ1c2VyX2lkIjozLCJlbWFpbCI6ImtodXNocGF0ZWwxNjE1QGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiZnVsbF9uYW1lIjoiS2h1c2ggUGF0ZWwifQ.vSjy0sEfaiYY1y9H5i1VY9ibh83D_1_mmz4Wbl-oIEc",
+        "User-Agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/144.0.0.0 Safari\/537.36",
+        "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+        "Content-Type": "application\/json",
+        "sec-ch-ua-mobile": "?0",
+        "Accept": "*\/*",
+        "Origin": "http:\/\/localhost:5173",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "http:\/\/localhost:5173\/",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "en-CA,en-GB;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+}
+----------------------------------------
+[2026-02-02 05:19:25] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 05:19:25] [VERIFY-TOKEN] Token verification result
+{
+    "valid": true,
+    "error": null
+}
+----------------------------------------
+[2026-02-02 05:19:25] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------
+[2026-02-02 05:19:25] [VERIFY-TOKEN] Token verified successfully
+{
+    "user": "khushpatel1615@gmail.com"
+}
+----------------------------------------

@@ -44,18 +44,19 @@ export const KPICard = ({ title, value, subValue, trend, trendValue, icon: Icon,
             <div className="kpi-header">
                 <span className="kpi-title">{title}</span>
                 <div className={`kpi-icon-wrapper ${theme.bg}`}>
-                    <Icon size={20} className={theme.text} strokeWidth={2.5} />
+                    <Icon size={18} className={theme.text} strokeWidth={2.5} />
                 </div>
             </div>
 
-            <div className="kpi-content">
+            <div className="kpi-content" style={{ marginTop: 'auto' }}>
                 <div className="kpi-value-group">
                     <h3>{value}</h3>
                     <div className={`kpi-delta ${trendClass}`}>
-                        <TrendIcon size={14} strokeWidth={3} />
+                        <TrendIcon size={12} strokeWidth={3} />
                         <span>{trendValue}</span>
                     </div>
                 </div>
+                {/* Sparkline */}
                 <div className="kpi-chart-mini">
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={sparkData}>
@@ -63,7 +64,7 @@ export const KPICard = ({ title, value, subValue, trend, trendValue, icon: Icon,
                                 type="monotone"
                                 dataKey="v"
                                 stroke={theme.hex}
-                                strokeWidth={3}
+                                strokeWidth={2.5}
                                 dot={false}
                                 isAnimationActive={false}
                             />
@@ -144,36 +145,47 @@ export const LineChartCard = ({ title, subTitle, data, dataKey, color, fillId })
     );
 };
 
-export const GaugeCard = ({ title, score, label, color }) => {
+export const GaugeCard = ({ title, score, label, color, icon: Icon }) => {
     return (
         <div className="analytics-card">
             <div className="kpi-header">
                 <span className="kpi-title">{title}</span>
+                {Icon && (
+                    <div className="kpi-icon-wrapper" style={{ backgroundColor: `${color}15` }}>
+                        <Icon size={18} color={color} strokeWidth={2.5} />
+                    </div>
+                )}
             </div>
             <div className="gauge-container">
-                <div className="gauge-chart-wrapper">
+                <div className="gauge-chart-wrapper" style={{ height: '140px', marginTop: '-10px' }}>
                     <ResponsiveContainer width="100%" height="100%">
                         <RadialBarChart
                             cx="50%"
-                            cy="75%"
-                            innerRadius="75%"
-                            outerRadius="100%"
-                            barSize={18}
+                            cy="80%"
+                            innerRadius="80%"
+                            outerRadius="110%"
+                            barSize={12}
                             data={[{ value: score, fill: color }]}
                             startAngle={180}
                             endAngle={0}
                         >
                             <RadialBar
-                                background={{ fill: '#f3f4f6' }}
+                                background={{ fill: '#f1f5f9' }}
                                 clockWise
                                 dataKey="value"
-                                cornerRadius={20}
+                                cornerRadius={10}
                             />
                         </RadialBarChart>
                     </ResponsiveContainer>
-                    <div className="gauge-overlay" style={{ marginTop: '30px' }}>
-                        <span className="gauge-value" style={{ color: color }}>{score}</span>
-                        <span className="gauge-label" style={{ color: color }}>{label}</span>
+                    <div className="gauge-overlay" style={{ marginTop: '0' }}>
+                        <span className="gauge-value" style={{ color: color, fontSize: '2rem' }}>{score}</span>
+                        <span className="gauge-label" style={{
+                            color: color,
+                            fontSize: '0.7rem',
+                            marginTop: '2px',
+                            background: `${color}15`,
+                            padding: '2px 8px'
+                        }}>{label}</span>
                     </div>
                 </div>
             </div>

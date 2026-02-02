@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { API_BASE } from '../../../config';
 import { motion } from 'framer-motion';
-import { Activity, Users, Award, Zap, AlertTriangle } from 'lucide-react';
+import { Activity, Users, Award, Zap, AlertTriangle, Bot } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { KPICard, LineChartCard, GaugeCard } from './ChartComponents';
 import './Analytics.css';
@@ -136,6 +136,7 @@ const Analytics = () => {
                     score={riskScore}
                     label={safeData.risk_label || 'Unknown'}
                     color={riskScore > 50 ? '#22c55e' : '#ef4444'}
+                    icon={Bot}
                 />
                 <KPICard
                     title="Attendance"
