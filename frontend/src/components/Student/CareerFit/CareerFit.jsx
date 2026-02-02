@@ -10,8 +10,10 @@ const CareerFit = () => {
     const [careers, setCareers] = useState([]);
 
     useEffect(() => {
-        fetchProfile();
-    }, []);
+        if (user && token) {
+            fetchProfile();
+        }
+    }, [user, token]);
 
     const fetchProfile = async () => {
         try {
@@ -19,15 +21,32 @@ const CareerFit = () => {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
-            if (data.success) {
+            if (data.success && data.data && data.data.grade_avg !== null) {
                 setProfile(data.data);
                 generateCareerRecommendations(data.data);
+            } else {
+                // If analytics data is missing, try fallback
+                fetchFallbackData();
             }
         } catch (err) {
             console.error(err);
         } finally {
             setLoading(false);
         }
+    };
+
+    // Fallback: Fetch basic gpa if analytics profile is incomplete
+    const fetchFallbackData = async () => {
+        try {
+            const response = await fetch(`${API_BASE}/student_dashboard.php?action=summary`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            if (data.success && data.data.summary) {
+                const gpa = data.data.summary.gpa_4 || (data.data.summary.gpa ? data.data.summary.gpa / 2.5 : 0);
+                generateCareerRecommendations({ grade_avg: gpa });
+            }
+        } catch (e) { console.error(e); }
     };
 
     const generateCareerRecommendations = (profileData) => {

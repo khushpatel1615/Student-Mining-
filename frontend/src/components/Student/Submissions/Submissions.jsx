@@ -9,8 +9,10 @@ const Submissions = () => {
     const [assignments, setAssignments] = useState([]);
 
     useEffect(() => {
-        fetchSubmissions();
-    }, []);
+        if (token) {
+            fetchSubmissions();
+        }
+    }, [token]);
 
     const fetchSubmissions = async () => {
         try {
@@ -31,7 +33,7 @@ const Submissions = () => {
     const getStatusInfo = (assignment) => {
         const dueDate = new Date(assignment.due_date);
         const now = new Date();
-        const hasSubmission = assignment.submission_id;
+        const hasSubmission = assignment.my_submission;
 
         if (hasSubmission) {
             return {
@@ -57,9 +59,9 @@ const Submissions = () => {
         }
     };
 
-    const submittedCount = assignments.filter(a => a.submission_id).length;
-    const pendingCount = assignments.filter(a => !a.submission_id && new Date(a.due_date) > new Date()).length;
-    const missedCount = assignments.filter(a => !a.submission_id && new Date(a.due_date) <= new Date()).length;
+    const submittedCount = assignments.filter(a => a.my_submission).length;
+    const pendingCount = assignments.filter(a => !a.my_submission && new Date(a.due_date) > new Date()).length;
+    const missedCount = assignments.filter(a => !a.my_submission && new Date(a.due_date) <= new Date()).length;
 
     if (loading) {
         return <div style={{ padding: '2rem', textAlign: 'center' }}><div className="spinner"></div><p>Loading submissions...</p></div>;
@@ -108,9 +110,9 @@ const Submissions = () => {
                                         <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                                             {assignment.subject_name} • Due: {new Date(assignment.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                         </div>
-                                        {assignment.submission_id && assignment.grade && (
+                                        {assignment.my_submission && assignment.my_submission.marks_obtained && (
                                             <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#16a34a', fontWeight: 600 }}>
-                                                Grade: {assignment.grade}/{assignment.total_marks}
+                                                Grade: {assignment.my_submission.marks_obtained}/{assignment.total_points}
                                             </div>
                                         )}
                                     </div>

@@ -10,8 +10,10 @@ const Performance = () => {
     const [summary, setSummary] = useState({ gpa: 0, attendance: 0 });
 
     useEffect(() => {
-        fetchPerformance();
-    }, []);
+        if (token) {
+            fetchPerformance();
+        }
+    }, [token]);
 
     const fetchPerformance = async () => {
         try {
@@ -29,10 +31,10 @@ const Performance = () => {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const summaryData = await summaryResponse.json();
-            if (summaryData.success) {
+            if (summaryData.success && summaryData.data.summary) {
                 setSummary({
-                    gpa: summaryData.data.gpa || 0,
-                    attendance: summaryData.data.attendance || 0
+                    gpa: summaryData.data.summary.gpa_4 || summaryData.data.summary.gpa || 0,
+                    attendance: summaryData.data.summary.overall_attendance || 0
                 });
             }
         } catch (err) {
@@ -113,10 +115,10 @@ const Performance = () => {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                                     <div style={{ textAlign: 'center' }}>
                                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Score</div>
-                                        <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>{grade.marks || '-'}/{grade.total_marks || 100}</div>
+                                        <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>{grade.final_percentage || '-'}/{grade.total_marks || 100}</div>
                                     </div>
-                                    <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: getGradeColor(grade.grade), color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 700 }}>
-                                        {grade.grade || 'N/A'}
+                                    <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: getGradeColor(grade.final_grade), color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 700 }}>
+                                        {grade.final_grade || 'N/A'}
                                     </div>
                                 </div>
                             </div>

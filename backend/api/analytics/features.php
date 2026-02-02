@@ -36,13 +36,13 @@ try {
     $action = $_GET['action'] ?? 'profile';
 
     // Access Control
-    if ($authUser['role'] !== 'admin' && $requestUserId && $requestUserId != $authUser['id']) {
+    if ($authUser['role'] !== 'admin' && $requestUserId && $requestUserId != $authUser['user_id']) {
         throw new Exception("Access denied");
     }
 
     if ($action === 'profile') {
         // Get Single Student Profile
-        $targetId = $requestUserId ? $requestUserId : $authUser['id'];
+        $targetId = $requestUserId ? $requestUserId : $authUser['user_id'];
 
         $stmt = $pdo->prepare("
             SELECT 
