@@ -156,18 +156,20 @@ const StudentDashboard = () => {
                         .slice(0, 5);
                 }
 
-                const courses = subjects.map(sub => ({
-                    id: sub.subject.id,
-                    name: sub.subject.name,
-                    code: sub.subject.code,
-                    grade: sub.grade_letter || 'N/A',
-                    progress: sub.attendance?.percentage || 0,
-                    attendance: sub.attendance,
-                    overall_score: sub.overall_grade,
-                    credits: sub.subject.credits,
-                    components: sub.components,
-                    semester: sub.subject.semester
-                }));
+                const courses = subjects
+                    .filter(sub => sub && sub.subject) // Filter out invalid entries
+                    .map(sub => ({
+                        id: sub.subject.id,
+                        name: sub.subject.name,
+                        code: sub.subject.code,
+                        grade: sub.grade_letter || 'N/A',
+                        progress: sub.attendance?.percentage || 0,
+                        attendance: sub.attendance,
+                        overall_score: sub.overall_grade,
+                        credits: sub.subject.credits,
+                        components: sub.components,
+                        semester: sub.subject.semester
+                    }));
 
                 setDashboardData({
                     gpa: summary.gpa,
@@ -196,7 +198,13 @@ const StudentDashboard = () => {
         }
     }, [token, fetchNotifications, selectedSemester, user])
 
-
+    // Fetch dashboard data on mount and when token/user become available
+    useEffect(() => {
+        if (token && user) {
+            fetchDashboardData()
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [token, user]) // Intentionally exclude fetchDashboardData to prevent infinite loop
 
 
 
@@ -311,12 +319,15 @@ const StudentDashboard = () => {
                 <div className="welcome-banner">
                     <div className="welcome-content">
                         <div className="welcome-text">
-                            <h1>{getGreeting()}, {user?.full_name}! 👋</h1>
+                            <h1>
+                                {getGreeting()}, <span style={{ whiteSpace: 'nowrap' }}>{user?.full_name}!</span>
+                                <span style={{ display: 'inline-block', marginLeft: '8px' }}>👋</span>
+                            </h1>
                             <p>Here's your academic summary{selectedSemester ? ` for Semester ${selectedSemester}` : ' for the semester'}.</p>
                         </div>
                         {availableSemesters.length > 0 && (
                             <div className="semester-selector">
-                                <label htmlFor="semester-select">View Semester:</label>
+                                <label htmlFor="semester-select" style={{ color: '#374151', fontWeight: 600 }}>View Semester:</label>
                                 <div className="select-wrapper">
                                     <select
                                         id="semester-select"

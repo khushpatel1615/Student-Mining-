@@ -1,181 +1,412 @@
-.analytics-container {
-    padding: 1.5rem;
+/* Analytics Dashboard Styles - Premium Polished Version (Upscaled) */
+
+.analytics-dashboard {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 2.5rem;
+    /* Increased padding */
+    max-width: 1800px;
+    /* Wider container */
+    margin: 0 auto;
+    color: #1f2937;
+    background-color: #f9fafb;
 }
 
+/* Big Dashboard Mode */
+@media (min-width: 1400px) {
+    .analytics-dashboard {
+        transform: scale(1.02);
+        /* Subtle scale up for huge screens */
+        transform-origin: top center;
+    }
+}
+
+/* --- Header Section --- */
 .analytics-header {
-    margin-bottom: 2rem;
-}
-
-.analytics-header h2 {
     display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 0.5rem;
-}
-
-.analytics-header p {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-}
-
-.analytics-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    margin-bottom: 2.5rem;
     gap: 1.5rem;
-    margin-bottom: 2rem;
 }
 
-.stat-card {
+.header-title h2 {
+    font-size: 2rem;
+    /* Increased from 1.875 */
+    font-weight: 800;
+    color: #111827;
+    margin: 0;
+    letter-spacing: -0.03em;
+}
+
+.header-title p {
+    color: #6b7280;
+    margin-top: 0.5rem;
+    font-size: 1rem;
+}
+
+.header-actions {
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 1.5rem;
-    background: var(--bg-secondary);
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    transition: all 0.2s;
 }
 
-.stat-card:hover {
+.live-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #374151;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.ping-dot {
+    position: relative;
+    display: flex;
+    height: 10px;
+    width: 10px;
+}
+
+.ping-animate {
+    position: absolute;
+    display: inline-flex;
+    height: 100%;
+    width: 100%;
+    border-radius: 50%;
+    background-color: #4ade80;
+    opacity: 0.75;
+    animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.ping-solid {
+    position: relative;
+    display: inline-flex;
+    border-radius: 50%;
+    height: 10px;
+    width: 10px;
+    background-color: #22c55e;
+}
+
+@keyframes ping {
+
+    75%,
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+/* --- Grid Layouts --- */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.chart-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+@media (min-width: 1024px) {
+    .chart-grid-2 {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* --- Card Components --- */
+.analytics-card {
+    background: white;
+    border-radius: 1.25rem;
+    /* Rounder */
+    border: 1px solid #f3f4f6;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+    padding: 1.75rem;
+    /* More breathing room */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.analytics-card:hover {
+    box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08);
+    /* Deeper shadow */
+    border-color: #e5e7eb;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.stat-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 12px;
+/* KPI Card Specifics */
+.kpi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+
+.kpi-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6b7280;
+}
+
+.kpi-icon-wrapper {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.75rem;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.stat-content {
-    flex: 1;
+.kpi-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
 }
 
-.stat-label {
+.kpi-value-group h3 {
+    font-size: 2.5rem;
+    /* Much bigger numbers */
+    font-weight: 800;
+    color: #111827;
+    margin: 0;
+    line-height: 1;
+    letter-spacing: -0.03em;
+}
+
+.kpi-sublabel {
+    font-size: 0.9rem;
+    color: #9ca3af;
+    margin-top: 0.5rem;
+    font-weight: 500;
+}
+
+.kpi-chart-mini {
+    height: 3rem;
+    width: 7rem;
+    opacity: 0.9;
+}
+
+.kpi-delta {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
     font-size: 0.8rem;
-    color: var(--text-muted);
-    margin-bottom: 0.25rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.stat-value {
-    font-size: 1.75rem;
     font-weight: 700;
-    color: var(--text-primary);
+    padding: 0.25rem 0.6rem;
+    border-radius: 9999px;
+    margin-top: 0.75rem;
+    width: fit-content;
 }
 
-.stat-meta {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    margin-top: 0.25rem;
+.delta-up {
+    color: #15803d;
+    background-color: #dcfce7;
 }
 
-.risk-factors-section {
-    padding: 1.5rem;
-    background: #fef2f2;
-    border-radius: 12px;
-    border-left: 4px solid #ef4444;
+.delta-down {
+    color: #b91c1c;
+    background-color: #fee2e2;
 }
 
-.risk-factors-section h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #991b1b;
-    margin-bottom: 1rem;
+.delta-neutral {
+    color: #4b5563;
+    background-color: #f3f4f6;
 }
 
-.risk-factors-list {
-    list-style: none;
-    padding: 0;
+/* Chart Card Specifics */
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.75rem;
+}
+
+.chart-title-group h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1f2937;
     margin: 0;
 }
 
-.risk-factors-list li {
-    padding: 0.75rem;
-    background: white;
-    border-radius: 8px;
-    margin-bottom: 0.5rem;
-    color: #7f1d1d;
-    font-size: 0.9rem;
+.chart-title-group p {
+    font-size: 0.95rem;
+    color: #9ca3af;
+    margin: 0.25rem 0 0 0;
 }
 
-.risk-factors-list li:last-child {
-    margin-bottom: 0;
-}
-
-.success-message {
-    text-align: center;
-    padding: 3rem;
-    background: #f0fdf4;
-    border-radius: 12px;
-}
-
-.success-message h3 {
-    color: #15803d;
-    margin: 1rem 0 0.5rem;
-    font-size: 1.25rem;
-}
-
-.success-message p {
-    color: #166534;
-}
-
-.loading-state,
-.error-state {
-    text-align: center;
-    padding: 4rem 2rem;
-}
-
-.spinner {
-    width: 48px;
-    height: 48px;
-    border: 4px solid var(--border);
-    border-top-color: var(--primary);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 1rem;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-.error-state svg {
-    color: var(--error);
-    margin-bottom: 1rem;
-}
-
-.error-state h3 {
-    color: var(--text-primary);
-    margin-bottom: 0.5rem;
-}
-
-.error-state p {
-    color: var(--text-muted);
-    margin-bottom: 1.5rem;
-}
-
-.btn-primary {
-    padding: 0.75rem 1.5rem;
-    background: var(--primary);
-    color: white;
-    border: none;
-    border-radius: 8px;
+.chart-select {
+    padding: 0.35rem 0.85rem;
+    font-size: 0.85rem;
     font-weight: 500;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background-color: white;
+    color: #374151;
     cursor: pointer;
+    outline: none;
     transition: all 0.2s;
 }
 
-.btn-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+.chart-select:hover {
+    border-color: #d1d5db;
+    background-color: #f9fafb;
+}
+
+.chart-container-medium {
+    height: 320px;
+    /* Increased height */
+    width: 100%;
+}
+
+.chart-container-large {
+    height: 380px;
+    /* Increased height */
+    width: 100%;
+}
+
+/* --- Gauge Specific --- */
+.gauge-container {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.gauge-chart-wrapper {
+    height: 160px;
+    /* Bigger gauge */
+    width: 100%;
+    position: relative;
+}
+
+.gauge-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.gauge-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+}
+
+.gauge-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-top: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    background: #f3f4f6;
+}
+
+/* --- Colors --- */
+.text-purple {
+    color: #8b5cf6;
+}
+
+.bg-purple-light {
+    background-color: #f3e8ff;
+}
+
+.text-blue {
+    color: #3b82f6;
+}
+
+.bg-blue-light {
+    background-color: #eff6ff;
+}
+
+.text-green {
+    color: #22c55e;
+}
+
+.bg-green-light {
+    background-color: #dcfce7;
+}
+
+.text-orange {
+    color: #f97316;
+}
+
+.bg-orange-light {
+    background-color: #ffedd5;
+}
+
+.text-red {
+    color: #ef4444;
+}
+
+.bg-red-light {
+    background-color: #fee2e2;
+}
+
+/* Loading / Error */
+.status-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    text-align: center;
+    color: #9ca3af;
+}
+
+.skeleton-box {
+    background-color: #f3f4f6;
+    border-radius: 0.5rem;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: .5;
+    }
+}
+
+.custom-tooltip {
+    background-color: white;
+    border: 1px solid #f3f4f6;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.tooltip-label {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+}
+
+.tooltip-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #111827;
 }

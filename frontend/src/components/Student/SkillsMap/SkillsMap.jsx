@@ -9,8 +9,10 @@ const SkillsMap = () => {
     const [courses, setCourses] = useState([]);
 
     useEffect(() => {
-        fetchCourses();
-    }, []);
+        if (user && token) {
+            fetchCourses();
+        }
+    }, [user, token]);
 
     const fetchCourses = async () => {
         try {
@@ -19,7 +21,7 @@ const SkillsMap = () => {
             });
             const data = await response.json();
             if (data.success) {
-                setCourses(data.data.courses || []);
+                setCourses(data.data.subjects || []);
             }
         } catch (err) {
             console.error(err);
@@ -50,9 +52,18 @@ const SkillsMap = () => {
     };
 
     const skillsMap = courses.reduce((acc, course) => {
-        const category = getSkillCategory(course.name);
+        // course.subject contains the subject details from backend
+        const subjectName = course.subject?.name || '';
+        const category = getSkillCategory(subjectName);
         if (!acc[category]) acc[category] = [];
-        acc[category].push(course);
+        // Flatten for easier display
+        acc[category].push({
+            id: course.subject?.id,
+            name: subjectName,
+            code: course.subject?.code,
+            grade: course.grade_letter,
+            status: course.status
+        });
         return acc;
     }, {});
 

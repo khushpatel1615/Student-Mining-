@@ -9,8 +9,10 @@ const Difficulty = () => {
     const [grades, setGrades] = useState([]);
 
     useEffect(() => {
-        fetchDifficulty();
-    }, []);
+        if (token) {
+            fetchDifficulty();
+        }
+    }, [token]);
 
     const fetchDifficulty = async () => {
         try {
@@ -29,7 +31,7 @@ const Difficulty = () => {
     };
 
     const calculateDifficulty = (grade) => {
-        const gradeValue = grade?.grade;
+        const gradeValue = grade?.final_grade;
         if (!gradeValue) return { level: 'Unknown', score: 0, color: '#6b7280' };
 
         if (gradeValue === 'A+' || gradeValue === 'A') return { level: 'Easy', score: 95, color: '#16a34a' };
@@ -113,7 +115,7 @@ const Difficulty = () => {
                                     <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: `${subject.difficulty.score}%`, background: subject.difficulty.color, borderRadius: '4px', transition: 'width 0.3s' }}></div>
                                 </div>
                                 <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                                    Performance Score: {subject.difficulty.score}% • Grade: <span style={{ fontWeight: 600, color: subject.difficulty.color }}>{subject.grade || 'N/A'}</span>
+                                    Performance Score: {subject.difficulty.score}% • Grade: <span style={{ fontWeight: 600, color: subject.difficulty.color }}>{subject.final_grade || 'N/A'}</span>
                                 </div>
                             </div>
                         ))}

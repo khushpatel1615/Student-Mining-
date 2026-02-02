@@ -10,8 +10,10 @@ const CoursePicks = () => {
     const [availableSubjects, setAvailableSubjects] = useState([]);
 
     useEffect(() => {
-        fetchCourses();
-    }, []);
+        if (token) {
+            fetchCourses();
+        }
+    }, [token]);
 
     const fetchCourses = async () => {
         try {
@@ -20,8 +22,17 @@ const CoursePicks = () => {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const dashData = await dashResponse.json();
-            if (dashData.success) {
-                setEnrolledSubjects(dashData.data.courses || []);
+            // Transform subjects data for display
+            let enrolledCourses = [];
+            if (dashData.success && dashData.data.subjects) {
+                enrolledCourses = dashData.data.subjects.map(s => ({
+                    id: s.subject?.id,
+                    name: s.subject?.name,
+                    code: s.subject?.code,
+                    grade: s.grade_letter,
+                    status: s.status
+                }));
+                setEnrolledSubjects(enrolledCourses);
             }
 
             // Fetch all available subjects
@@ -30,7 +41,7 @@ const CoursePicks = () => {
             });
             const subjectsData = await subjectsResponse.json();
             if (subjectsData.success) {
-                const enrolledIds = dashData.data.courses?.map(c => c.id) || [];
+                const enrolledIds = enrolledCourses.map(c => c.id) || [];
                 const available = subjectsData.data.filter(s => !enrolledIds.includes(s.id)).slice(0, 6);
                 setAvailableSubjects(available);
             }

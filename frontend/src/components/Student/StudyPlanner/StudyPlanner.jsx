@@ -10,8 +10,10 @@ const StudyPlanner = () => {
     const [exams, setExams] = useState([]);
 
     useEffect(() => {
-        fetchPlannerData();
-    }, []);
+        if (token) {
+            fetchPlannerData();
+        }
+    }, [token]);
 
     const fetchPlannerData = async () => {
         try {
@@ -54,7 +56,7 @@ const StudyPlanner = () => {
 
     const upcomingItems = [
         ...assignments.map(a => ({ ...a, type: 'assignment', date: a.due_date })),
-        ...exams.map(e => ({ ...e, type: 'exam', date: e.exam_date }))
+        ...exams.map(e => ({ ...e, type: 'exam', date: e.start_datetime }))
     ].sort((a, b) => new Date(a.date) - new Date(b.date)).slice(0, 10);
 
     if (loading) {

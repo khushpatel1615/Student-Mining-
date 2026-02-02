@@ -10,8 +10,10 @@ const Badges = () => {
     const [earnedBadges, setEarnedBadges] = useState([]);
 
     useEffect(() => {
-        fetchBadges();
-    }, []);
+        if (token) {
+            fetchBadges();
+        }
+    }, [token]);
 
     const fetchBadges = async () => {
         try {
@@ -21,10 +23,10 @@ const Badges = () => {
             const data = await response.json();
             if (data.success) {
                 setSummary({
-                    gpa: data.data.gpa || 0,
-                    attendance: data.data.attendance || 0
+                    gpa: data.data.summary?.gpa_4 || data.data.summary?.gpa || 0,
+                    attendance: data.data.summary?.overall_attendance || 0
                 });
-                calculateBadges(data.data);
+                calculateBadges(data.data.summary);
             }
         } catch (err) {
             console.error(err);
@@ -35,8 +37,9 @@ const Badges = () => {
 
     const calculateBadges = (data) => {
         const badges = [];
-        const gpa = data.gpa || 0;
-        const attendance = data.attendance || 0;
+        // Use gpa_4 for 4.0 scale, and overall_attendance for attendance
+        const gpa = data?.gpa_4 || data?.gpa || 0;
+        const attendance = data?.overall_attendance || 0;
 
         // GPA-based badges
         if (gpa >= 3.8) badges.push({ id: 'gpa-perfect', name: 'Perfect Scholar', icon: <Crown size={48} />, color: '#fbbf24', description: 'Maintained GPA above 3.8' });
