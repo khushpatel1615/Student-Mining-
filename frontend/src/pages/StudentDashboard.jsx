@@ -10,7 +10,7 @@ import GradesTab from '../components/Student/Grades/GradesTab'
 import StudentProfile from '../components/Student/Profile/StudentProfile'
 import StudentAssignments from '../components/Student/Assignments/StudentAssignments'
 import StudentExams from '../components/Student/Exams/StudentExams'
-import Analytics from '../components/Student/Analytics/Analytics'
+import Analytics from '../components/Student/Analytics/StudentAnalyticsDashboard'
 import SkillsMap from '../components/Student/SkillsMap/SkillsMap'
 import CareerFit from '../components/Student/CareerFit/CareerFit'
 import CoursePicks from '../components/Student/CoursePicks/CoursePicks'
@@ -321,33 +321,33 @@ const StudentDashboard = () => {
                 {activeTab === 'overview' && (
                     <div className="welcome-banner">
                         <div className="welcome-content">
-                        <div className="welcome-text">
-                            <h1>
-                                {getGreeting()}, <span style={{ whiteSpace: 'nowrap' }}>{user?.full_name}!</span>
-                                <span style={{ display: 'inline-block', marginLeft: '8px' }}>👋</span>
-                            </h1>
-                            <p>Here's your academic summary{selectedSemester ? ` for Semester ${selectedSemester}` : ' for the semester'}.</p>
-                        </div>
-                        {availableSemesters.length > 0 && (
-                            <div className="semester-selector">
-                                <label htmlFor="semester-select" style={{ color: '#374151', fontWeight: 600 }}>View Semester:</label>
-                                <div className="select-wrapper">
-                                    <select
-                                        id="semester-select"
-                                        value={selectedSemester || ''}
-                                        onChange={(e) => setSelectedSemester(Number(e.target.value))}
-                                        className="semester-dropdown"
-                                    >
-                                        {availableSemesters.map(sem => (
-                                            <option key={sem} value={sem}>
-                                                Semester {sem}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <ChevronDown size={18} className="select-icon" />
-                                </div>
+                            <div className="welcome-text">
+                                <h1>
+                                    {getGreeting()}, <span style={{ whiteSpace: 'nowrap' }}>{user?.full_name}!</span>
+                                    <span style={{ display: 'inline-block', marginLeft: '8px' }}>👋</span>
+                                </h1>
+                                <p>Here's your academic summary{selectedSemester ? ` for Semester ${selectedSemester}` : ' for the semester'}.</p>
                             </div>
-                        )}
+                            {availableSemesters.length > 0 && (
+                                <div className="semester-selector">
+                                    <label htmlFor="semester-select" style={{ color: '#374151', fontWeight: 600 }}>View Semester:</label>
+                                    <div className="select-wrapper">
+                                        <select
+                                            id="semester-select"
+                                            value={selectedSemester || ''}
+                                            onChange={(e) => setSelectedSemester(Number(e.target.value))}
+                                            className="semester-dropdown"
+                                        >
+                                            {availableSemesters.map(sem => (
+                                                <option key={sem} value={sem}>
+                                                    Semester {sem}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <ChevronDown size={18} className="select-icon" />
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
