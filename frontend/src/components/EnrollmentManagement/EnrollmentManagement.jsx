@@ -67,6 +67,20 @@ function EnrollmentManagement() {
         return `${startYear}-${startYear + 1}`;
     };
 
+    const getAcademicYearFromDate = (dateString) => {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return '-';
+
+        const year = date.getFullYear();
+        const month = date.getMonth(); // 0-11
+
+        // If June (5) or later, we are in the start of a year (e.g. 2025-2026)
+        // If before June, we are in the second half (e.g. 2024-2025)
+        const startYear = month >= 5 ? year : year - 1;
+        return `${startYear}-${startYear + 1}`;
+    };
+
     const [academicYear, setAcademicYear] = useState(getCurrentAcademicYear())
     const [saving, setSaving] = useState(false)
     const [expandedStudents, setExpandedStudents] = useState([])
@@ -399,7 +413,7 @@ function EnrollmentManagement() {
                                                 {student.subjects.length} Subjects
                                             </span>
                                         </td>
-                                        <td className="text-center tabular-nums">{student.academic_year || '-'}</td>
+                                        <td className="text-center tabular-nums">{student.academic_year || getAcademicYearFromDate(student.enrolled_at)}</td>
                                         <td className="text-center">
                                             <button className="btn-icon">
                                                 <svg
