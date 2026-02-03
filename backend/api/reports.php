@@ -92,12 +92,16 @@ function generateReportCard($pdo, $studentId)
         return;
     }
 
-    // Get enrollments with final grades (from student_enrollments table)
+    // Get current semester to filter report card
+    $currentSemester = $student['current_semester'] ?? 1;
+
+    // Get enrollments with final grades (from student_enrollments table) for CURRENT SEMESTER ONLY
     $stmt = $pdo->prepare("
         SELECT 
             s.code as subject_code,
             s.name as subject_name,
             s.credits,
+            s.subject_type,
             se.final_percentage as score,
             se.final_grade as letter_grade,
             s.semester,
@@ -111,10 +115,10 @@ function generateReportCard($pdo, $studentId)
             END as grade_points
         FROM student_enrollments se
         JOIN subjects s ON se.subject_id = s.id
-        WHERE se.user_id = ?
-        ORDER BY s.semester DESC, s.name
+        WHERE se.user_id = ? AND s.semester = ?
+        ORDER BY s.name
     ");
-    $stmt->execute([$studentId]);
+    $stmt->execute([$studentId, $currentSemester]);
     $grades = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Calculate GPA

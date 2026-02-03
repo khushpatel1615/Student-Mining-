@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Brain, TrendingUp, Award, Code, Database, Globe, Palette } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { API_BASE } from '../../../config';
+import './SkillsMap.css';
 
 const SkillsMap = () => {
     const { token, user } = useAuth();
@@ -33,79 +34,102 @@ const SkillsMap = () => {
     // Map courses to skill categories (simple heuristic)
     const getSkillCategory = (courseName) => {
         const name = courseName.toLowerCase();
-        if (name.includes('programming') || name.includes('java') || name.includes('python')) return 'Programming';
-        if (name.includes('database') || name.includes('sql')) return 'Database';
-        if (name.includes('web') || name.includes('html')) return 'Web Development';
-        if (name.includes('design') || name.includes('ui')) return 'Design';
-        if (name.includes('network') || name.includes('security')) return 'Networking';
-        return 'General';
+        if (name.includes('programming') || name.includes('java') || name.includes('python') || name.includes('c ')) return 'Programming';
+        if (name.includes('database') || name.includes('sql') || name.includes('data')) return 'Database';
+        if (name.includes('web') || name.includes('html') || name.includes('design')) return 'Web Development';
+        if (name.includes('algorithm') || name.includes('math') || name.includes('calculus')) return 'Computer Science Core';
+        if (name.includes('network') || name.includes('security')) return 'Networking & Security';
+        return 'General Skills';
     };
 
     const getSkillIcon = (category) => {
         switch (category) {
-            case 'Programming': return <Code size={24} />;
-            case 'Database': return <Database size={24} />;
-            case 'Web Development': return <Globe size={24} />;
-            case 'Design': return <Palette size={24} />;
-            default: return <Award size={24} />;
+            case 'Programming': return <Code size={28} strokeWidth={1.5} />;
+            case 'Database': return <Database size={28} strokeWidth={1.5} />;
+            case 'Web Development': return <Globe size={28} strokeWidth={1.5} />;
+            case 'Design': return <Palette size={28} strokeWidth={1.5} />;
+            case 'Computer Science Core': return <Brain size={28} strokeWidth={1.5} />;
+            default: return <Award size={28} strokeWidth={1.5} />;
         }
     };
 
+    // Helper to get grade badge class
+    const getGradeClass = (grade) => {
+        if (!grade) return 'in-progress';
+        const g = grade.charAt(0).toLowerCase(); // 'a', 'b', 'c', etc.
+        return `grade-${g}`;
+    };
+
     const skillsMap = courses.reduce((acc, course) => {
-        // course.subject contains the subject details from backend
-        const subjectName = course.subject?.name || '';
+        const subjectName = course.subject?.name || course.subject_name || 'Unknown Course';
         const category = getSkillCategory(subjectName);
         if (!acc[category]) acc[category] = [];
-        // Flatten for easier display
+
         acc[category].push({
-            id: course.subject?.id,
+            id: course.subject?.id || Math.random(),
             name: subjectName,
-            code: course.subject?.code,
             grade: course.grade_letter,
-            status: course.status
+            status: course.status || (course.grade_letter ? 'Completed' : 'In Progress')
         });
         return acc;
     }, {});
 
     if (loading) {
-        return <div style={{ padding: '2rem', textAlign: 'center' }}><div className="spinner"></div><p>Loading skills map...</p></div>;
+        return (
+            <div className="skills-map-container" style={{ display: 'flex', justifyContent: 'center', paddingTop: '4rem' }}>
+                <div className="spinner"></div>
+            </div>
+        );
     }
 
     return (
-        <div style={{ padding: '1.5rem' }}>
-            <div style={{ marginBottom: '2rem' }}>
-                <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.5rem', marginBottom: '0.5rem' }}>
-                    <Brain size={24} /> My Skills Map
+        <div className="skills-map-container">
+            <div className="skills-header">
+                <h2>
+                    <Brain size={28} strokeWidth={1.5} className="text-indigo-600" />
+                    My Skills Map
                 </h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Skills developed through your courses</p>
+                <p>Track your technical competency growth across specialized domains.</p>
             </div>
 
             {Object.keys(skillsMap).length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '3rem', background: 'var(--bg-secondary)', borderRadius: '12px' }}>
-                    <Brain size={64} style={{ color: 'var(--text-muted)', marginBottom: '1rem' }} />
-                    <h3>No skills data available</h3>
-                    <p style={{ color: 'var(--text-muted)' }}>Complete some courses to see your skills map</p>
+                <div className="empty-state">
+                    <Brain size={64} strokeWidth={1} style={{ marginBottom: '1rem', color: '#cbd5e1' }} />
+                    <h3>No skills data yet</h3>
+                    <p>Enrolled courses will appear here categorized by skill set.</p>
                 </div>
             ) : (
-                <div style={{ display: 'grid', gap: '1.5rem' }}>
+                <div className="skills-grid">
                     {Object.entries(skillsMap).map(([category, categoryCourses]) => (
-                        <div key={category} style={{ background: 'var(--bg-secondary)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-                                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#dbeafe', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div key={category} className="skill-category-card">
+                            <div className="category-header">
+                                <div className="category-icon">
                                     {getSkillIcon(category)}
                                 </div>
-                                <div>
-                                    <h3 style={{ fontSize: '1.1rem', margin: 0 }}>{category}</h3>
-                                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>{categoryCourses.length} course{categoryCourses.length !== 1 ? 's' : ''}</p>
+                                <div className="category-info">
+                                    <h3>{category}</h3>
+                                    <p>{categoryCourses.length} Course{categoryCourses.length !== 1 ? 's' : ''} Tracked</p>
                                 </div>
                             </div>
-                            <div style={{ display: 'grid', gap: '0.75rem' }}>
-                                {categoryCourses.map(course => (
-                                    <div key={course.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', background: 'white', borderRadius: '8px' }}>
-                                        <span style={{ fontWeight: 500, fontSize: '0.9rem' }}>{course.name}</span>
-                                        <span style={{ fontSize: '0.9rem', color: course.grade === 'F' ? '#dc2626' : '#16a34a', fontWeight: 600 }}>
-                                            {course.grade || 'In Progress'}
-                                        </span>
+
+                            <div className="course-list">
+                                {categoryCourses.map((course, idx) => (
+                                    <div key={idx} className="course-item">
+                                        <span className="course-name">{course.name}</span>
+
+                                        <div className="course-status-group">
+                                            {/* Progress Bar Visual */}
+                                            <div className="progress-bar-container" title={course.status}>
+                                                <div
+                                                    className={`progress-bar ${!course.grade ? 'in-progress' : 'completed'}`}
+                                                ></div>
+                                            </div>
+
+                                            {/* Status Badge */}
+                                            <span className={`status-badge ${getGradeClass(course.grade)}`}>
+                                                {course.grade || 'In Progress'}
+                                            </span>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
