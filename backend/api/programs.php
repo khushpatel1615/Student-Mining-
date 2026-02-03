@@ -12,6 +12,14 @@ setCORSHeaders();
 $method = $_SERVER['REQUEST_METHOD'];
 $pdo = getDBConnection();
 
+// Require authentication for all program routes
+$authUser = getAuthUser();
+if (!$authUser) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Unauthorized']);
+    exit;
+}
+
 try {
     switch ($method) {
         case 'GET':

@@ -59,37 +59,6 @@ const QuickActionsPanel = ({ userRole = 'student' }) => {
         }
     ]
 
-    const teacherActions = [
-        {
-            icon: '✏️',
-            title: 'Quick Grade',
-            description: 'Enter grades',
-            action: () => setActiveModal('grade'),
-            color: 'blue'
-        },
-        {
-            icon: '✅',
-            title: 'Mark Attendance',
-            description: "Today's classes",
-            action: () => setActiveModal('attendance'),
-            color: 'green'
-        },
-        {
-            icon: '📢',
-            title: 'Post Announcement',
-            description: 'Notify students',
-            action: () => setActiveModal('announcement'),
-            color: 'purple'
-        },
-        {
-            icon: '📊',
-            title: 'Class Analytics',
-            description: 'Performance stats',
-            action: () => navigate('/teacher/dashboard'),
-            color: 'indigo'
-        }
-    ]
-
     const adminActions = [
         {
             icon: '👥',
@@ -100,9 +69,9 @@ const QuickActionsPanel = ({ userRole = 'student' }) => {
         },
         {
             icon: '👨‍🏫',
-            title: 'Teacher Assignment',
-            description: 'Assign courses',
-            action: () => navigate('/admin/dashboard?tab=teachers'),
+            title: 'Programs & Subjects',
+            description: 'Manage catalog',
+            action: () => navigate('/admin/dashboard?tab=subjects'),
             color: 'green'
         },
         {
@@ -123,8 +92,6 @@ const QuickActionsPanel = ({ userRole = 'student' }) => {
 
     const getActions = () => {
         switch (userRole) {
-            case 'teacher':
-                return teacherActions
             case 'admin':
                 return adminActions
             default:
@@ -172,3 +139,5 @@ const QuickActionsPanel = ({ userRole = 'student' }) => {
 }
 
 export default QuickActionsPanel
+
+

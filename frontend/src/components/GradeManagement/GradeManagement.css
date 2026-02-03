@@ -171,6 +171,23 @@
     letter-spacing: 0;
 }
 
+/* Student Cell */
+.student-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.student-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.student-id {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+}
+
 /* Grade Input */
 .grade-input {
     width: 60px;
@@ -435,4 +452,242 @@
     border-color: #764ba2;
     outline: none;
     color: var(--text-primary);
+}
+
+/* ============================================
+   New Grade Management Look (Overrides)
+   ============================================ */
+
+.grade-management {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.grade-management-header {
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(99, 102, 241, 0.02));
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+}
+
+.grade-management-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.btn-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.1rem;
+    background: var(--primary);
+    color: #fff;
+    border: 0;
+    border-radius: 10px;
+    font-weight: 600;
+    box-shadow: var(--shadow-md);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-add:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.btn-add:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-lg);
+}
+
+.grade-filters {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.25rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.filter-select,
+.filter-input {
+    background: var(--bg-card);
+}
+
+.grades-table-container {
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+}
+
+.grades-table th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--bg-card);
+    color: var(--text-secondary);
+}
+
+.grades-table tbody tr:nth-child(odd) {
+    background: rgba(15, 23, 42, 0.02);
+}
+
+.grades-table tbody tr:hover {
+    background: rgba(99, 102, 241, 0.06);
+}
+
+.grade-input,
+.grade-input-compact {
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    background: #fff;
+}
+
+.grade-input.invalid,
+.grade-input-compact.invalid {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.06);
+}
+
+.grade-error {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.7rem;
+    color: #ef4444;
+    text-align: center;
+}
+
+.grade-cell-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.remark-input-mini {
+    width: 100%;
+    min-width: 100px;
+    padding: 0.3rem 0.45rem;
+    border-radius: 6px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: #f8fafc;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+}
+
+.remark-input-mini:focus {
+    outline: none;
+    background: #ffffff;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.12);
+}
+
+.remark-input-mini::placeholder {
+    color: var(--text-tertiary);
+}
+
+.grades-table th,
+.grades-table td {
+    padding: 1rem 0.9rem;
+}
+
+.grades-table tbody tr {
+    height: 88px;
+}
+
+.grades-table th {
+    font-size: 0.7rem;
+}
+
+.grades-table td {
+    vertical-align: middle;
+}
+
+.grades-table td:last-child,
+.grades-table th:last-child {
+    padding-right: 1.25rem;
+}
+
+.grades-table td:first-child,
+.grades-table th:first-child {
+    padding-left: 1.25rem;
+}
+
+.grade-input {
+    width: 72px;
+    height: 36px;
+    font-weight: 600;
+}
+
+.grade-input::placeholder {
+    color: #cbd5f5;
+}
+
+/* Table Footer/Badges */
+.percentage {
+    padding: 0.3rem 0.55rem;
+    font-weight: 700;
+    border-radius: 999px;
+}
+
+.total-marks {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+/* Subject Card Footer (All Subjects view) */
+.subject-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 0.75rem;
+    border-top: 1px dashed var(--border-color);
+}
+
+.total-display {
+    display: flex;
+    gap: 0.35rem;
+    align-items: baseline;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.total-display .value {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.percentage-display {
+    padding: 0.3rem 0.6rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.75rem;
+}
+
+.percentage-display.pass {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+}
+
+.percentage-display.fail {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+}
+
+/* Filters layout polish */
+.grade-filters {
+    gap: 0.75rem;
+}
+
+.filter-select {
+    min-width: 220px;
+}
+
+.filter-input {
+    height: 42px;
+    border-radius: var(--radius-md);
+}
+
+.percentage {
+    min-width: 52px;
+    text-align: center;
 }

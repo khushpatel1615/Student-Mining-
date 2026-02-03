@@ -84,8 +84,8 @@ const StudentDashboard = () => {
             })
             const data = await response.json()
             if (data.success) {
-                setNotifications(data.data)
-                setUnreadCount(data.unread_count)
+                setNotifications(data.data?.notifications || [])
+                setUnreadCount(data.data?.unread_count || 0)
             }
         } catch (err) {
             console.error('Failed to fetch notifications:', err)
@@ -95,7 +95,9 @@ const StudentDashboard = () => {
     // Mark as read
     const markAsRead = async (id = null) => {
         try {
-            const body = id ? { id } : { mark_all_read: true }
+            const body = id
+                ? { action: 'mark_read', notification_id: id }
+                : { action: 'mark_read' }
             await fetch(`${API_BASE}/notifications.php`, {
                 method: 'PUT',
                 headers: {
@@ -316,8 +318,9 @@ const StudentDashboard = () => {
         >
             <div className="dashboard-content">
                 {/* Welcome Banner with Semester Selector */}
-                <div className="welcome-banner">
-                    <div className="welcome-content">
+                {activeTab === 'overview' && (
+                    <div className="welcome-banner">
+                        <div className="welcome-content">
                         <div className="welcome-text">
                             <h1>
                                 {getGreeting()}, <span style={{ whiteSpace: 'nowrap' }}>{user?.full_name}!</span>
@@ -345,8 +348,9 @@ const StudentDashboard = () => {
                                 </div>
                             </div>
                         )}
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* Tab Content */}
                 <div className="tab-content">

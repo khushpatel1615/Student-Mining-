@@ -76,17 +76,7 @@ const Sidebar = ({ role = 'student', onLogout, collapsed, mobileMenuOpen, onTogg
         { id: 'calendar', label: 'Calendar', icon: CalendarDays, tab: 'calendar' }
     ];
 
-    const teacherMenuItems = [
-        { id: 'overview', label: 'Overview', icon: LayoutDashboard, tab: 'overview' },
-        { id: 'subjects', label: 'My Subjects', icon: BookOpen, tab: 'subjects' },
-        { id: 'assignments', label: 'Assignments', icon: FileText, tab: 'assignments' },
-        { id: 'exams', label: 'Exams', icon: ClipboardCheck, tab: 'exams' },
-        { id: 'grades', label: 'Grades', icon: GraduationCap, tab: 'grades' },
-
-        { id: 'calendar', label: 'Calendar', icon: CalendarDays, tab: 'calendar' }
-    ];
-
-    const menuItems = role === 'admin' ? adminMenuItems : role === 'teacher' ? teacherMenuItems : studentMenuItems;
+    const menuItems = role === 'admin' ? adminMenuItems : studentMenuItems;
 
     const getInitials = (name) => {
         if (!name) return '?';

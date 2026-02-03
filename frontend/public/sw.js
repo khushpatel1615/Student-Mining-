@@ -2,6 +2,11 @@ const CACHE_NAME = 'sdm-cache-v1';
 const STATIC_CACHE = 'sdm-static-v1';
 const DYNAMIC_CACHE = 'sdm-dynamic-v1';
 
+const OFFLINE_DB_NAME = 'sdm-offline';
+const OFFLINE_DB_VERSION = 1;
+const PENDING_ATTENDANCE_STORE = 'pending-attendance';
+const API_BASE = '/StudentDataMining/backend/api';
+
 // Assets to cache immediately
 const STATIC_ASSETS = [
     '/',
@@ -117,14 +122,14 @@ self.addEventListener('push', (event) => {
     const data = event.data?.json() || {
         title: 'Student Portal',
         body: 'You have a new notification',
-        icon: '/icons/icon-192x192.png'
+        icon: '/icons/icon-192x192.svg'
     };
 
     event.waitUntil(
         self.registration.showNotification(data.title, {
             body: data.body,
-            icon: data.icon || '/icons/icon-192x192.png',
-            badge: '/icons/badge-72x72.png',
+            icon: data.icon || '/icons/icon-192x192.svg',
+            badge: '/icons/icon-192x192.svg',
             vibrate: [100, 50, 100],
             data: data.url || '/',
             actions: [
@@ -166,7 +171,7 @@ async function syncAttendance() {
 
         for (const record of pendingAttendance) {
             try {
-                await fetch('/api/attendance.php', {
+                await fetch(`${API_BASE}/attendance.php`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(record)
@@ -179,4 +184,44 @@ async function syncAttendance() {
     } catch (err) {
         console.log('[SW] Sync error:', err);
     }
+}
+
+function openDB() {
+    if (!('indexedDB' in self)) {
+        return Promise.resolve({
+            getAll: async () => [],
+            delete: async () => { }
+        });
+    }
+
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(OFFLINE_DB_NAME, OFFLINE_DB_VERSION);
+
+        request.onupgradeneeded = () => {
+            const db = request.result;
+            if (!db.objectStoreNames.contains(PENDING_ATTENDANCE_STORE)) {
+                db.createObjectStore(PENDING_ATTENDANCE_STORE, { keyPath: 'id', autoIncrement: true });
+            }
+        };
+
+        request.onsuccess = () => {
+            const db = request.result;
+
+            const withStore = (storeName, mode, callback) => new Promise((resolveOp, rejectOp) => {
+                const tx = db.transaction(storeName, mode);
+                const store = tx.objectStore(storeName);
+                const request = callback(store);
+
+                request.onsuccess = () => resolveOp(request.result);
+                request.onerror = () => rejectOp(request.error);
+            });
+
+            resolve({
+                getAll: (storeName) => withStore(storeName, 'readonly', store => store.getAll()),
+                delete: (storeName, key) => withStore(storeName, 'readwrite', store => store.delete(key))
+            });
+        };
+
+        request.onerror = () => reject(request.error);
+    });
 }
