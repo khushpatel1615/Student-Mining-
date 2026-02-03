@@ -11,6 +11,10 @@ require_once __DIR__ . '/../includes/jwt.php';
 // Debug logging helper (copied from google-auth.php for consistency)
 function logDebug($message, $data = [])
 {
+    if (getenv('APP_ENV') !== 'dev') {
+        return;
+    }
+
     $logFile = __DIR__ . '/debug_auth.txt';
     $timestamp = date('Y-m-d H:i:s');
     $logEntry = "[$timestamp] [VERIFY-TOKEN] $message\n";

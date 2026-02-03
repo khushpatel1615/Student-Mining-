@@ -439,6 +439,51 @@ function handlePut($pdo)
         return;
     }
 
+    // Validate marks against criteria max_marks
+    if (!empty($data['grades']) && is_array($data['grades'])) {
+        $criteriaIds = [];
+        foreach ($data['grades'] as $grade) {
+            if (isset($grade['criteria_id'])) {
+                $criteriaIds[] = (int) $grade['criteria_id'];
+            }
+        }
+
+        $criteriaMax = [];
+        if (!empty($criteriaIds)) {
+            $criteriaIds = array_values(array_unique($criteriaIds));
+            $placeholders = str_repeat('?,', count($criteriaIds) - 1) . '?';
+            $stmt = $pdo->prepare("SELECT id, max_marks FROM evaluation_criteria WHERE id IN ($placeholders)");
+            $stmt->execute($criteriaIds);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($rows as $row) {
+                $criteriaMax[(int) $row['id']] = (float) $row['max_marks'];
+            }
+        }
+
+        foreach ($data['grades'] as $grade) {
+            $marks = $grade['marks_obtained'] ?? null;
+            $criteriaId = $grade['criteria_id'] ?? null;
+            if ($marks === null || $marks === '') {
+                continue;
+            }
+            if (!is_numeric($marks)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Invalid marks value']);
+                return;
+            }
+            if ((float) $marks < 0) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Marks cannot be negative']);
+                return;
+            }
+            if ($criteriaId && isset($criteriaMax[(int) $criteriaId]) && (float) $marks > $criteriaMax[(int) $criteriaId]) {
+                http_response_code(400);
+                echo json_encode(['error' => "Marks exceed max for criteria {$criteriaId}"]);
+                return;
+            }
+        }
+    }
+
     $pdo->beginTransaction();
     $updatedEnrollments = [];
 
@@ -491,6 +536,33 @@ function handlePut($pdo)
 
         } else {
             // Single grade update
+            // Validate marks against criteria max_marks
+            if (isset($data['marks_obtained']) && $data['marks_obtained'] !== null && $data['marks_obtained'] !== '') {
+                if (!is_numeric($data['marks_obtained'])) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'Invalid marks value']);
+                    return;
+                }
+                if ((float) $data['marks_obtained'] < 0) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'Marks cannot be negative']);
+                    return;
+                }
+                $stmtMax = $pdo->prepare("
+                    SELECT ec.max_marks
+                    FROM student_grades sg
+                    JOIN evaluation_criteria ec ON sg.criteria_id = ec.id
+                    WHERE sg.id = ?
+                ");
+                $stmtMax->execute([$data['grade_id']]);
+                $maxMarks = $stmtMax->fetchColumn();
+                if ($maxMarks !== false && (float) $data['marks_obtained'] > (float) $maxMarks) {
+                    http_response_code(400);
+                    echo json_encode(['error' => "Marks exceed max for this criteria"]);
+                    return;
+                }
+            }
+
             $stmt = $pdo->prepare("
                 UPDATE student_grades 
                 SET marks_obtained = ?, remarks = ?, graded_by = ?, graded_at = NOW()

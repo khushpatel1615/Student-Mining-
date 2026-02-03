@@ -8,6 +8,14 @@ $method = $_SERVER['REQUEST_METHOD'];
 $pdo = getDBConnection();
 $DATA_DIR = __DIR__ . '/../data/attendance';
 
+// Require authentication for all attendance routes
+$authUser = getAuthUser();
+if (!$authUser) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+    exit();
+}
+
 // Ensure data directory exists
 if (!file_exists($DATA_DIR)) {
     mkdir($DATA_DIR, 0777, true);
@@ -19,6 +27,11 @@ try {
 
         switch ($action) {
             case 'fetch_sheet':
+                if (!in_array($authUser['role'], ['admin', 'teacher'])) {
+                    http_response_code(403);
+                    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+                    exit();
+                }
                 handleFetchSheet($pdo, $DATA_DIR);
                 break;
             case 'student_view':
@@ -33,6 +46,11 @@ try {
 
         switch ($action) {
             case 'save_daily':
+                if (!in_array($authUser['role'], ['admin', 'teacher'])) {
+                    http_response_code(403);
+                    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+                    exit();
+                }
                 handleSaveDaily($pdo, $DATA_DIR, $data);
                 break;
             default:

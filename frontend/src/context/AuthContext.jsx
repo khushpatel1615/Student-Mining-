@@ -124,7 +124,6 @@ export function AuthProvider({ children }) {
     const redirectByRole = (role) => {
         const dashboardMap = {
             admin: '/admin/dashboard',
-            teacher: '/teacher/dashboard',
             student: '/student/dashboard'
         }
         navigate(dashboardMap[role] || '/student/dashboard')

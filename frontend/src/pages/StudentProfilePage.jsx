@@ -138,7 +138,9 @@ function StudentProfilePage() {
                         description: meetingData.message || `Meeting scheduled with ${student.full_name}`,
                         event_date: meetingData.date,
                         type: 'event',
-                        target_audience: 'all'
+                        target_audience: 'program_semester',
+                        target_program_id: student.program_id || null,
+                        target_semester: student.current_semester || null
                     })
                 })
             } catch (calErr) {

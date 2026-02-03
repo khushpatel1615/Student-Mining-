@@ -5,7 +5,9 @@
     width: 100%;
     /* Ensure full width */
     color: #1f2937;
-    /* Removed padding and background to blend with MainLayout */
+    padding: 1.25rem 1.5rem 2rem;
+    background: #f8fafc;
+    border-radius: 1rem;
 }
 
 /* Big Dashboard Mode */
@@ -21,58 +23,57 @@
 .analytics-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: center;
     /* Align text baseline with badge */
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     gap: 1.5rem;
     padding-bottom: 1rem;
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 1px solid #e2e8f0;
     /* Subtle visual separator */
 }
 
 /* --- Grid Layouts --- */
-.kpi-grid {
+.analytics-dashboard .kpi-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     /* Force 4 columns on desktop */
-    gap: 1.5rem;
-    margin-bottom: 2.5rem;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
 }
 
 @media (max-width: 1200px) {
-    .kpi-grid {
+    .analytics-dashboard .kpi-grid {
         grid-template-columns: repeat(2, 1fr);
         /* 2 columns on tablet */
     }
 }
 
 @media (max-width: 640px) {
-    .kpi-grid {
+    .analytics-dashboard .kpi-grid {
         grid-template-columns: 1fr;
         /* 1 column on mobile */
     }
 }
 
-.chart-grid-2 {
+.analytics-dashboard .chart-grid-2 {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1.5rem;
-    margin-bottom: 2.5rem;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
 }
 
 @media (min-width: 1024px) {
-    .chart-grid-2 {
+    .analytics-dashboard .chart-grid-2 {
         grid-template-columns: 1fr 1fr;
     }
 }
 
 /* --- Card Components --- */
-.analytics-card {
-    background: white;
-    border-radius: 1rem;
-    /* Standard consistency */
-    border: 1px solid #f1f5f9;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+.analytics-dashboard .analytics-card {
+    background: #ffffff;
+    border-radius: 0.9rem;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
     padding: 1.5rem;
     /* Consistent padding */
     transition: all 0.2s ease-in-out;
@@ -84,15 +85,15 @@
     overflow: hidden;
 }
 
-.analytics-card:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    border-color: #e2e8f0;
+.analytics-dashboard .analytics-card:hover {
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+    border-color: #dbeafe;
     transform: translateY(-2px);
 }
 
 /* Header Text Fixes */
 .header-title h2 {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
     /* Reduced from 2rem to match hierarchy */
     font-weight: 700;
     color: #0f172a;
@@ -103,7 +104,7 @@
 .header-title p {
     color: #64748b;
     margin-top: 0.25rem;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
 }
 
 /* Live Indicator Fix */
@@ -111,9 +112,9 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    background-color: #fff;
+    background-color: #f8fafc;
     border: 1px solid #e2e8f0;
-    padding: 0.35rem 0.75rem;
+    padding: 0.4rem 0.85rem;
     border-radius: 9999px;
     font-size: 0.75rem;
     font-weight: 600;
@@ -121,14 +122,14 @@
 }
 
 /* KPI Card Specifics */
-.kpi-header {
+.analytics-dashboard .kpi-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1.25rem;
 }
 
-.kpi-title {
+.analytics-dashboard .kpi-title {
     font-size: 0.9rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -136,23 +137,23 @@
     color: #6b7280;
 }
 
-.kpi-icon-wrapper {
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 0.75rem;
+.analytics-dashboard .kpi-icon-wrapper {
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 0.7rem;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.kpi-content {
+.analytics-dashboard .kpi-content {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
 }
 
-.kpi-value-group h3 {
-    font-size: 2rem;
+.analytics-dashboard .kpi-value-group h3 {
+    font-size: 1.85rem;
     /* Adjusted for better fit */
     font-weight: 700;
     color: #0f172a;
@@ -161,7 +162,7 @@
     letter-spacing: -0.02em;
 }
 
-.kpi-chart-mini {
+.analytics-dashboard .kpi-chart-mini {
     height: 48px;
     /* Fixed height */
     width: 90px;
@@ -169,7 +170,7 @@
     /* Push to right */
 }
 
-.kpi-delta {
+.analytics-dashboard .kpi-delta {
     display: inline-flex;
     align-items: center;
     gap: 0.25rem;
@@ -181,45 +182,46 @@
     width: fit-content;
 }
 
-.delta-up {
+.analytics-dashboard .delta-up {
     color: #15803d;
     background-color: #dcfce7;
 }
 
-.delta-down {
+.analytics-dashboard .delta-down {
     color: #b91c1c;
     background-color: #fee2e2;
 }
 
-.delta-neutral {
+.analytics-dashboard .delta-neutral {
     color: #4b5563;
     background-color: #f3f4f6;
 }
 
 /* Chart Card Specifics */
-.chart-header {
+.analytics-dashboard .chart-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 1.75rem;
+    margin-bottom: 1.25rem;
+    gap: 1rem;
 }
 
-.chart-title-group h3 {
-    font-size: 1.25rem;
+.analytics-dashboard .chart-title-group h3 {
+    font-size: 1.1rem;
     font-weight: 700;
     color: #1f2937;
     margin: 0;
 }
 
-.chart-title-group p {
-    font-size: 0.95rem;
+.analytics-dashboard .chart-title-group p {
+    font-size: 0.85rem;
     color: #9ca3af;
     margin: 0.25rem 0 0 0;
 }
 
-.chart-select {
+.analytics-dashboard .chart-select {
     padding: 0.35rem 0.85rem;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 500;
     border: 1px solid #e5e7eb;
     border-radius: 0.5rem;
@@ -230,25 +232,25 @@
     transition: all 0.2s;
 }
 
-.chart-select:hover {
+.analytics-dashboard .chart-select:hover {
     border-color: #d1d5db;
     background-color: #f9fafb;
 }
 
-.chart-container-medium {
-    height: 320px;
+.analytics-dashboard .chart-container-medium {
+    height: 300px;
     /* Increased height */
     width: 100%;
 }
 
-.chart-container-large {
-    height: 380px;
+.analytics-dashboard .chart-container-large {
+    height: 340px;
     /* Increased height */
     width: 100%;
 }
 
 /* --- Gauge Specific --- */
-.gauge-container {
+.analytics-dashboard .gauge-container {
     position: relative;
     height: 100%;
     display: flex;
@@ -257,14 +259,14 @@
     justify-content: center;
 }
 
-.gauge-chart-wrapper {
+.analytics-dashboard .gauge-chart-wrapper {
     height: 160px;
     /* Bigger gauge */
     width: 100%;
     position: relative;
 }
 
-.gauge-overlay {
+.analytics-dashboard .gauge-overlay {
     position: absolute;
     inset: 0;
     display: flex;
@@ -274,14 +276,14 @@
     margin-top: 2rem;
 }
 
-.gauge-value {
+.analytics-dashboard .gauge-value {
     font-size: 2.5rem;
     font-weight: 800;
     line-height: 1;
     letter-spacing: -0.03em;
 }
 
-.gauge-label {
+.analytics-dashboard .gauge-label {
     font-size: 0.8rem;
     text-transform: uppercase;
     font-weight: 700;
@@ -293,48 +295,48 @@
 }
 
 /* --- Colors --- */
-.text-purple {
+.analytics-dashboard .text-purple {
     color: #8b5cf6;
 }
 
-.bg-purple-light {
+.analytics-dashboard .bg-purple-light {
     background-color: #f3e8ff;
 }
 
-.text-blue {
+.analytics-dashboard .text-blue {
     color: #3b82f6;
 }
 
-.bg-blue-light {
+.analytics-dashboard .bg-blue-light {
     background-color: #eff6ff;
 }
 
-.text-green {
+.analytics-dashboard .text-green {
     color: #22c55e;
 }
 
-.bg-green-light {
+.analytics-dashboard .bg-green-light {
     background-color: #dcfce7;
 }
 
-.text-orange {
+.analytics-dashboard .text-orange {
     color: #f97316;
 }
 
-.bg-orange-light {
+.analytics-dashboard .bg-orange-light {
     background-color: #ffedd5;
 }
 
-.text-red {
+.analytics-dashboard .text-red {
     color: #ef4444;
 }
 
-.bg-red-light {
+.analytics-dashboard .bg-red-light {
     background-color: #fee2e2;
 }
 
 /* Loading / Error */
-.status-container {
+.analytics-dashboard .status-container {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -344,7 +346,7 @@
     color: #9ca3af;
 }
 
-.skeleton-box {
+.analytics-dashboard .skeleton-box {
     background-color: #f3f4f6;
     border-radius: 0.5rem;
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
@@ -362,7 +364,7 @@
     }
 }
 
-.custom-tooltip {
+.analytics-dashboard .custom-tooltip {
     background-color: white;
     border: 1px solid #f3f4f6;
     padding: 0.75rem 1rem;
@@ -370,14 +372,14 @@
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
-.tooltip-label {
+.analytics-dashboard .tooltip-label {
     font-size: 0.8rem;
     color: #6b7280;
     margin-bottom: 0.25rem;
     font-weight: 500;
 }
 
-.tooltip-value {
+.analytics-dashboard .tooltip-value {
     font-size: 1.1rem;
     font-weight: 700;
     color: #111827;

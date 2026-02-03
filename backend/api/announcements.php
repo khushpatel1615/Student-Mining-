@@ -71,8 +71,6 @@ function handleGet($pdo, $userId, $userRole)
 
         // Fetch attachments
         attachAttachments($pdo, $announcements);
-        attachAttachments($pdo, $announcements);
-        attachAttachments($pdo, $announcements);
 
         echo json_encode(['success' => true, 'data' => $announcements]);
 
@@ -219,7 +217,7 @@ function handlePost($pdo, $userId, $userRole)
 
         // Handle File Additions (same logic as create)
         $uploadedFiles = [];
-        $uploadDir = __DIR__ . '/../../backend/uploads/announcements/';
+        $uploadDir = __DIR__ . '/../uploads/announcements/';
         if (!is_dir($uploadDir))
             mkdir($uploadDir, 0755, true);
 
@@ -307,7 +305,7 @@ function handlePost($pdo, $userId, $userRole)
         }
 
         // Create upload directory if not exists
-        $uploadDir = __DIR__ . '/../../backend/uploads/announcements/';
+        $uploadDir = __DIR__ . '/../uploads/announcements/';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }
@@ -417,7 +415,7 @@ function handlePut($pdo, $userId, $userRole)
        since scope is inside function.
     */
 
-    $uploadDir = __DIR__ . '/../../backend/uploads/announcements/';
+    $uploadDir = __DIR__ . '/../uploads/announcements/';
     $uploadedFiles = [];
 
     // We need to parse multipart put if we want to be strict, but simplest is relying on POST override.

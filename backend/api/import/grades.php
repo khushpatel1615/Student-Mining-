@@ -90,6 +90,7 @@ try {
     $failCount = 0;
     $errors = [];
     $rowNumber = 1;
+    $criteriaCache = [];
 
     // Process each row
     while (($row = fgetcsv($handle)) !== false) {
@@ -152,38 +153,61 @@ try {
                 continue;
             }
 
-            // Check if grade exists
-            $stmt = $pdo->prepare("SELECT id, grade FROM grades 
-                                   WHERE student_id = ? AND subject_id = ? AND assessment_type = ?");
-            $stmt->execute([$studentDbId, $subjectId, $assessmentType]);
-            $existingGrade = $stmt->fetch(PDO::FETCH_ASSOC);
+            // Resolve enrollment
+            $stmt = $pdo->prepare("
+                SELECT id FROM student_enrollments 
+                WHERE user_id = ? AND subject_id = ?
+                ORDER BY id DESC LIMIT 1
+            ");
+            $stmt->execute([$studentDbId, $subjectId]);
+            $enrollmentId = $stmt->fetchColumn();
 
-            if ($existingGrade) {
-                // Update existing grade
-                $stmt = $pdo->prepare("UPDATE grades 
-                                       SET grade = ?, updated_at = NOW() 
-                                       WHERE id = ?");
-                $stmt->execute([$grade, $existingGrade['id']]);
+            if (!$enrollmentId) {
+                $errors[] = "Row $rowNumber: Enrollment not found for student/subject";
+                $failCount++;
+                continue;
+            }
 
-                // Log to grade history
-                $stmt = $pdo->prepare("INSERT INTO grade_history 
-                                       (grade_id, student_id, subject_id, old_grade, new_grade, changed_by, change_reason)
-                                       VALUES (?, ?, ?, ?, ?, ?, ?)");
-                $stmt->execute([
-                    $existingGrade['id'],
-                    $studentDbId,
-                    $subjectId,
-                    $existingGrade['grade'],
-                    $grade,
-                    $user['id'],
-                    'Bulk import update'
-                ]);
+            // Cache criteria per subject
+            if (!isset($criteriaCache[$subjectId])) {
+                $criteriaStmt = $pdo->prepare("
+                    SELECT id, component_name, max_marks 
+                    FROM evaluation_criteria 
+                    WHERE subject_id = ?
+                ");
+                $criteriaStmt->execute([$subjectId]);
+                $criteriaCache[$subjectId] = $criteriaStmt->fetchAll(PDO::FETCH_ASSOC);
+            }
+
+            $criteriaList = $criteriaCache[$subjectId];
+            $matchedCriteria = null;
+            foreach ($criteriaList as $criteria) {
+                if (strcasecmp($criteria['component_name'], $assessmentType) === 0) {
+                    $matchedCriteria = $criteria;
+                    break;
+                }
+            }
+
+            if ($matchedCriteria) {
+                // Update component-level grade
+                $stmt = $pdo->prepare("
+                    INSERT INTO student_grades (enrollment_id, criteria_id, marks_obtained, graded_at)
+                    VALUES (?, ?, ?, NOW())
+                    ON DUPLICATE KEY UPDATE marks_obtained = VALUES(marks_obtained), graded_at = NOW()
+                ");
+                $stmt->execute([$enrollmentId, $matchedCriteria['id'], $grade]);
+
+                // Recompute final percentage
+                updateFinalPercentage($pdo, $enrollmentId);
             } else {
-                // Insert new grade
-                $stmt = $pdo->prepare("INSERT INTO grades 
-                                       (student_id, subject_id, grade, assessment_type, created_at)
-                                       VALUES (?, ?, ?, ?, NOW())");
-                $stmt->execute([$studentDbId, $subjectId, $grade, $assessmentType]);
+                // Treat as final percentage update
+                $finalGrade = calculateGradeLetter($grade);
+                $stmt = $pdo->prepare("
+                    UPDATE student_enrollments 
+                    SET final_percentage = ?, final_grade = ?
+                    WHERE id = ?
+                ");
+                $stmt->execute([$grade, $finalGrade, $enrollmentId]);
             }
 
             $successCount++;
@@ -207,7 +231,7 @@ try {
         $successCount,
         $failCount,
         json_encode($errors),
-        $user['id']
+        $user['user_id']
     ]);
 
     echo json_encode([
@@ -225,4 +249,43 @@ try {
     http_response_code(500);
     echo json_encode(['error' => $e->getMessage()]);
 }
-?>
+
+function updateFinalPercentage($pdo, $enrollmentId)
+{
+    $stmt = $pdo->prepare("
+        SELECT 
+            SUM(sg.marks_obtained) as total_obtained,
+            SUM(ec.max_marks) as total_max
+        FROM student_grades sg
+        JOIN evaluation_criteria ec ON sg.criteria_id = ec.id
+        WHERE sg.enrollment_id = ? AND sg.marks_obtained IS NOT NULL
+    ");
+    $stmt->execute([$enrollmentId]);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $percentage = null;
+    $grade = null;
+
+    if ($result && $result['total_max'] > 0) {
+        $percentage = round(($result['total_obtained'] / $result['total_max']) * 100, 2);
+        $grade = calculateGradeLetter($percentage);
+    }
+
+    $updateStmt = $pdo->prepare("
+        UPDATE student_enrollments 
+        SET final_percentage = ?, final_grade = ?
+        WHERE id = ?
+    ");
+    $updateStmt->execute([$percentage, $grade, $enrollmentId]);
+}
+
+function calculateGradeLetter($percentage)
+{
+    if ($percentage >= 90) return 'A+';
+    if ($percentage >= 80) return 'A';
+    if ($percentage >= 70) return 'B+';
+    if ($percentage >= 60) return 'B';
+    if ($percentage >= 50) return 'C';
+    if ($percentage >= 40) return 'D';
+    return 'F';
+}

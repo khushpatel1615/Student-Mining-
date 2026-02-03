@@ -18,8 +18,8 @@ if (php_sapi_name() !== 'cli') {
         $token = $matches[1];
     }
 
-    $payload = verifyToken($token);
-    if (!$payload || $payload['payload']['role'] !== 'admin') {
+    $validation = verifyToken($token);
+    if (!$validation['valid'] || $validation['payload']['role'] !== 'admin') {
         http_response_code(403);
         echo json_encode(['success' => false, 'error' => 'Unauthorized']);
         exit;

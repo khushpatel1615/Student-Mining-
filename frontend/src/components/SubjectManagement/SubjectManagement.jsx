@@ -41,6 +41,8 @@ function SubjectManagement() {
     const [showDeleteModal, setShowDeleteModal] = useState(false)
     const [deletingSubject, setDeletingSubject] = useState(null)
     const [saving, setSaving] = useState(false)
+    const [modalLoading, setModalLoading] = useState(false)
+    const [modalError, setModalError] = useState(null)
 
     // Form state
     const [formData, setFormData] = useState({
@@ -92,7 +94,8 @@ function SubjectManagement() {
             }
 
             const response = await fetch(url, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { 'Authorization': `Bearer ${token}` },
+                cache: 'no-store'
             })
 
             const data = await response.json()
@@ -130,10 +133,14 @@ function SubjectManagement() {
         return criteria.reduce((sum, c) => sum + (parseFloat(c.weight_percentage) || 0), 0)
     }
 
+    const isWeightValid = () => {
+        return Math.abs(getTotalWeight() - 100) < 0.01
+    }
+
     const openAddModal = () => {
         setFormData({
             program_id: selectedProgram,
-            semester: 1,
+            semester: parseInt(selectedSemester || 1),
             name: '',
             code: '',
             subject_type: 'Core',
@@ -145,29 +152,53 @@ function SubjectManagement() {
         setShowModal(true)
     }
 
-    const openEditModal = (subject) => {
+    const openEditModal = async (subject) => {
         setEditingSubject(subject)
-        setFormData({
-            program_id: subject.program_id,
-            semester: subject.semester,
-            name: subject.name,
-            code: subject.code,
-            subject_type: subject.subject_type,
-            credits: subject.credits,
-            description: subject.description || ''
-        })
-        // Load existing criteria or use defaults
-        if (subject.evaluation_criteria && subject.evaluation_criteria.length > 0) {
-            setCriteria(subject.evaluation_criteria.map(c => ({
-                component_name: c.component_name,
-                weight_percentage: parseFloat(c.weight_percentage),
-                max_marks: parseInt(c.max_marks)
-            })))
-        } else {
-            setCriteria([...DEFAULT_CRITERIA])
-        }
         setModalMode('edit')
         setShowModal(true)
+
+        setModalLoading(true)
+        setModalError(null)
+        try {
+            const response = await fetch(`${API_BASE}/subjects.php?id=${subject.id}`, {
+                headers: { 'Authorization': `Bearer ${token}` },
+                cache: 'no-store'
+            })
+            const data = await response.json()
+
+            if (data.success && data.data) {
+                const detailed = data.data
+                setFormData({
+                    program_id: detailed.program_id,
+                    semester: detailed.semester,
+                    name: detailed.name,
+                    code: detailed.code,
+                    subject_type: detailed.subject_type,
+                    credits: detailed.credits,
+                    description: detailed.description || ''
+                })
+
+                if (detailed.evaluation_criteria && detailed.evaluation_criteria.length > 0) {
+                    setCriteria(detailed.evaluation_criteria.map(c => ({
+                        component_name: c.component_name,
+                        weight_percentage: parseFloat(c.weight_percentage),
+                        max_marks: parseInt(c.max_marks)
+                    })))
+                } else {
+                    setCriteria([...DEFAULT_CRITERIA])
+                }
+            } else {
+                const msg = data.error || 'Failed to load subject details'
+                setError(msg)
+                setModalError(msg)
+            }
+        } catch (err) {
+            const msg = 'Failed to load subject details'
+            setError(msg)
+            setModalError(msg)
+        } finally {
+            setModalLoading(false)
+        }
     }
 
     const openDeleteModal = (subject) => {
@@ -175,31 +206,111 @@ function SubjectManagement() {
         setShowDeleteModal(true)
     }
 
+    const redistributeWeights = (rows) => {
+        if (!rows.length) return rows
+        const even = Math.floor(100 / rows.length)
+        const remainder = 100 - (even * rows.length)
+        return rows.map((row, index) => {
+            const weight = even + (index === 0 ? remainder : 0)
+            return {
+                ...row,
+                weight_percentage: weight,
+                max_marks: weight
+            }
+        })
+    }
+
+    const rebalanceFromIndex = (rows, index, newWeight) => {
+        if (!rows.length) return rows
+        const count = rows.length
+        const safeWeight = Math.max(0, Math.min(100, Number(newWeight) || 0))
+        const remainingCount = count - 1
+        const remainingTotal = Math.max(0, 100 - safeWeight)
+        const even = remainingCount > 0 ? Math.floor(remainingTotal / remainingCount) : 0
+        const remainder = remainingCount > 0 ? remainingTotal - (even * remainingCount) : 0
+
+        return rows.map((row, i) => {
+            if (i === index) {
+                return {
+                    ...row,
+                    weight_percentage: safeWeight,
+                    max_marks: safeWeight
+                }
+            }
+            if (remainingCount === 0) {
+                return { ...row }
+            }
+            const add = i === 0 ? remainder : 0
+            const weight = even + add
+            return {
+                ...row,
+                weight_percentage: weight,
+                max_marks: weight
+            }
+        })
+    }
+
     const addCriteriaRow = () => {
-        setCriteria([...criteria, { component_name: '', weight_percentage: 0, max_marks: 0 }])
+        const updated = [...criteria, { component_name: '', weight_percentage: 0, max_marks: 0 }]
+        setCriteria(redistributeWeights(updated))
     }
 
     const removeCriteriaRow = (index) => {
-        setCriteria(criteria.filter((_, i) => i !== index))
+        const updated = criteria.filter((_, i) => i !== index)
+        setCriteria(redistributeWeights(updated))
     }
 
     const updateCriteria = (index, field, value) => {
         const updated = [...criteria]
         updated[index] = { ...updated[index], [field]: value }
-        // Sync max_marks with weight for simplicity
+
         if (field === 'weight_percentage') {
-            updated[index].max_marks = parseInt(value) || 0
+            setCriteria(rebalanceFromIndex(updated, index, value))
+            return
         }
+
+        if (field === 'max_marks') {
+            setCriteria(rebalanceFromIndex(updated, index, value))
+            return
+        }
+
         setCriteria(updated)
     }
 
     const handleSubmit = async (e) => {
         e.preventDefault()
 
-        // Validate weights sum to 100
+        // Normalize weights to 100 if possible
+        let adjustedCriteria = [...criteria]
         const total = getTotalWeight()
-        if (total !== 100) {
-            setError(`Evaluation weights must sum to 100%. Current total: ${total}%`)
+        const diff = 100 - total
+
+        if (Math.abs(diff) > 0.01 && adjustedCriteria.length > 0) {
+            const lastIndex = adjustedCriteria.length - 1
+            const last = adjustedCriteria[lastIndex]
+            const newWeight = (parseFloat(last.weight_percentage) || 0) + diff
+
+            if (newWeight >= 0) {
+                adjustedCriteria[lastIndex] = {
+                    ...last,
+                    weight_percentage: parseFloat(newWeight.toFixed(2)),
+                    max_marks: Math.max(0, Math.round(newWeight))
+                }
+                setCriteria(adjustedCriteria)
+            } else {
+                const msg = `Evaluation weights must sum to 100%. Current total: ${total.toFixed(2)}%`
+                setError(msg)
+                setModalError(msg)
+                return
+            }
+        }
+
+        // Validate weights sum to 100 (tolerance)
+        const normalizedTotal = adjustedCriteria.reduce((sum, c) => sum + (parseFloat(c.weight_percentage) || 0), 0)
+        if (Math.abs(normalizedTotal - 100) > 0.01) {
+            const msg = `Evaluation weights must sum to 100%. Current total: ${normalizedTotal.toFixed(2)}%`
+            setError(msg)
+            setModalError(msg)
             return
         }
 
@@ -210,7 +321,7 @@ function SubjectManagement() {
             const method = modalMode === 'add' ? 'POST' : 'PUT'
             const body = {
                 ...formData,
-                evaluation_criteria: criteria.filter(c => c.component_name)
+                evaluation_criteria: adjustedCriteria.filter(c => c.component_name)
             }
             if (modalMode === 'edit') {
                 body.id = editingSubject.id
@@ -230,12 +341,18 @@ function SubjectManagement() {
             if (data.success) {
                 setShowModal(false)
                 setError(null)
-                fetchSubjects()
+                setModalError(null)
+                // Ensure latest data before reopening edit
+                await fetchSubjects()
             } else {
-                setError(data.error || 'Failed to save subject')
+                const msg = data.error || 'Failed to save subject'
+                setError(msg)
+                setModalError(msg)
             }
         } catch (err) {
-            setError('Network error. Please try again.')
+            const msg = 'Network error. Please try again.'
+            setError(msg)
+            setModalError(msg)
         } finally {
             setSaving(false)
         }
@@ -414,6 +531,16 @@ function SubjectManagement() {
                             </div>
                             <form onSubmit={handleSubmit}>
                                 <div className="modal-body">
+                                    {modalError && (
+                                        <div className="error-message" style={{ marginBottom: '1rem' }}>
+                                            {modalError}
+                                        </div>
+                                    )}
+                                    {modalLoading && (
+                                        <div className="loading-overlay">
+                                            <div className="spinner"></div>
+                                        </div>
+                                    )}
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                         <div className="form-group">
                                             <label className="form-label">Program *</label>
@@ -437,7 +564,10 @@ function SubjectManagement() {
                                                 onChange={e => setFormData({ ...formData, semester: parseInt(e.target.value) })}
                                                 required
                                             >
-                                                {[1, 2, 3, 4, 5, 6].map(s => (
+                                                {(currentProgram
+                                                    ? Array.from({ length: currentProgram.total_semesters }, (_, i) => i + 1)
+                                                    : [1, 2, 3, 4, 5, 6]
+                                                ).map(s => (
                                                     <option key={s} value={s}>Semester {s}</option>
                                                 ))}
                                             </select>
@@ -495,8 +625,8 @@ function SubjectManagement() {
                                     <div className="evaluation-editor">
                                         <div className="evaluation-editor-header">
                                             <span className="evaluation-editor-title">Evaluation Criteria</span>
-                                            <span className={`evaluation-total ${getTotalWeight() === 100 ? 'valid' : 'invalid'}`}>
-                                                Total: {getTotalWeight()}%
+                                            <span className={`evaluation-total ${isWeightValid() ? 'valid' : 'invalid'}`}>
+                                                Total: {getTotalWeight().toFixed(1)}%
                                             </span>
                                         </div>
                                         <div className="evaluation-rows">
@@ -506,14 +636,14 @@ function SubjectManagement() {
                                                 <span>Marks</span>
                                                 <span></span>
                                             </div>
-                                            {criteria.map((c, index) => (
-                                                <div key={index} className="evaluation-row">
-                                                    <input
-                                                        type="text"
-                                                        value={c.component_name}
-                                                        onChange={e => updateCriteria(index, 'component_name', e.target.value)}
-                                                        placeholder="Component name"
-                                                    />
+                                        {criteria.map((c, index) => (
+                                            <div key={index} className="evaluation-row">
+                                                <input
+                                                    type="text"
+                                                    value={c.component_name}
+                                                    onChange={e => updateCriteria(index, 'component_name', e.target.value)}
+                                                    placeholder="Component name"
+                                                />
                                                     <input
                                                         type="number"
                                                         value={c.weight_percentage}
@@ -547,7 +677,7 @@ function SubjectManagement() {
                                     <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>
                                         Cancel
                                     </button>
-                                    <button type="submit" className="btn-primary" disabled={saving || getTotalWeight() !== 100}>
+                                    <button type="submit" className="btn-primary" disabled={saving}>
                                         {saving ? 'Saving...' : (modalMode === 'add' ? 'Add Subject' : 'Save Changes')}
                                     </button>
                                 </div>

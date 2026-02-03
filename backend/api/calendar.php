@@ -93,7 +93,7 @@ function handleGet($pdo)
         $enrolledSubjectIds = [];
         // Get enrolled subjects for fetching specific assignments/exams
         $stmtSubs = $pdo->prepare("SELECT subject_id FROM student_enrollments WHERE user_id = ? AND status = 'active'");
-        $stmtSubs->execute([$user['id']]); // Use user['id'] from token payload which is the ID in users table
+        $stmtSubs->execute([$user['user_id']]);
         $enrolledSubjectIds = $stmtSubs->fetchAll(PDO::FETCH_COLUMN);
 
         if ($studentData) {

@@ -43,7 +43,7 @@ try {
                 }
 
                 $stmt = $pdo->prepare("
-                    SELECT s.*, u.full_name, u.student_id as student_code, u.avatar
+                    SELECT s.*, u.full_name, u.student_id as student_code, u.avatar_url
                     FROM assignment_submissions s
                     JOIN users u ON s.student_id = u.id
                     WHERE s.assignment_id = ?

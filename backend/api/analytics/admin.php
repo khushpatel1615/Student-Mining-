@@ -20,8 +20,7 @@ if ($method !== 'GET') {
 
 try {
     // 1. Verify Admin Token
-    $token = getTokenFromHeader();
-    $validation = verifyToken($token);
+    requireRole('admin');
 
     // 2. System Overview Stats
     $stats = [];
@@ -58,8 +57,8 @@ try {
         if ($avgPct) {
             $avgGpa = ($avgPct / 25); // Approx
         } else {
-            // Fallback to grades table
-            $stmt = $pdo->query("SELECT AVG(marks_obtained) FROM grades");
+            // Fallback to student_enrollments final_percentage
+            $stmt = $pdo->query("SELECT AVG(final_percentage) FROM student_enrollments WHERE final_percentage IS NOT NULL");
             $avgRaw = $stmt->fetchColumn();
             $avgGpa = $avgRaw ? ($avgRaw / 25) : 0;
         }
@@ -79,9 +78,9 @@ try {
             FROM vw_student_performance
          ");
         $res = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (!$res && $res['total'] == 0) {
+        if (!$res || $res['total'] == 0) {
             // Fallback
-            $stmt = $pdo->query("SELECT COUNT(*) as total, SUM(CASE WHEN marks_obtained >= 40 THEN 1 ELSE 0 END) as passed FROM grades");
+            $stmt = $pdo->query("SELECT COUNT(*) as total, SUM(CASE WHEN final_percentage >= 40 THEN 1 ELSE 0 END) as passed FROM student_enrollments WHERE final_percentage IS NOT NULL");
             $res = $stmt->fetch(PDO::FETCH_ASSOC);
         }
 
@@ -116,7 +115,7 @@ try {
                 AVG(v.attendance_percentage) as avg_attendance,
                 u.avatar_url
             FROM users u
-            JOIN vw_student_performance v ON u.id = v.student_id
+            JOIN vw_student_performance v ON u.id = v.user_id
             WHERE u.role = 'student'
             GROUP BY u.id
             HAVING avg_grade < 50 OR avg_attendance < 75

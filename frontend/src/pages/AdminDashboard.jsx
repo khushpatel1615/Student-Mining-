@@ -101,8 +101,8 @@ function AdminDashboard() {
             })
             const data = await response.json()
             if (data.success) {
-                setNotifications(data.data)
-                setUnreadCount(data.unread_count)
+                setNotifications(data.data?.notifications || [])
+                setUnreadCount(data.data?.unread_count || 0)
             }
         } catch (err) {
             console.error('Failed to fetch notifications:', err)
@@ -112,7 +112,9 @@ function AdminDashboard() {
     // Mark as read
     const markAsRead = async (id = null) => {
         try {
-            const body = id ? { id } : { mark_all_read: true }
+            const body = id
+                ? { action: 'mark_read', notification_id: id }
+                : { action: 'mark_read' }
             await fetch(`${API_BASE}/notifications.php`, {
                 method: 'PUT',
                 headers: {

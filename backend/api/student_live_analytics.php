@@ -84,11 +84,15 @@ try {
     $gradeHistory = [];
     try {
         $stmtGrades = $pdo->prepare("
-            SELECT g.grade_value, g.created_at
-            FROM student_grades g
-            JOIN subjects s ON g.subject_id = s.id
-            WHERE g.student_id = (SELECT student_id FROM users WHERE id = ?)
-            ORDER BY g.created_at ASC
+            SELECT 
+                ROUND((sg.marks_obtained / NULLIF(ec.max_marks, 0)) * 100, 2) as grade_value,
+                COALESCE(sg.graded_at, sg.updated_at, sg.created_at) as created_at
+            FROM student_grades sg
+            JOIN evaluation_criteria ec ON sg.criteria_id = ec.id
+            JOIN student_enrollments se ON sg.enrollment_id = se.id
+            WHERE se.user_id = ?
+            AND sg.marks_obtained IS NOT NULL
+            ORDER BY created_at ASC
             LIMIT 30
         ");
         $stmtGrades->execute([$requestUserId]);

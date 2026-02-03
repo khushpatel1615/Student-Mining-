@@ -39,6 +39,7 @@ function GradeManagement() {
     const [criteria, setCriteria] = useState([])
     const [grades, setGrades] = useState({})
     const [remarks, setRemarks] = useState({})
+    const [gradeErrors, setGradeErrors] = useState({})
     const [loading, setLoading] = useState(false)
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState(null)
@@ -161,6 +162,7 @@ function GradeManagement() {
             if (data.success) {
                 setEnrollments(data.data.enrollments || [])
                 setCriteria(data.data.criteria || [])
+                setGradeErrors({})
 
                 // Initialize grades and remarks objects
                 const gradesObj = {}
@@ -193,11 +195,23 @@ function GradeManagement() {
     }, [fetchGrades])
 
     const updateGrade = (enrollmentId, criteriaId, value) => {
+        const maxMarks = criteria.find(c => String(c.id) === String(criteriaId))?.max_marks ?? null
+        const normalized = normalizeGradeInput(value)
+        const validationError = validateGradeValue(normalized, maxMarks)
+
         setGrades(prev => ({
             ...prev,
             [enrollmentId]: {
                 ...prev[enrollmentId],
-                [criteriaId]: value
+                [criteriaId]: normalized
+            }
+        }))
+
+        setGradeErrors(prev => ({
+            ...prev,
+            [enrollmentId]: {
+                ...prev[enrollmentId],
+                [criteriaId]: validationError
             }
         }))
     }
@@ -220,7 +234,18 @@ function GradeManagement() {
         }, 0)
     }
 
+    const hasValidationErrors = () => {
+        return Object.values(gradeErrors).some(enrollmentErrors =>
+            Object.values(enrollmentErrors || {}).some(Boolean)
+        )
+    }
+
     const handleSaveGrades = async () => {
+        if (hasValidationErrors()) {
+            setError('Please fix invalid marks before saving.')
+            return
+        }
+
         setSaving(true)
         setError(null)
         setSuccess(null)
@@ -271,13 +296,37 @@ function GradeManagement() {
     const currentProgram = programs.find(p => p.id.toString() === selectedProgram)
     const semesters = currentProgram ? Array.from({ length: currentProgram.total_semesters }, (_, i) => i + 1) : []
 
+    const normalizeGradeInput = (value) => {
+        if (value === '' || value === null || value === undefined) return ''
+        const num = Number(value)
+        if (Number.isNaN(num)) return ''
+        return num
+    }
+
+    const validateGradeValue = (value, maxMarks) => {
+        if (value === '' || value === null || value === undefined) return null
+        if (Number.isNaN(Number(value))) return 'Invalid number'
+        if (Number(value) < 0) return 'Min 0'
+        if (maxMarks !== null && Number(value) > Number(maxMarks)) return `Max ${maxMarks}`
+        return null
+    }
+
+    const clampGradeValue = (value, maxMarks) => {
+        if (value === '' || value === null || value === undefined) return ''
+        let num = Number(value)
+        if (Number.isNaN(num)) return ''
+        if (num < 0) num = 0
+        if (maxMarks !== null && num > Number(maxMarks)) num = Number(maxMarks)
+        return num
+    }
+
     return (
         <div className="grade-management">
             {/* Header */}
             <div className="grade-management-header">
                 <h2 className="grade-management-title">Grade Management</h2>
                 {selectedSubject && enrollments.length > 0 && (
-                    <button className="btn-add" onClick={handleSaveGrades} disabled={saving}>
+                    <button className="btn-add" onClick={handleSaveGrades} disabled={saving || hasValidationErrors()}>
                         <SaveIcon />
                         {saving ? 'Saving...' : 'Save All Grades'}
                     </button>
@@ -433,20 +482,28 @@ function GradeManagement() {
                                                                         {c.component_name}
                                                                         <span className="max-marks">/{c.max_marks}</span>
                                                                     </label>
-                                                                    <input
-                                                                        type="number"
-                                                                        className="grade-input-compact"
-                                                                        value={grades[enrollment.id]?.[c.id] || ''}
-                                                                        onChange={(e) => updateGrade(enrollment.id, c.id, e.target.value)}
-                                                                        min="0"
-                                                                        max={c.max_marks}
-                                                                        placeholder="-"
-                                                                    />
-                                                                </div>
                                                                 <input
-                                                                    type="text"
-                                                                    className="remark-input-compact"
-                                                                    placeholder="Add feedback..."
+                                                                    type="number"
+                                                                    className={`grade-input-compact ${gradeErrors[enrollment.id]?.[c.id] ? 'invalid' : ''}`}
+                                                                    value={grades[enrollment.id]?.[c.id] ?? ''}
+                                                                    onChange={(e) => updateGrade(enrollment.id, c.id, e.target.value)}
+                                                                    onBlur={(e) => {
+                                                                        const clamped = clampGradeValue(e.target.value, c.max_marks)
+                                                                        updateGrade(enrollment.id, c.id, clamped)
+                                                                    }}
+                                                                    min="0"
+                                                                    max={c.max_marks}
+                                                                    step="0.01"
+                                                                    placeholder="-"
+                                                                />
+                                                            </div>
+                                                            {gradeErrors[enrollment.id]?.[c.id] && (
+                                                                <span className="grade-error">{gradeErrors[enrollment.id]?.[c.id]}</span>
+                                                            )}
+                                                            <input
+                                                                type="text"
+                                                                className="remark-input-compact"
+                                                                placeholder="Add feedback..."
                                                                     value={remarks[enrollment.id]?.[c.id] || ''}
                                                                     onChange={(e) => updateRemark(enrollment.id, c.id, e.target.value)}
                                                                 />
@@ -545,13 +602,21 @@ function GradeManagement() {
                                                         <div className="grade-cell-wrapper">
                                                             <input
                                                                 type="number"
-                                                                className="grade-input"
-                                                                value={grades[enrollment.id]?.[c.id] || ''}
+                                                                className={`grade-input ${gradeErrors[enrollment.id]?.[c.id] ? 'invalid' : ''}`}
+                                                                value={grades[enrollment.id]?.[c.id] ?? ''}
                                                                 onChange={(e) => updateGrade(enrollment.id, c.id, e.target.value)}
+                                                                onBlur={(e) => {
+                                                                    const clamped = clampGradeValue(e.target.value, c.max_marks)
+                                                                    updateGrade(enrollment.id, c.id, clamped)
+                                                                }}
                                                                 min="0"
                                                                 max={c.max_marks}
+                                                                step="0.01"
                                                                 placeholder="-"
                                                             />
+                                                            {gradeErrors[enrollment.id]?.[c.id] && (
+                                                                <span className="grade-error">{gradeErrors[enrollment.id]?.[c.id]}</span>
+                                                            )}
                                                             <input
                                                                 type="text"
                                                                 className="remark-input-mini"

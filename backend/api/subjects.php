@@ -12,6 +12,14 @@ setCORSHeaders();
 $method = $_SERVER['REQUEST_METHOD'];
 $pdo = getDBConnection();
 
+// Require authentication for all subject routes
+$authUser = getAuthUser();
+if (!$authUser) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Unauthorized']);
+    exit;
+}
+
 try {
     switch ($method) {
         case 'GET':
@@ -252,7 +260,7 @@ function handlePut($pdo)
         $fields = [];
         $params = [];
 
-        $allowedFields = ['name', 'code', 'semester', 'subject_type', 'credits', 'description', 'is_active'];
+        $allowedFields = ['program_id', 'name', 'code', 'semester', 'subject_type', 'credits', 'description', 'is_active'];
 
         foreach ($allowedFields as $field) {
             if (isset($data[$field])) {

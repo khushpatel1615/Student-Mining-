@@ -188,7 +188,7 @@ function AdminOverview() {
             })
             const notifData = await notifRes.json()
             if (notifData.success) {
-                setRecentActivity(Array.isArray(notifData.data) ? notifData.data : [])
+                setRecentActivity(Array.isArray(notifData.data?.notifications) ? notifData.data.notifications : [])
             }
 
             // Calculate additional stats (ensure numbers)
