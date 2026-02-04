@@ -1,43 +1,103 @@
 /* ============================================
    Student Management Styles
+   Modern Circular Profile Tile Design
    ============================================ */
+
+/* CSS Custom Properties for Design Tokens */
+:root {
+    --sm-avatar-size: 56px;
+    --sm-avatar-border: 2px;
+    --sm-card-radius: 14px;
+    --sm-card-padding: 16px 20px;
+    --sm-spacing-xs: 4px;
+    --sm-spacing-sm: 8px;
+    --sm-spacing-md: 12px;
+    --sm-spacing-lg: 16px;
+    --sm-spacing-xl: 24px;
+
+    /* Typography */
+    --sm-font-name: 600;
+    --sm-font-meta: 400;
+    --sm-size-name: 0.938rem;
+    --sm-size-email: 0.813rem;
+    --sm-size-meta: 0.75rem;
+    --sm-size-pill: 0.688rem;
+
+    /* Colors */
+    --sm-bg-page: #f8f9fc;
+    --sm-bg-card: #ffffff;
+    --sm-bg-header: #f1f3f8;
+    --sm-border-light: rgba(99, 102, 241, 0.12);
+    --sm-border-avatar: rgba(255, 255, 255, 0.9);
+    --sm-shadow-avatar: 0 4px 12px rgba(99, 102, 241, 0.18);
+    --sm-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.03);
+    --sm-shadow-card-hover: 0 8px 24px rgba(99, 102, 241, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
+
+    /* Accent Colors */
+    --sm-purple: #7c3aed;
+    --sm-purple-soft: rgba(124, 58, 237, 0.08);
+    --sm-blue: #3b82f6;
+    --sm-blue-soft: rgba(59, 130, 246, 0.08);
+    --sm-green: #10b981;
+    --sm-green-soft: rgba(16, 185, 129, 0.08);
+    --sm-red: #ef4444;
+    --sm-red-soft: rgba(239, 68, 68, 0.08);
+}
 
 .student-management {
     animation: fadeIn 0.5s ease-out;
     width: 100%;
-    padding: 1rem;
+    padding: 1.5rem;
+    background: var(--sm-bg-page);
+    min-height: 100vh;
 }
 
-/* Header with actions */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
+   Header Section
+   ============================================ */
 .student-management-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 2rem;
+    margin-bottom: 1.75rem;
     flex-wrap: wrap;
     gap: 1rem;
 }
 
 .student-management-title {
-    font-size: 1.5rem;
+    font-size: 1.625rem;
     font-weight: 700;
     color: var(--text-primary);
+    letter-spacing: -0.02em;
 }
 
-/* Filter Bar */
+/* ============================================
+   Filter Bar
+   ============================================ */
 .student-filters {
     display: flex;
     align-items: center;
     gap: 1rem;
     flex-wrap: wrap;
-    margin-bottom: 2rem;
-    /* Sync with enrollment-filters */
+    margin-bottom: 1.5rem;
 }
 
 .search-input-wrapper {
     position: relative;
     flex: 1;
-    min-width: 250px;
+    min-width: 280px;
 }
 
 .search-input-wrapper svg {
@@ -53,60 +113,75 @@
 
 .search-input {
     width: 100%;
-    padding: 0.75rem 1rem 0.75rem 2.75rem;
-    /* Reduced height to match enrollment buttons */
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    background: var(--bg-primary);
+    padding: 0.875rem 1rem 0.875rem 2.75rem;
+    border: 1.5px solid var(--sm-border-light);
+    border-radius: var(--sm-card-radius);
+    background: var(--sm-bg-card);
     color: var(--text-primary);
-    font-size: 0.95rem;
-    transition: all var(--transition-fast);
-    box-shadow: var(--shadow-sm);
+    font-size: 0.938rem;
+    transition: all 0.2s ease;
+    box-shadow: var(--sm-shadow-card);
 }
 
 .search-input:focus {
     outline: none;
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    border-color: var(--sm-purple);
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+}
+
+.search-input::placeholder {
+    color: var(--text-tertiary);
 }
 
 .filter-select {
-    padding: 0.75rem 2rem 0.75rem 1rem;
-    /* Reduced height */
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    background: var(--bg-primary);
+    padding: 0.875rem 2.25rem 0.875rem 1.125rem;
+    border: 1.5px solid var(--sm-border-light);
+    border-radius: var(--sm-card-radius);
+    background: var(--sm-bg-card);
     color: var(--text-primary);
-    font-size: 0.95rem;
+    font-size: 0.938rem;
     cursor: pointer;
-    transition: all var(--transition-fast);
-    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+    box-shadow: var(--sm-shadow-card);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
 }
 
+.filter-select:focus {
+    outline: none;
+    border-color: var(--sm-purple);
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+}
+
+/* ============================================
+   Add Button
+   ============================================ */
 .btn-add {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 0.5rem;
     padding: 0.875rem 1.5rem;
-    background: var(--accent-gradient);
+    background: linear-gradient(135deg, var(--sm-purple) 0%, #8b5cf6 100%);
     color: white;
     border: none;
-    border-radius: var(--radius-md);
-    font-size: 0.95rem;
-    font-weight: 500;
+    border-radius: var(--sm-card-radius);
+    font-size: 0.938rem;
+    font-weight: 600;
     cursor: pointer;
-    transition: all var(--transition-fast);
-    box-shadow: var(--shadow-sm);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
 }
 
 .btn-add:hover {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    filter: brightness(1.1);
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.45);
 }
 
 .btn-add:active {
     transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
 }
 
 .btn-add svg {
@@ -114,22 +189,24 @@
     height: 18px;
 }
 
-/* Table Container */
+/* ============================================
+   Table Container
+   ============================================ */
 .students-table-container {
     width: 100%;
     overflow-x: auto;
     padding-bottom: 1rem;
 }
 
-/* Table Styles - Enforcing Table Layout */
+/* ============================================
+   Table Styles
+   ============================================ */
 .students-table {
     display: table !important;
     width: 100% !important;
     border-collapse: separate !important;
-    /* Allows spacing for card effect */
-    border-spacing: 0 0.4rem !important;
-    /* Reduced from 0.8rem for density */
-    min-width: 900px;
+    border-spacing: 0 var(--sm-spacing-md) !important;
+    min-width: 950px;
 }
 
 .students-table thead {
@@ -150,42 +227,43 @@
     vertical-align: middle !important;
 }
 
-/* Header Styling */
+/* ============================================
+   Table Header
+   ============================================ */
 .students-table th {
     position: sticky;
     top: 0;
     z-index: 10;
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
-    /* Brighter from text-tertiary */
+    background: var(--sm-bg-header);
+    color: var(--text-secondary);
     font-weight: 600;
-    font-size: 0.75rem;
+    font-size: 0.688rem;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 0.75rem 1.5rem;
-    /* Reduced from 1rem */
+    letter-spacing: 0.08em;
+    padding: 0.875rem 1.25rem;
     border: none;
 }
 
-/* Rounded header corners */
 .students-table th:first-child {
-    border-top-left-radius: 8px;
-    border-bottom-left-radius: 8px;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    padding-left: 1.5rem;
 }
 
 .students-table th:last-child {
-    border-top-right-radius: 8px;
-    border-bottom-right-radius: 8px;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    padding-right: 1.5rem;
 }
 
 /* Column Widths */
 .students-table th:nth-child(1) {
-    width: 25%;
+    width: 28%;
 }
 
 /* Student */
 .students-table th:nth-child(2) {
-    width: 15%;
+    width: 12%;
 }
 
 /* ID */
@@ -195,276 +273,716 @@
 
 /* Role */
 .students-table th:nth-child(4) {
-    width: 10%;
+    width: 12%;
 }
 
 /* Dept */
 .students-table th:nth-child(5) {
-    width: 15%;
+    width: 12%;
 }
 
 /* Status */
 .students-table th:nth-child(6) {
-    width: 10%;
+    width: 14%;
 }
 
 /* Login */
 .students-table th:nth-child(7) {
-    width: 15%;
-    text-align: right;
+    width: 12%;
+    text-align: center;
 }
 
 /* Actions */
 
-/* Body Row Styling (Card Look) */
+/* ============================================
+   Table Row - Card Style
+   ============================================ */
 .students-table tbody tr {
-    background: var(--bg-card);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    transition: transform 0.2s, box-shadow 0.2s;
+    background: var(--sm-bg-card);
+    box-shadow: var(--sm-shadow-card);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .students-table tbody tr:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--sm-shadow-card-hover);
+}
+
+.students-table tbody tr:hover .circular-avatar {
+    box-shadow: 0 6px 18px rgba(124, 58, 237, 0.25);
+    transform: scale(1.04);
 }
 
 .students-table td {
-    padding: 0.6rem 1.5rem;
-    /* Reduced from 1rem for density */
-    background: var(--bg-card);
-    /* Required for proper border radius masking */
-    border-top: 1px solid var(--border-color);
-    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 1.25rem;
+    background: var(--sm-bg-card);
+    border-top: 1px solid var(--sm-border-light);
+    border-bottom: 1px solid var(--sm-border-light);
     color: var(--text-primary);
 }
 
 .students-table td:first-child {
-    border-left: 1px solid var(--border-color);
-    border-top-left-radius: 8px;
-    border-bottom-left-radius: 8px;
+    border-left: 1px solid var(--sm-border-light);
+    border-top-left-radius: var(--sm-card-radius);
+    border-bottom-left-radius: var(--sm-card-radius);
+    padding-left: 1.25rem;
 }
 
 .students-table td:last-child {
-    border-right: 1px solid var(--border-color);
-    border-top-right-radius: 8px;
-    border-bottom-right-radius: 8px;
-    text-align: right;
+    border-right: 1px solid var(--sm-border-light);
+    border-top-right-radius: var(--sm-card-radius);
+    border-bottom-right-radius: var(--sm-card-radius);
+    padding-right: 1.25rem;
 }
 
-/* Content Styles */
-.student-info {
+/* ============================================
+   Circular Profile Tile
+   ============================================ */
+.student-profile-tile {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: var(--sm-spacing-lg);
 }
 
-.student-avatar {
-    width: 40px;
-    height: 40px;
+.circular-avatar {
+    width: var(--sm-avatar-size);
+    height: var(--sm-avatar-size);
+    min-width: var(--sm-avatar-size);
+    min-height: var(--sm-avatar-size);
     border-radius: 50%;
-    background: var(--accent-gradient);
+    background: linear-gradient(145deg, #8b5cf6 0%, #7c3aed 50%, #6d28d9 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-weight: 600;
-    flex-shrink: 0;
+    font-weight: 700;
+    font-size: 1.125rem;
+    letter-spacing: 0.02em;
+    box-shadow: var(--sm-shadow-avatar);
+    border: var(--sm-avatar-border) solid var(--sm-border-avatar);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
 }
 
-.student-avatar img {
+.circular-avatar::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.circular-avatar img {
     width: 100%;
     height: 100%;
     border-radius: 50%;
     object-fit: cover;
 }
 
-.student-details {
+.circular-avatar:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.3);
+}
+
+/* Avatar Color Variants based on initials */
+.circular-avatar[data-color="blue"] {
+    background: linear-gradient(145deg, #60a5fa 0%, #3b82f6 50%, #2563eb 100%);
+}
+
+.circular-avatar[data-color="teal"] {
+    background: linear-gradient(145deg, #2dd4bf 0%, #14b8a6 50%, #0d9488 100%);
+}
+
+.circular-avatar[data-color="rose"] {
+    background: linear-gradient(145deg, #fb7185 0%, #f43f5e 50%, #e11d48 100%);
+}
+
+.circular-avatar[data-color="amber"] {
+    background: linear-gradient(145deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+}
+
+/* Student Details */
+.student-details-modern {
     display: flex;
     flex-direction: column;
+    gap: var(--sm-spacing-xs);
+    min-width: 0;
 }
 
-.student-name {
+.student-name-modern {
+    font-weight: var(--sm-font-name);
+    font-size: var(--sm-size-name);
+    color: #1e293b;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.01em;
+}
+
+.student-email-modern {
+    font-size: var(--sm-size-email);
+    font-weight: var(--sm-font-meta);
+    color: #64748b;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ============================================
+   Student ID Column
+   ============================================ */
+.student-id-cell {
+    font-family: 'SF Mono', 'Roboto Mono', 'Consolas', monospace;
+    font-size: 0.875rem;
     font-weight: 500;
-    font-size: 0.95rem;
+    color: #475569;
+    letter-spacing: 0.02em;
 }
 
-.student-email {
-    font-size: 0.8rem;
-    color: var(--text-tertiary);
-}
-
-.role-badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 999px;
-    font-size: 0.75rem;
+/* ============================================
+   Role Pill
+   ============================================ */
+.role-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 20px;
+    font-size: var(--sm-size-pill);
     font-weight: 600;
-    text-transform: capitalize;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
 }
 
-.role-badge.admin {
-    background: rgba(99, 102, 241, 0.1);
-    color: #6366f1;
+.role-pill.admin {
+    background: var(--sm-purple-soft);
+    color: var(--sm-purple);
 }
 
-.role-badge.student {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
+.role-pill.student {
+    background: var(--sm-blue-soft);
+    color: var(--sm-blue);
 }
 
-.status-toggle {
+.role-pill-icon {
+    width: 12px;
+    height: 12px;
+    opacity: 0.8;
+}
+
+/* ============================================
+   Department Cell
+   ============================================ */
+.dept-cell {
+    font-weight: 500;
+    font-size: 0.875rem;
+    color: #475569;
+}
+
+/* ============================================
+   Status Pill
+   ============================================ */
+.status-pill {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.4rem 0.8rem;
-    border-radius: 999px;
-    border: none;
-    font-size: 0.75rem;
+    padding: 0.4rem 0.875rem;
+    border-radius: 20px;
+    font-size: var(--sm-size-pill);
     font-weight: 600;
+    text-transform: capitalize;
+    border: none;
     cursor: pointer;
-    background: transparent;
+    transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
-.status-toggle.active {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
+.status-pill.active {
+    background: var(--sm-green-soft);
+    color: var(--sm-green);
 }
 
-.status-toggle.inactive {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
+.status-pill.inactive {
+    background: var(--sm-red-soft);
+    color: var(--sm-red);
 }
 
-.status-indicator {
-    width: 6px;
-    height: 6px;
+.status-pill:hover {
+    transform: scale(1.02);
+}
+
+.status-pill.active:hover {
+    background: rgba(16, 185, 129, 0.15);
+}
+
+.status-pill.inactive:hover {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     background: currentColor;
+    animation: pulse 2s infinite;
 }
 
-.action-buttons {
+.status-pill.inactive .status-dot {
+    animation: none;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.6;
+        transform: scale(0.85);
+    }
+}
+
+/* ============================================
+   Last Login Cell
+   ============================================ */
+.last-login-cell {
+    font-size: 0.813rem;
+    font-weight: 500;
+    color: #64748b;
+    white-space: nowrap;
+}
+
+.last-login-cell.never {
+    color: #94a3b8;
+    font-style: italic;
+}
+
+/* ============================================
+   Action Buttons
+   ============================================ */
+.action-buttons-modern {
     display: flex;
     gap: 0.5rem;
-    justify-content: flex-end;
+    justify-content: center;
 }
 
-.btn-action {
-    width: 32px;
-    height: 32px;
+.btn-action-modern {
+    width: 34px;
+    height: 34px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
     background: transparent;
-    color: var(--text-secondary);
+    color: #64748b;
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.btn-action:hover {
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
-    transform: scale(1.1);
+.btn-action-modern svg {
+    width: 16px;
+    height: 16px;
 }
 
-.btn-action.delete:hover {
-    border-color: #ef4444;
-    color: #ef4444;
-    background: rgba(239, 68, 68, 0.1);
-    transform: scale(1.1);
+.btn-action-modern:hover {
+    background: #f8fafc;
+    border-color: var(--sm-purple);
+    color: var(--sm-purple);
+    transform: translateY(-1px);
 }
 
-/* Pagination */
+.btn-action-modern:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+}
+
+.btn-action-modern.delete:hover {
+    border-color: var(--sm-red);
+    color: var(--sm-red);
+    background: var(--sm-red-soft);
+}
+
+/* ============================================
+   Pagination
+   ============================================ */
 .pagination {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem 0;
-    /* Remove border-top as updated layout is separated */
-    margin-top: 1rem;
+    padding: 1.25rem 0;
+    margin-top: 0.5rem;
 }
 
 .pagination-info {
     font-size: 0.875rem;
-    color: var(--text-secondary);
+    font-weight: 500;
+    color: #64748b;
 }
 
 .pagination-buttons {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.625rem;
 }
 
 .btn-page {
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--border-color);
-    background: var(--bg-primary);
-    border-radius: 6px;
+    padding: 0.625rem 1.125rem;
+    border: 1.5px solid #e2e8f0;
+    background: var(--sm-bg-card);
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #475569;
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .btn-page:hover:not(:disabled) {
-    background: var(--bg-secondary);
+    border-color: var(--sm-purple);
+    color: var(--sm-purple);
+    background: rgba(124, 58, 237, 0.04);
 }
 
 .btn-page:disabled {
     opacity: 0.5;
+    cursor: not-allowed;
 }
 
-/* Modal Styles Reuse */
+/* ============================================
+   Modal Styles
+   ============================================ */
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    animation: fadeIn 0.2s ease;
 }
 
 .modal-content {
-    background: var(--bg-secondary);
-    border-radius: 12px;
+    background: var(--sm-bg-card);
+    border-radius: 16px;
     width: 90%;
-    max-width: 500px;
+    max-width: 480px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .modal-header,
 .modal-footer {
-    padding: 1rem;
+    padding: 1.25rem 1.5rem;
     display: flex;
     align-items: center;
 }
 
 .modal-header {
     justify-content: space-between;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.modal-close {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: #f1f5f9;
+    border-radius: 10px;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.modal-close svg {
+    width: 18px;
+    height: 18px;
 }
 
 .modal-footer {
     justify-content: flex-end;
-    gap: 1rem;
-    border-top: 1px solid var(--border-color);
+    gap: 0.75rem;
+    border-top: 1px solid #e2e8f0;
 }
 
 .modal-body {
     padding: 1.5rem;
 }
 
+/* ============================================
+   Form Styles
+   ============================================ */
 .form-group {
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
 }
 
 .form-label {
     display: block;
     margin-bottom: 0.5rem;
+    font-size: 0.875rem;
     font-weight: 500;
+    color: #475569;
 }
 
 .form-input,
 .form-select {
     width: 100%;
-    padding: 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background: var(--bg-primary);
-    color: var(--text-primary);
+    padding: 0.75rem 1rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    background: var(--sm-bg-card);
+    color: #1e293b;
+    font-size: 0.938rem;
+    transition: all 0.2s ease;
+}
+
+.form-input:focus,
+.form-select:focus {
+    outline: none;
+    border-color: var(--sm-purple);
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+}
+
+.form-input::placeholder {
+    color: #94a3b8;
+}
+
+/* Button Styles */
+.btn-primary {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, var(--sm-purple) 0%, #8b5cf6 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.938rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+    transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    padding: 0.75rem 1.5rem;
+    background: #f1f5f9;
+    color: #475569;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.938rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background: #e2e8f0;
+}
+
+.btn-danger {
+    padding: 0.75rem 1.5rem;
+    background: var(--sm-red);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.938rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-danger:hover:not(:disabled) {
+    background: #dc2626;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+}
+
+.btn-danger:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Delete Confirmation */
+.delete-confirmation {
+    text-align: center;
+    padding: 1rem 0;
+}
+
+.delete-confirmation-icon {
+    width: 56px;
+    height: 56px;
+    background: var(--sm-red-soft);
+    color: var(--sm-red);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.25rem;
+}
+
+.delete-confirmation-icon svg {
+    width: 28px;
+    height: 28px;
+}
+
+.delete-confirmation h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.delete-confirmation p {
+    font-size: 0.938rem;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+.delete-confirmation p strong {
+    color: #1e293b;
+}
+
+/* ============================================
+   Responsive Design
+   ============================================ */
+@media (max-width: 1200px) {
+    .students-table {
+        min-width: 850px;
+    }
+
+    .circular-avatar {
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+        min-height: 48px;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .student-management {
+        padding: 1rem;
+    }
+
+    .student-management-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .student-filters {
+        flex-direction: column;
+    }
+
+    .search-input-wrapper {
+        min-width: 100%;
+    }
+
+    .filter-select {
+        width: 100%;
+    }
+
+    .btn-add {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .pagination {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+}
+
+/* ============================================
+   Dark Mode Support (Optional)
+   ============================================ */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --sm-bg-page: #0f172a;
+        --sm-bg-card: #1e293b;
+        --sm-bg-header: #334155;
+        --sm-border-light: rgba(148, 163, 184, 0.15);
+        --sm-border-avatar: rgba(30, 41, 59, 0.9);
+    }
+
+    .student-name-modern {
+        color: #f1f5f9;
+    }
+
+    .student-email-modern,
+    .last-login-cell {
+        color: #94a3b8;
+    }
+
+    .student-id-cell,
+    .dept-cell {
+        color: #cbd5e1;
+    }
+
+    .btn-action-modern {
+        border-color: #475569;
+        color: #94a3b8;
+    }
+
+    .btn-action-modern:hover {
+        background: #334155;
+    }
+}
+
+/* Text alignment utilities */
+.text-left {
+    text-align: left;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.tabular-nums {
+    font-variant-numeric: tabular-nums;
 }

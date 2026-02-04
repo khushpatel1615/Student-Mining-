@@ -561,65 +561,95 @@ function StudentManagement() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {students.map(student => (
-                                    <tr key={student.id}>
-                                        <td>
-                                            <div className="student-info">
-                                                <div className="student-avatar">
-                                                    {student.avatar_url ? (
-                                                        <img src={student.avatar_url} alt={student.full_name} />
-                                                    ) : (
-                                                        getInitials(student.full_name)
-                                                    )}
+                                {students.map(student => {
+                                    // Generate avatar color based on name
+                                    const colors = ['purple', 'blue', 'teal', 'rose', 'amber'];
+                                    const colorIndex = student.full_name.charCodeAt(0) % colors.length;
+                                    const avatarColor = colors[colorIndex];
+
+                                    return (
+                                        <tr key={student.id}>
+                                            {/* Circular Profile Tile */}
+                                            <td>
+                                                <div className="student-profile-tile">
+                                                    <div
+                                                        className="circular-avatar"
+                                                        data-color={avatarColor}
+                                                        title={student.full_name}
+                                                    >
+                                                        {student.avatar_url ? (
+                                                            <img src={student.avatar_url} alt={student.full_name} />
+                                                        ) : (
+                                                            getInitials(student.full_name)
+                                                        )}
+                                                    </div>
+                                                    <div className="student-details-modern">
+                                                        <span className="student-name-modern">{toSentenceCase(student.full_name)}</span>
+                                                        <span className="student-email-modern">{student.email}</span>
+                                                    </div>
                                                 </div>
-                                                <div className="student-details">
-                                                    <span className="student-name">{toSentenceCase(student.full_name)}</span>
-                                                    <span className="student-email">{student.email}</span>
+                                            </td>
+
+                                            {/* Student ID */}
+                                            <td className="text-center">
+                                                <span className="student-id-cell">{student.student_id || '—'}</span>
+                                            </td>
+
+                                            {/* Role Pill */}
+                                            <td className="text-center">
+                                                <span className={`role-pill ${student.role}`}>
+                                                    {student.role}
+                                                </span>
+                                            </td>
+
+                                            {/* Department */}
+                                            <td className="text-center">
+                                                <span className="dept-cell">
+                                                    {student.program_code || '—'}
+                                                </span>
+                                            </td>
+
+                                            {/* Status Pill */}
+                                            <td className="text-center">
+                                                <button
+                                                    className={`status-pill ${student.is_active ? 'active' : 'inactive'}`}
+                                                    onClick={() => handleToggleStatus(student)}
+                                                    title={student.is_active ? 'Click to deactivate' : 'Click to activate'}
+                                                >
+                                                    <span className="status-dot"></span>
+                                                    {student.is_active ? 'Active' : 'Inactive'}
+                                                </button>
+                                            </td>
+
+                                            {/* Last Login */}
+                                            <td className="text-center">
+                                                <span className={`last-login-cell ${!student.last_login ? 'never' : ''}`}>
+                                                    {formatDate(student.last_login)}
+                                                </span>
+                                            </td>
+
+                                            {/* Actions */}
+                                            <td className="text-center">
+                                                <div className="action-buttons-modern">
+                                                    <button
+                                                        className="btn-action-modern"
+                                                        onClick={() => openEditModal(student)}
+                                                        title="Edit student"
+                                                    >
+                                                        <EditIcon />
+                                                    </button>
+                                                    <button
+                                                        className="btn-action-modern delete"
+                                                        onClick={() => openDeleteModal(student)}
+                                                        title="Delete student"
+                                                    >
+                                                        <TrashIcon />
+                                                    </button>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td className="text-right tabular-nums">{student.student_id || '-'}</td>
-                                        <td className="text-center">
-                                            <span className={`role-badge ${student.role}`}>
-                                                {student.role}
-                                            </span>
-                                        </td>
-                                        <td className="text-left">
-                                            <span style={{ fontWeight: '500', color: 'var(--text-secondary)' }}>
-                                                {student.program_code || '-'}
-                                            </span>
-                                        </td>
-                                        <td className="text-center">
-                                            <button
-                                                className={`status-toggle ${student.is_active ? 'active' : 'inactive'}`}
-                                                onClick={() => handleToggleStatus(student)}
-                                                title={student.is_active ? 'Click to deactivate' : 'Click to activate'}
-                                            >
-                                                <span className="status-indicator"></span>
-                                                {student.is_active ? 'Active' : 'Inactive'}
-                                            </button>
-                                        </td>
-                                        <td className="text-right tabular-nums">{formatDate(student.last_login)}</td>
-                                        <td className="text-center">
-                                            <div className="action-buttons">
-                                                <button
-                                                    className="btn-action"
-                                                    onClick={() => openEditModal(student)}
-                                                    title="Edit"
-                                                >
-                                                    <EditIcon />
-                                                </button>
-                                                <button
-                                                    className="btn-action delete"
-                                                    onClick={() => openDeleteModal(student)}
-                                                    title="Delete"
-                                                >
-                                                    <TrashIcon />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
 
