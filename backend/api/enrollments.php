@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Student Enrollment API
  * Handles auto-enrollment and enrollment management
@@ -6,28 +7,29 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
-
 setCORSHeaders();
-
 $method = $_SERVER['REQUEST_METHOD'];
 $pdo = getDBConnection();
-
 try {
     switch ($method) {
         case 'GET':
-            handleGet($pdo);
+                                                                                                                                                                                                                                                                                                handleGet($pdo);
+
             break;
         case 'POST':
-            handlePost($pdo);
+                                                                                                                                                                                                                                                                                                handlePost($pdo);
+
             break;
         case 'PUT':
-            handlePut($pdo);
+                                                                                                                                                                                                                                                                                                handlePut($pdo);
+
             break;
         case 'DELETE':
-            handleDelete($pdo);
+                                                                                                                                                                                                                                                                                                handleDelete($pdo);
+
             break;
         default:
-            http_response_code(405);
+                                                                                                                                                                                                                                                                                                http_response_code(405);
             echo json_encode(['error' => 'Method not allowed']);
     }
 } catch (Exception $e) {
@@ -45,8 +47,7 @@ function handleGet($pdo)
     $userId = $_GET['user_id'] ?? null;
     $semester = $_GET['semester'] ?? null;
     $programId = $_GET['program_id'] ?? null;
-
-    // Verify token
+// Verify token
     $user = getAuthUser();
     if (!$user) {
         http_response_code(401);
@@ -56,7 +57,6 @@ function handleGet($pdo)
 
     // Admin can view all enrollments; students can only view their own
     $isAdmin = $user['role'] === 'admin';
-
     if (!$isAdmin && $userId && $userId != $user['user_id']) {
         http_response_code(403);
         echo json_encode(['error' => 'Access denied']);
@@ -101,8 +101,7 @@ function handleGet($pdo)
             WHERE u.role = 'student'
         ";
         $params = [];
-
-        // Status filter (default to active if not specified)
+// Status filter (default to active if not specified)
         $status = $_GET['status'] ?? 'active';
         if ($status !== 'all') {
             $sql .= " AND se.status = ?";
@@ -120,19 +119,16 @@ function handleGet($pdo)
         }
 
         $sql .= " ORDER BY u.full_name ASC, s.name ASC";
-
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
         $enrollments = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
         echo json_encode(['success' => true, 'data' => $enrollments]);
         return;
     }
 
     // Single user enrollments (student's own or admin viewing specific student)
     $targetUserId = $userId ?? $user['user_id'];
-
-    // Check for current_sem_only flag - Filter by student's current semester
+// Check for current_sem_only flag - Filter by student's current semester
     if (isset($_GET['current_sem_only']) && $_GET['current_sem_only'] === 'true') {
         $semStmt = $pdo->prepare("SELECT current_semester FROM users WHERE id = ?");
         $semStmt->execute([$targetUserId]);
@@ -176,7 +172,6 @@ function handleGet($pdo)
         WHERE se.user_id = ?
     ";
     $params = [$targetUserId];
-
     if ($semester) {
         $sql .= " AND s.semester = ?";
         $params[] = $semester;
@@ -190,12 +185,10 @@ function handleGet($pdo)
     }
 
     $sql .= " ORDER BY s.semester ASC, s.subject_type DESC, s.name ASC";
-
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     $enrollments = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Get grades for each enrollment
+// Get grades for each enrollment
     foreach ($enrollments as &$enrollment) {
         $gradeStmt = $pdo->prepare("
             SELECT 
@@ -263,8 +256,7 @@ function handlePost($pdo)
     }
 
     $data = json_decode(file_get_contents('php://input'), true);
-
-    // Validate required fields
+// Validate required fields
     if (empty($data['program_id']) || empty($data['semester'])) {
         http_response_code(400);
         echo json_encode(['error' => 'program_id and semester are required']);
@@ -288,28 +280,23 @@ function handlePost($pdo)
     $programId = $data['program_id'];
     $semester = $data['semester'];
     $academicYear = $data['academic_year'] ?? date('Y') . '-' . (date('Y') + 1);
-
     $pdo->beginTransaction();
-
     try {
-        // Get all subjects for this program/semester
+    // Get all subjects for this program/semester
         $stmt = $pdo->prepare("
             SELECT id FROM subjects 
             WHERE program_id = ? AND semester = ? AND is_active = TRUE
         ");
         $stmt->execute([$programId, $semester]);
         $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
         if (empty($subjects)) {
             throw new Exception("No subjects found for program $programId, semester $semester");
         }
 
         $totalEnrolledCount = 0;
         $studentsProcessed = 0;
-
         foreach ($userIds as $userId) {
             $enrolledCount = 0;
-
             foreach ($subjects as $subject) {
                 // Create enrollment record (ignore if already exists)
                 $enrollStmt = $pdo->prepare("
@@ -317,47 +304,42 @@ function handlePost($pdo)
                     VALUES (?, ?, ?, 'active')
                 ");
                 $enrollStmt->execute([$userId, $subject['id'], $academicYear]);
-
                 $enrollmentId = $pdo->lastInsertId();
-
                 if ($enrollmentId > 0) {
-                    $enrolledCount++;
-
-                    // Check if evaluation criteria exist for this subject
-                    $criteriaCheckStmt = $pdo->prepare("
+                        $enrolledCount++;
+                        // Check if evaluation criteria exist for this subject
+                                    $criteriaCheckStmt = $pdo->prepare("
                         SELECT COUNT(*) as count FROM evaluation_criteria WHERE subject_id = ?
                     ");
-                    $criteriaCheckStmt->execute([$subject['id']]);
-                    $criteriaCount = $criteriaCheckStmt->fetch(PDO::FETCH_ASSOC)['count'];
-
-                    // If no criteria exist, create default criteria
+                            $criteriaCheckStmt->execute([$subject['id']]);
+                            $criteriaCount = $criteriaCheckStmt->fetch(PDO::FETCH_ASSOC)['count'];
+                            // If no criteria exist, create default criteria
                     if ($criteriaCount == 0) {
-                        // Get subject info to determine criteria type
+        // Get subject info to determine criteria type
                         $subjectInfoStmt = $pdo->prepare("SELECT name, subject_type FROM subjects WHERE id = ?");
                         $subjectInfoStmt->execute([$subject['id']]);
                         $subjectInfo = $subjectInfoStmt->fetch(PDO::FETCH_ASSOC);
-
-                        // Default criteria based on subject type
+        // Default criteria based on subject type
                         if (
                             $subjectInfo['subject_type'] === 'Core' ||
                             strpos($subjectInfo['name'], 'Programming') !== false ||
                             strpos($subjectInfo['name'], 'Lab') !== false
                         ) {
-                            // Core/Programming subjects with practical component
-                            $defaultCriteria = [
-                                ['Final Exam', 40.00, 40, 'End semester examination'],
-                                ['Mid-Term Exam', 20.00, 20, 'Mid semester examination'],
-                                ['Lab Practicals', 25.00, 25, 'Laboratory/Practical work'],
-                                ['Assignments', 15.00, 15, 'Assignments and homework']
-                            ];
+                    // Core/Programming subjects with practical component
+                                $defaultCriteria = [
+                                    ['Final Exam', 40.00, 40, 'End semester examination'],
+                                    ['Mid-Term Exam', 20.00, 20, 'Mid semester examination'],
+                                    ['Lab Practicals', 25.00, 25, 'Laboratory/Practical work'],
+                                    ['Assignments', 15.00, 15, 'Assignments and homework']
+                                ];
                         } else {
-                            // Theory subjects
-                            $defaultCriteria = [
-                                ['Final Exam', 40.00, 40, 'End semester examination'],
-                                ['Mid-Term Exam', 25.00, 25, 'Mid semester examination'],
-                                ['Assignments', 20.00, 20, 'Assignments and homework'],
-                                ['Class Participation', 15.00, 15, 'Class participation and quizzes']
-                            ];
+                                                // Theory subjects
+                                                $defaultCriteria = [
+                                                    ['Final Exam', 40.00, 40, 'End semester examination'],
+                                                    ['Mid-Term Exam', 25.00, 25, 'Mid semester examination'],
+                                                    ['Assignments', 20.00, 20, 'Assignments and homework'],
+                                                    ['Class Participation', 15.00, 15, 'Class participation and quizzes']
+                                                ];
                         }
 
                         // Insert default criteria
@@ -366,25 +348,23 @@ function handlePost($pdo)
                             VALUES (?, ?, ?, ?, ?)
                         ");
                         foreach ($defaultCriteria as $c) {
-                            $insertCriteriaStmt->execute([$subject['id'], $c[0], $c[1], $c[2], $c[3]]);
+                                        $insertCriteriaStmt->execute([$subject['id'], $c[0], $c[1], $c[2], $c[3]]);
                         }
                     }
 
-                    // Get evaluation criteria for this subject (now should exist)
-                    $criteriaStmt = $pdo->prepare("
+                                    // Get evaluation criteria for this subject (now should exist)
+                                    $criteriaStmt = $pdo->prepare("
                         SELECT id FROM evaluation_criteria WHERE subject_id = ?
                     ");
-                    $criteriaStmt->execute([$subject['id']]);
-                    $criteria = $criteriaStmt->fetchAll(PDO::FETCH_ASSOC);
-
-                    // Create blank grade records
-                    $gradeStmt = $pdo->prepare("
+                            $criteriaStmt->execute([$subject['id']]);
+                            $criteria = $criteriaStmt->fetchAll(PDO::FETCH_ASSOC);
+                            // Create blank grade records
+                                    $gradeStmt = $pdo->prepare("
                         INSERT IGNORE INTO student_grades (enrollment_id, criteria_id)
                         VALUES (?, ?)
                     ");
-
                     foreach ($criteria as $c) {
-                        $gradeStmt->execute([$enrollmentId, $c['id']]);
+                            $gradeStmt->execute([$enrollmentId, $c['id']]);
                     }
                 }
             }
@@ -394,13 +374,11 @@ function handlePost($pdo)
                 UPDATE users SET program_id = ?, current_semester = ? WHERE id = ?
             ");
             $updateStmt->execute([$programId, $semester, $userId]);
-
             $totalEnrolledCount += $enrolledCount;
             $studentsProcessed++;
         }
 
         $pdo->commit();
-
         echo json_encode([
             'success' => true,
             'message' => "$studentsProcessed student(s) enrolled in semester $semester",
@@ -411,7 +389,6 @@ function handlePost($pdo)
                 'academic_year' => $academicYear
             ]
         ]);
-
     } catch (Exception $e) {
         $pdo->rollBack();
         throw $e;
@@ -431,7 +408,6 @@ function handlePut($pdo)
     }
 
     $data = json_decode(file_get_contents('php://input'), true);
-
     if (empty($data['enrollment_id'])) {
         http_response_code(400);
         echo json_encode(['error' => 'enrollment_id is required']);
@@ -440,7 +416,6 @@ function handlePut($pdo)
 
     $fields = [];
     $params = [];
-
     if (isset($data['status'])) {
         $fields[] = 'status = ?';
         $params[] = $data['status'];
@@ -461,10 +436,8 @@ function handlePut($pdo)
     }
 
     $params[] = $data['enrollment_id'];
-
     $stmt = $pdo->prepare("UPDATE student_enrollments SET " . implode(', ', $fields) . " WHERE id = ?");
     $stmt->execute($params);
-
     echo json_encode(['success' => true, 'message' => 'Enrollment updated successfully']);
 }
 
@@ -481,7 +454,6 @@ function handleDelete($pdo)
     }
 
     $enrollmentId = $_GET['id'] ?? null;
-
     if (!$enrollmentId) {
         http_response_code(400);
         echo json_encode(['error' => 'Enrollment ID is required']);
@@ -491,7 +463,6 @@ function handleDelete($pdo)
     // Set status to dropped instead of hard delete
     $stmt = $pdo->prepare("UPDATE student_enrollments SET status = 'dropped' WHERE id = ?");
     $stmt->execute([$enrollmentId]);
-
     echo json_encode(['success' => true, 'message' => 'Enrollment dropped successfully']);
 }
 
@@ -501,7 +472,6 @@ function handleDelete($pdo)
 function verifyAdminToken()
 {
     $user = getAuthUser();
-
     if (!$user || $user['role'] !== 'admin') {
         return null;
     }

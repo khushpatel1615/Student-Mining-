@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Subject Details API
  * Returns detailed information about a subject for a student
@@ -7,12 +8,9 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
-
 setCORSHeaders();
-
 $method = $_SERVER['REQUEST_METHOD'];
 $pdo = getDBConnection();
-
 try {
     if ($method === 'GET') {
         handleGet($pdo);
@@ -45,7 +43,6 @@ function handleGet($pdo)
     $user = $result['payload'];
     $userId = $user['user_id'];
     $subjectId = $_GET['subject_id'] ?? null;
-
     if (!$subjectId) {
         http_response_code(400);
         echo json_encode(['success' => false, 'error' => 'subject_id is required']);
@@ -63,7 +60,6 @@ function handleGet($pdo)
     ");
     $stmt->execute([$subjectId]);
     $subject = $stmt->fetch(PDO::FETCH_ASSOC);
-
     if (!$subject) {
         http_response_code(404);
         echo json_encode(['success' => false, 'error' => 'Subject not found']);
@@ -78,7 +74,6 @@ function handleGet($pdo)
     ");
     $enrollStmt->execute([$userId, $subjectId]);
     $enrollment = $enrollStmt->fetch(PDO::FETCH_ASSOC);
-
     if (!$enrollment) {
         http_response_code(403);
         echo json_encode(['success' => false, 'error' => 'Not enrolled in this subject']);
@@ -106,20 +101,17 @@ function handleGet($pdo)
     ");
     $gradesStmt->execute([$enrollment['id'], $subjectId]);
     $grades = $gradesStmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Calculate totals
+// Calculate totals
     $totalObtained = 0;
     $totalMax = 0;
     $totalWeightAchieved = 0;
     $totalWeight = 0;
-
     foreach ($grades as &$grade) {
         $totalWeight += $grade['weight_percentage'];
         $totalMax += $grade['max_marks'];
-
         if ($grade['marks_obtained'] !== null) {
             $totalObtained += $grade['marks_obtained'];
-            // Calculate weight achieved for this component
+        // Calculate weight achieved for this component
             $weightAchieved = ($grade['marks_obtained'] / $grade['max_marks']) * $grade['weight_percentage'];
             $grade['weight_achieved'] = round($weightAchieved, 2);
             $grade['percentage'] = round(($grade['marks_obtained'] / $grade['max_marks']) * 100, 2);
@@ -132,8 +124,7 @@ function handleGet($pdo)
 
     $overallPercentage = $totalMax > 0 ? round(($totalObtained / $totalMax) * 100, 2) : null;
     $letterGrade = calculateLetterGrade($overallPercentage);
-
-    // Get attendance stats
+// Get attendance stats
     $attendanceStmt = $pdo->prepare("
         SELECT 
             COUNT(CASE WHEN status = 'present' THEN 1 END) as present,
@@ -146,11 +137,9 @@ function handleGet($pdo)
     ");
     $attendanceStmt->execute([$enrollment['id']]);
     $attendance = $attendanceStmt->fetch(PDO::FETCH_ASSOC);
-
     $attendancePercentage = $attendance['total'] > 0
         ? round(($attendance['present'] / $attendance['total']) * 100, 1)
         : null;
-
     echo json_encode([
         'success' => true,
         'data' => [
@@ -181,20 +170,26 @@ function handleGet($pdo)
 
 function calculateLetterGrade($percentage)
 {
-    if ($percentage === null)
+    if ($percentage === null) {
         return null;
-    if ($percentage >= 90)
+    }
+    if ($percentage >= 90) {
         return 'A+';
-    if ($percentage >= 80)
+    }
+    if ($percentage >= 80) {
         return 'A';
-    if ($percentage >= 70)
+    }
+    if ($percentage >= 70) {
         return 'B+';
-    if ($percentage >= 60)
+    }
+    if ($percentage >= 60) {
         return 'B';
-    if ($percentage >= 50)
+    }
+    if ($percentage >= 50) {
         return 'C';
-    if ($percentage >= 40)
+    }
+    if ($percentage >= 40) {
         return 'D';
+    }
     return 'F';
 }
-?>

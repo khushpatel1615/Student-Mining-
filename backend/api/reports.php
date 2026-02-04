@@ -1,4 +1,5 @@
 <?php
+
 /**
  * PDF Report Generation API
  * Generates report cards, transcripts, and attendance reports
@@ -7,12 +8,9 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
-
 setCORSHeaders();
-
 $method = $_SERVER['REQUEST_METHOD'];
 $pdo = getDBConnection();
-
 try {
     if ($method === 'GET') {
         handleGet($pdo);
@@ -39,8 +37,7 @@ function handleGet($pdo)
 
     $action = $_GET['action'] ?? 'report_card';
     $studentId = $_GET['student_id'] ?? null;
-
-    // If no student_id provided and user is a student, use their own ID
+// If no student_id provided and user is a student, use their own ID
     if (!$studentId && $user['role'] === 'student') {
         $studentId = $user['user_id'];
     }
@@ -59,19 +56,23 @@ function handleGet($pdo)
 
     switch ($action) {
         case 'report_card':
-            generateReportCard($pdo, $studentId);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    generateReportCard($pdo, $studentId);
+
             break;
         case 'transcript':
-            generateTranscript($pdo, $studentId);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    generateTranscript($pdo, $studentId);
+
             break;
         case 'attendance_report':
-            generateAttendanceReport($pdo, $studentId);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    generateAttendanceReport($pdo, $studentId);
+
             break;
         case 'performance_report':
-            generatePerformanceReport($pdo, $studentId);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    generatePerformanceReport($pdo, $studentId);
+
             break;
         default:
-            echo json_encode(['error' => 'Invalid action']);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    echo json_encode(['error' => 'Invalid action']);
     }
 }
 
@@ -86,7 +87,6 @@ function generateReportCard($pdo, $studentId)
     ");
     $stmt->execute([$studentId]);
     $student = $stmt->fetch(PDO::FETCH_ASSOC);
-
     if (!$student) {
         echo json_encode(['error' => 'Student not found']);
         return;
@@ -94,8 +94,7 @@ function generateReportCard($pdo, $studentId)
 
     // Get current semester to filter report card
     $currentSemester = $student['current_semester'] ?? 1;
-
-    // Get enrollments with final grades (from student_enrollments table) for CURRENT SEMESTER ONLY
+// Get enrollments with final grades (from student_enrollments table) for CURRENT SEMESTER ONLY
     $stmt = $pdo->prepare("
         SELECT 
             s.code as subject_code,
@@ -120,8 +119,7 @@ function generateReportCard($pdo, $studentId)
     ");
     $stmt->execute([$studentId, $currentSemester]);
     $grades = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Calculate GPA
+// Calculate GPA
     $totalPoints = 0;
     $totalCredits = 0;
     foreach ($grades as $grade) {
@@ -132,8 +130,7 @@ function generateReportCard($pdo, $studentId)
         }
     }
     $gpa = $totalCredits > 0 ? round($totalPoints / $totalCredits, 2) : 0;
-
-    // Get attendance summary
+// Get attendance summary
     $stmt = $pdo->prepare("
         SELECT 
             COUNT(*) as total,
@@ -147,7 +144,6 @@ function generateReportCard($pdo, $studentId)
     $attendancePercentage = ($attendance && $attendance['total'] > 0)
         ? round(($attendance['present'] / $attendance['total']) * 100, 1)
         : 100;
-
     echo json_encode([
         'success' => true,
         'data' => [
@@ -182,7 +178,6 @@ function generateTranscript($pdo, $studentId)
     ");
     $stmt->execute([$studentId]);
     $student = $stmt->fetch(PDO::FETCH_ASSOC);
-
     if (!$student) {
         echo json_encode(['error' => 'Student not found']);
         return;
@@ -213,8 +208,7 @@ function generateTranscript($pdo, $studentId)
     ");
     $stmt->execute([$studentId]);
     $allGrades = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Group by semester
+// Group by semester
     $semesters = [];
     foreach ($allGrades as $grade) {
         $sem = $grade['semester'] ?? 1;
@@ -256,7 +250,6 @@ function generateTranscript($pdo, $studentId)
         }
     }
     $cgpa = $totalCredits > 0 ? round($totalPoints / $totalCredits, 2) : 0;
-
     echo json_encode([
         'success' => true,
         'data' => [
@@ -292,8 +285,7 @@ function generateAttendanceReport($pdo, $studentId)
     ");
     $stmt->execute([$studentId]);
     $student = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    // Get attendance by subject
+// Get attendance by subject
     $stmt = $pdo->prepare("
         SELECT 
             s.code as subject_code,
@@ -311,8 +303,7 @@ function generateAttendanceReport($pdo, $studentId)
     ");
     $stmt->execute([$studentId]);
     $subjectAttendance = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Calculate percentages
+// Calculate percentages
     foreach ($subjectAttendance as &$subject) {
         $subject['percentage'] = $subject['total_classes'] > 0
             ? round(($subject['present'] / $subject['total_classes']) * 100, 1)
@@ -335,12 +326,10 @@ function generateAttendanceReport($pdo, $studentId)
     ");
     $stmt->execute([$studentId]);
     $monthlyData = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Calculate overall
+// Calculate overall
     $totalClasses = array_sum(array_column($subjectAttendance, 'total_classes'));
     $totalPresent = array_sum(array_column($subjectAttendance, 'present'));
     $overallPercentage = $totalClasses > 0 ? round(($totalPresent / $totalClasses) * 100, 1) : 100;
-
     echo json_encode([
         'success' => true,
         'data' => [
@@ -382,8 +371,7 @@ function generatePerformanceReport($pdo, $studentId)
     ");
     $stmt->execute([$studentId]);
     $grades = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Group by subject
+// Group by subject
     $subjects = [];
     foreach ($grades as $grade) {
         $name = $grade['subject_name'];
@@ -410,15 +398,12 @@ function generatePerformanceReport($pdo, $studentId)
     // Get strengths and weaknesses
     $subjectList = array_values($subjects);
     usort($subjectList, fn($a, $b) => $b['average'] - $a['average']);
-
     $strengths = array_slice($subjectList, 0, 3);
     $weaknesses = array_slice(array_reverse($subjectList), 0, 3);
-
-    // Overall average
+// Overall average
     $overallAvg = count($subjectList) > 0
         ? round(array_sum(array_column($subjectList, 'average')) / count($subjectList), 1)
         : 0;
-
     echo json_encode([
         'success' => true,
         'data' => [
@@ -438,7 +423,6 @@ function generatePerformanceReport($pdo, $studentId)
 function getAcademicRemarks($gpa, $attendance)
 {
     $remarks = [];
-
     if ($gpa >= 3.5) {
         $remarks[] = "Excellent academic performance - Dean's List eligible";
     } elseif ($gpa >= 3.0) {
@@ -464,16 +448,21 @@ function getAcademicRemarks($gpa, $attendance)
 
 function getAcademicStanding($cgpa)
 {
-    if ($cgpa >= 3.7)
+    if ($cgpa >= 3.7) {
         return 'Summa Cum Laude';
-    if ($cgpa >= 3.5)
+    }
+    if ($cgpa >= 3.5) {
         return 'Magna Cum Laude';
-    if ($cgpa >= 3.3)
+    }
+    if ($cgpa >= 3.3) {
         return 'Cum Laude';
-    if ($cgpa >= 2.0)
+    }
+    if ($cgpa >= 2.0) {
         return 'Good Standing';
-    if ($cgpa > 0)
+    }
+    if ($cgpa > 0) {
         return 'Academic Probation';
+    }
     return 'No Grades Yet';
 }
 
@@ -493,4 +482,3 @@ function generateRecommendations($weakSubjects)
     }
     return $recommendations;
 }
-?>

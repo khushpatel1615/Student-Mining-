@@ -1,23 +1,19 @@
 <?php
+
 /**
  * Video Lectures API
  */
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
-
 setCORSHeaders();
-
 $method = $_SERVER['REQUEST_METHOD'];
 $pdo = getDBConnection();
-
 createVideoTables($pdo);
-
 try {
     if ($method === 'GET') {
         $subjectId = $_GET['subject_id'] ?? null;
         $action = $_GET['action'] ?? 'list';
-
         if ($action === 'list' && $subjectId) {
             $stmt = $pdo->prepare("SELECT * FROM video_lectures WHERE subject_id = ? ORDER BY sequence_order, created_at");
             $stmt->execute([$subjectId]);
@@ -43,7 +39,6 @@ try {
 
         $data = json_decode(file_get_contents('php://input'), true);
         $action = $data['action'] ?? 'create';
-
         if ($action === 'create' && ($user['role'] === 'admin' || $user['role'] === 'teacher')) {
             $stmt = $pdo->prepare("INSERT INTO video_lectures (subject_id, title, description, video_url, 
                 video_type, duration_minutes, sequence_order, thumbnail_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
@@ -108,4 +103,3 @@ function createVideoTables($pdo)
     } catch (PDOException $e) {
     }
 }
-?>

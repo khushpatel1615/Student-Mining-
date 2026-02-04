@@ -1,11 +1,11 @@
 <?php
+
 /**
  * JWT Helper Functions
  * Simple JWT implementation without external dependencies
  */
 
 require_once __DIR__ . '/../config/database.php';
-
 /**
  * Base64 URL encode (JWT compatible)
  */
@@ -31,7 +31,6 @@ function generateToken($userId, $email, $role, $fullName)
         'typ' => 'JWT',
         'alg' => 'HS256'
     ]);
-
     $payload = json_encode([
         'iss' => 'StudentDataMining',
         'iat' => time(),
@@ -41,13 +40,10 @@ function generateToken($userId, $email, $role, $fullName)
         'role' => $role,
         'full_name' => $fullName
     ]);
-
     $base64Header = base64UrlEncode($header);
     $base64Payload = base64UrlEncode($payload);
-
     $signature = hash_hmac('sha256', $base64Header . '.' . $base64Payload, JWT_SECRET, true);
     $base64Signature = base64UrlEncode($signature);
-
     return $base64Header . '.' . $base64Payload . '.' . $base64Signature;
 }
 
@@ -57,24 +53,20 @@ function generateToken($userId, $email, $role, $fullName)
 function verifyToken($token)
 {
     $parts = explode('.', $token);
-
     if (count($parts) !== 3) {
         return ['valid' => false, 'error' => 'Invalid token format'];
     }
 
     list($base64Header, $base64Payload, $base64Signature) = $parts;
-
-    // Verify signature
+// Verify signature
     $signature = hash_hmac('sha256', $base64Header . '.' . $base64Payload, JWT_SECRET, true);
     $expectedSignature = base64UrlEncode($signature);
-
     if (!hash_equals($expectedSignature, $base64Signature)) {
         return ['valid' => false, 'error' => 'Invalid signature'];
     }
 
     // Decode payload
     $payload = json_decode(base64UrlDecode($base64Payload), true);
-
     if (!$payload) {
         return ['valid' => false, 'error' => 'Invalid payload'];
     }
@@ -95,7 +87,6 @@ function getTokenFromHeader()
 {
     $headers = null;
     $authHeader = null;
-
     if (function_exists('getallheaders')) {
         $headers = getallheaders();
         $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? null;
@@ -118,13 +109,11 @@ function getTokenFromHeader()
 function requireAuth()
 {
     $token = getTokenFromHeader();
-
     if (!$token) {
         jsonResponse(['success' => false, 'error' => 'No token provided'], 401);
     }
 
     $result = verifyToken($token);
-
     if (!$result['valid']) {
         jsonResponse(['success' => false, 'error' => $result['error']], 401);
     }
@@ -138,7 +127,6 @@ function requireAuth()
 function requireRole($requiredRole)
 {
     $payload = requireAuth();
-
     if ($payload['role'] !== $requiredRole) {
         jsonResponse(['success' => false, 'error' => 'Insufficient permissions'], 403);
     }
@@ -152,13 +140,14 @@ function requireRole($requiredRole)
 function getAuthUser()
 {
     $token = getTokenFromHeader();
-    if (!$token)
+    if (!$token) {
         return null;
+    }
 
     $result = verifyToken($token);
-    if (!$result['valid'])
+    if (!$result['valid']) {
         return null;
+    }
 
     return $result['payload'];
 }
-?>

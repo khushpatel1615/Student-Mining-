@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Student Dashboard API
  * Returns summary, subjects, grades and attendance for the logged-in student
@@ -41,24 +42,26 @@ function getSubjectAttendanceFromCsv($dataDir, $subjectId, $studentIdKey)
     ];
 
     if (file_exists($file)) {
-        if (($handle = fopen($file, "r")) !== FALSE) {
+        if (($handle = fopen($file, "r")) !== false) {
             $header = fgetcsv($handle);
             if ($header && count($header) > 2) {
                 $dates = array_slice($header, 2);
-                while (($row = fgetcsv($handle)) !== FALSE) {
+                while (($row = fgetcsv($handle)) !== false) {
                     if ($row[0] === $studentIdKey) {
                         foreach ($dates as $i => $date) {
                             $status = $row[$i + 2] ?? '-';
-                            if ($status === '-')
+                            if ($status === '-') {
                                 continue;
+                            }
 
                             $stats['total_classes']++;
-                            if ($status === 'P')
+                            if ($status === 'P') {
                                 $stats['present']++;
-                            elseif ($status === 'A')
+                            } elseif ($status === 'A') {
                                 $stats['absent']++;
-                            elseif ($status === 'E' || $status === 'L')
+                            } elseif ($status === 'E' || $status === 'L') {
                                 $stats['excused']++; // Simplified
+                            }
 
                             $stats['records'][] = ['date' => $date, 'status' => $status];
                         }
@@ -252,33 +255,43 @@ function handleGet($pdo, $dataDir)
 
 function calculateGrade($percentage)
 {
-    if ($percentage >= 90)
+    if ($percentage >= 90) {
         return ['letter' => 'A+', 'points' => 10];
-    if ($percentage >= 80)
+    }
+    if ($percentage >= 80) {
         return ['letter' => 'A', 'points' => 9];
-    if ($percentage >= 70)
+    }
+    if ($percentage >= 70) {
         return ['letter' => 'B+', 'points' => 8];
-    if ($percentage >= 60)
+    }
+    if ($percentage >= 60) {
         return ['letter' => 'B', 'points' => 7];
-    if ($percentage >= 50)
+    }
+    if ($percentage >= 50) {
         return ['letter' => 'C', 'points' => 6];
-    if ($percentage >= 40)
+    }
+    if ($percentage >= 40) {
         return ['letter' => 'D', 'points' => 5];
+    }
     return ['letter' => 'F', 'points' => 0];
 }
 
 function getGPAGrade($gpa)
 {
-    if ($gpa >= 9.0)
+    if ($gpa >= 9.0) {
         return 'Outstanding';
-    if ($gpa >= 8.0)
+    }
+    if ($gpa >= 8.0) {
         return 'Excellent';
-    if ($gpa >= 7.0)
+    }
+    if ($gpa >= 7.0) {
         return 'Very Good';
-    if ($gpa >= 6.0)
+    }
+    if ($gpa >= 6.0) {
         return 'Good';
-    if ($gpa >= 5.0)
+    }
+    if ($gpa >= 5.0) {
         return 'Average';
+    }
     return 'Needs Improvement';
 }
-?>

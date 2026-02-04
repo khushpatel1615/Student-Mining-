@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Bulk Grade Import API
  * Handles CSV/Excel upload for bulk grade entry
@@ -91,7 +92,6 @@ try {
     $errors = [];
     $rowNumber = 1;
     $criteriaCache = [];
-
     // Process each row
     while (($row = fgetcsv($handle)) !== false) {
         $rowNumber++;
@@ -103,7 +103,6 @@ try {
             $subjectId = $row[$columnMap['subject_id'] ?? ''] ?? null;
             $grade = $row[$columnMap['grade']] ?? null;
             $assessmentType = $row[$columnMap['assessment_type'] ?? ''] ?? 'final';
-
             // Validate required fields
             if (empty($studentId) || empty($grade)) {
                 $errors[] = "Row $rowNumber: Missing student_id or grade";
@@ -161,7 +160,6 @@ try {
             ");
             $stmt->execute([$studentDbId, $subjectId]);
             $enrollmentId = $stmt->fetchColumn();
-
             if (!$enrollmentId) {
                 $errors[] = "Row $rowNumber: Enrollment not found for student/subject";
                 $failCount++;
@@ -189,18 +187,17 @@ try {
             }
 
             if ($matchedCriteria) {
-                // Update component-level grade
+// Update component-level grade
                 $stmt = $pdo->prepare("
                     INSERT INTO student_grades (enrollment_id, criteria_id, marks_obtained, graded_at)
                     VALUES (?, ?, ?, NOW())
                     ON DUPLICATE KEY UPDATE marks_obtained = VALUES(marks_obtained), graded_at = NOW()
                 ");
                 $stmt->execute([$enrollmentId, $matchedCriteria['id'], $grade]);
-
-                // Recompute final percentage
+// Recompute final percentage
                 updateFinalPercentage($pdo, $enrollmentId);
             } else {
-                // Treat as final percentage update
+            // Treat as final percentage update
                 $finalGrade = calculateGradeLetter($grade);
                 $stmt = $pdo->prepare("
                     UPDATE student_enrollments 
@@ -211,7 +208,6 @@ try {
             }
 
             $successCount++;
-
         } catch (Exception $e) {
             $errors[] = "Row $rowNumber: " . $e->getMessage();
             $failCount++;
@@ -244,7 +240,6 @@ try {
         ],
         'errors' => $errors
     ]);
-
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['error' => $e->getMessage()]);
@@ -262,10 +257,8 @@ function updateFinalPercentage($pdo, $enrollmentId)
     ");
     $stmt->execute([$enrollmentId]);
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
     $percentage = null;
     $grade = null;
-
     if ($result && $result['total_max'] > 0) {
         $percentage = round(($result['total_obtained'] / $result['total_max']) * 100, 2);
         $grade = calculateGradeLetter($percentage);
@@ -281,11 +274,23 @@ function updateFinalPercentage($pdo, $enrollmentId)
 
 function calculateGradeLetter($percentage)
 {
-    if ($percentage >= 90) return 'A+';
-    if ($percentage >= 80) return 'A';
-    if ($percentage >= 70) return 'B+';
-    if ($percentage >= 60) return 'B';
-    if ($percentage >= 50) return 'C';
-    if ($percentage >= 40) return 'D';
+    if ($percentage >= 90) {
+        return 'A+';
+    }
+    if ($percentage >= 80) {
+        return 'A';
+    }
+    if ($percentage >= 70) {
+        return 'B+';
+    }
+    if ($percentage >= 60) {
+        return 'B';
+    }
+    if ($percentage >= 50) {
+        return 'C';
+    }
+    if ($percentage >= 40) {
+        return 'D';
+    }
     return 'F';
 }

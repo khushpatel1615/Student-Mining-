@@ -10,20 +10,17 @@ import SubjectManagement from '../components/SubjectManagement/SubjectManagement
 import EnrollmentManagement from '../components/EnrollmentManagement/EnrollmentManagement'
 import GradeManagement from '../components/GradeManagement/GradeManagement'
 import AdminAttendance from '../components/AttendanceManagement/AdminAttendance'
-
 import CalendarManagement from '../components/CalendarManagement/CalendarManagement'
-
 import AdminOverview from '../components/Overview/AdminOverview'
 import CSVImport from '../components/Import/CSVImport'
 import AssignmentManagement from '../components/AssignmentManagement/AssignmentManagement'
 import ExamManagement from '../components/ExamManagement/ExamManagement'
 import AdminAnnouncements from '../components/Discussions/AdminAnnouncements'
 import VideoLectures from '../components/VideoLectures/VideoLectures'
-
-
 import ActivityFeed from '../components/ActivityFeed/ActivityFeed'
 import MainLayout from '../components/Layout/MainLayout'
 import RiskCenter from '../components/Analytics/RiskCenter'
+import RiskAlertSettings from '../components/Analytics/RiskAlertSettings'
 import InsightsDashboard from '../components/Analytics/InsightsDashboard'
 import { CircularProgress } from '../components/CircularProgress'
 import {
@@ -37,6 +34,7 @@ import {
 import './AdminDashboard.css'
 
 import { API_BASE } from '../config'
+
 
 function AdminDashboard() {
     const { user, token, logout } = useAuth()
@@ -338,6 +336,8 @@ function AdminDashboard() {
                 return <VideoLectures />
             case 'calendar':
                 return <CalendarManagement role="admin" />
+            case 'risk-alerts':
+                return <RiskAlertSettings />
             default:
                 return <AdminOverview />
         }

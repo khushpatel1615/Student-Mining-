@@ -1,34 +1,28 @@
 <?php
+
 /**
  * Course Reviews/Ratings API
  */
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
-
 setCORSHeaders();
-
 $method = $_SERVER['REQUEST_METHOD'];
 $pdo = getDBConnection();
-
 createReviewTables($pdo);
-
 try {
     if ($method === 'GET') {
         $subjectId = $_GET['subject_id'] ?? null;
         $action = $_GET['action'] ?? 'list';
-
         if ($action === 'list' && $subjectId) {
             $stmt = $pdo->prepare("SELECT r.*, u.full_name as reviewer_name FROM course_reviews r 
                 JOIN users u ON r.user_id = u.id WHERE r.subject_id = ? AND r.is_approved = 1 ORDER BY r.created_at DESC");
             $stmt->execute([$subjectId]);
             $reviews = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
             $stmt = $pdo->prepare("SELECT AVG(overall_rating) as avg_rating, AVG(difficulty_rating) as avg_difficulty,
                 AVG(workload_rating) as avg_workload, COUNT(*) as total_reviews FROM course_reviews WHERE subject_id = ? AND is_approved = 1");
             $stmt->execute([$subjectId]);
             $stats = $stmt->fetch(PDO::FETCH_ASSOC);
-
             echo json_encode(['success' => true, 'data' => ['reviews' => $reviews, 'stats' => $stats]]);
         } elseif ($action === 'my_reviews') {
             $user = getAuthUser();
@@ -58,9 +52,8 @@ try {
 
         $data = json_decode(file_get_contents('php://input'), true);
         $action = $data['action'] ?? 'create';
-
         if ($action === 'create') {
-            // Check if already reviewed
+        // Check if already reviewed
             $stmt = $pdo->prepare("SELECT id FROM course_reviews WHERE user_id = ? AND subject_id = ?");
             $stmt->execute([$user['user_id'], $data['subject_id']]);
             if ($stmt->fetch()) {
@@ -117,4 +110,3 @@ function createReviewTables($pdo)
     } catch (PDOException $e) {
     }
 }
-?>

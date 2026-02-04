@@ -4,6 +4,24 @@
 
 ---
 
+## ⚡ Quick Start (For returning developers)
+
+If you have already set up the project:
+
+```bash
+# 1. Start XAMPP (Apache + MySQL)
+
+# 2. Start Frontend
+cd frontend
+npm run dev
+
+# 3. Run Tests
+cd frontend
+npm test
+```
+
+---
+
 ## 📋 Prerequisites
 
 Before you begin, ensure you have:
@@ -217,6 +235,43 @@ Navigate to: **http://localhost:5173**
 
 ---
 
+## 🧪 Testing & Code Quality
+
+### Frontend Testing (Jest)
+We use Jest for unit and integration testing of the frontend.
+
+```bash
+cd frontend
+npm test                 # Run all tests
+npm run test:watch      # Watch mode (runs relevant tests on save)
+npm run test:coverage   # Generate coverage report
+npm run test:debug      # Debug tests
+```
+
+### Frontend Linting & Formatting
+We use ESLint and Prettier to enforce consistent code style.
+
+```bash
+cd frontend
+npm run lint            # Javascript/React linting check
+npm run lint:fix        # Auto-fix linting errors
+npm run format          # Format code with Prettier
+npm run format:check    # Check if code is formatted
+```
+
+### Backend Code Quality
+We use PHP CodeSniffer (PHPCS) to enforce PSR-12 coding part.
+
+```bash
+cd backend
+composer install        # Install dev dependencies (if not done)
+composer run lint       # Check for style violations (summary)
+composer run lint:full  # Detailed report of violations
+composer run lint:fix   # Auto-fix coding standard violations
+```
+
+---
+
 ## 🔑 Default Login Credentials
 
 | Role | Email | Password | Access |
@@ -301,6 +356,33 @@ npm install
 1. Ensure you have a valid Google Gemini API key
 2. Add it to `backend/.env` as `GEMINI_API_KEY=your_key_here`
 3. AI Chat is **admin-only** - login as `admin@college.edu`
+
+---
+
+### Issue: "npm test fails" or "Jest error"
+
+**Solution:**
+1. Check `node_modules` exists: `rm -rf node_modules && npm install`
+2. Clear cache: `npm cache clean --force`
+3. Ensure no other process is using port (rare for Jest, but possible if watching)
+
+---
+
+### Issue: ESLint errors
+
+**Solution:**
+1. Try running `npm run lint:fix` to solve clearable issues.
+2. Check `eslint.config.js` configuration.
+3. Ensure you are using the correct Node version.
+
+---
+
+### Issue: PHP CodeSniffer errors
+
+**Solution:**
+1. Run `composer install` in `backend/` to install PHPCS.
+2. Run `composer run lint:fix` to auto-fix style issues.
+3. Ensure PHP version is 8.1+.
 
 ---
 

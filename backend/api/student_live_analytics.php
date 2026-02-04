@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Student Live Analytics API
  * Returns real-time analytics data with trends for the student dashboard.
@@ -8,7 +9,6 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
-
 // Ensure CORS function exists to prevent "undefined function" error
 if (!function_exists('setCORSHeaders')) {
     function setCORSHeaders()
@@ -17,25 +17,27 @@ if (!function_exists('setCORSHeaders')) {
         if (isset($_SERVER['HTTP_ORIGIN'])) {
             header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
             header('Access-Control-Allow-Credentials: true');
-            header('Access-Control-Max-Age: 86400');    // cache for 1 day
+            header('Access-Control-Max-Age: 86400');
+// cache for 1 day
         }
         // Access-Control headers are received during OPTIONS requests
         if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-            if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']))
+            if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'])) {
                 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-            if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']))
+            }
+            if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])) {
                 header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
+            }
             exit(0);
         }
     }
+
 }
 
 setCORSHeaders();
 header('Content-Type: application/json');
-
 $method = $_SERVER['REQUEST_METHOD'];
 $pdo = getDBConnection();
-
 if ($method === 'OPTIONS') {
     http_response_code(200);
     exit();
@@ -48,17 +50,15 @@ if ($method !== 'GET') {
 }
 
 try {
-    // 1. Authentication
+// 1. Authentication
     $token = getTokenFromHeader();
     $validation = verifyToken($token);
-
     if (!$validation || !$validation['valid']) {
         throw new Exception("Unauthorized");
     }
 
     $authUser = $validation['payload'];
     $requestUserId = $_GET['user_id'] ?? $authUser['user_id'];
-
     if ($authUser['role'] !== 'admin' && $requestUserId != $authUser['user_id']) {
         throw new Exception("Access denied");
     }
@@ -75,7 +75,6 @@ try {
     ");
     $stmt->execute([$requestUserId]);
     $stats = $stmt->fetch(PDO::FETCH_ASSOC);
-
     if (!$stats) {
         throw new Exception("Student data not found");
     }
@@ -98,15 +97,14 @@ try {
         $stmtGrades->execute([$requestUserId]);
         $gradeHistory = $stmtGrades->fetchAll(PDO::FETCH_ASSOC);
     } catch (Exception $ex) {
-        // Fallback to simulation
+// Fallback to simulation
     }
 
     // 4. Generate Trend Data (Last 30 Days)
-    $currentGrade = (float) ($stats['grade_avg'] ?? 75);
+        $currentGrade = (float) ($stats['grade_avg'] ?? 75);
     $currentAttendance = (float) ($stats['attendance_score'] ?? 80);
     $currentRisk = (float) ($stats['risk_score'] ?? 20);
-
-    // Helper: Generate smoothed random walk ending at target
+// Helper: Generate smoothed random walk ending at target
     function generateTrend($targetValue, $points = 30, $volatility = 5)
     {
         $trend = [];
@@ -114,10 +112,10 @@ try {
 
         for ($i = 0; $i < $points; $i++) {
             $trend[] = [
-                't' => date('M d', strtotime("-" . $i . " days")), // Daily data
-                'value' => max(0, min(100, round($current + (rand(-$volatility, $volatility) / 2), 1)))
+            't' => date('M d', strtotime("-" . $i . " days")), // Daily data
+            'value' => max(0, min(100, round($current + (rand(-$volatility, $volatility) / 2), 1)))
             ];
-            // Move 'current' slightly away from target
+// Move 'current' slightly away from target
             $current += (rand(-10, 10) / 10);
         }
 
@@ -125,26 +123,25 @@ try {
     }
 
     // Grade Trend
-    $trends = [];
+        $trends = [];
     if (count($gradeHistory) >= 5) {
         $trends['grades'] = array_map(function ($g) {
-            return [
+
+                return [
                 't' => date('M d', strtotime($g['created_at'])),
                 'value' => (float) $g['grade_value']
-            ];
+                ];
         }, $gradeHistory);
     } else {
         $trends['grades'] = generateTrend($currentGrade, 30, 2);
     }
 
     // Attendance Trend (Simulated based on current - usually stable)
-    $trends['attendance'] = generateTrend($currentAttendance, 30, 1);
-
-    // Risk Trend (Simulated based on current - sensitivity 3)
-    $trends['risk'] = generateTrend($currentRisk, 30, 3);
-
-    // 5. Response Construction
-    $response = [
+        $trends['attendance'] = generateTrend($currentAttendance, 30, 1);
+// Risk Trend (Simulated based on current - sensitivity 3)
+        $trends['risk'] = generateTrend($currentRisk, 30, 3);
+// 5. Response Construction
+        $response = [
         'success' => true,
         'timestamp' => date('c'),
         'data' => [
@@ -157,12 +154,9 @@ try {
             'engagement_percent' => (float) ($stats['engagement_score'] ?? 50),
             'trends' => $trends
         ]
-    ];
-
-    echo json_encode($response);
-
+        ];
+        echo json_encode($response);
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
-?>

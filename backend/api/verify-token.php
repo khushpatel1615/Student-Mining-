@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Verify Token API Endpoint
  * GET /api/verify-token.php
@@ -24,7 +25,6 @@ function logDebug($message, $data = [])
     $logEntry .= str_repeat('-', 40) . "\n";
     file_put_contents($logFile, $logEntry, FILE_APPEND);
 }
-
 setCORSHeaders();
 
 // Accept GET and POST
@@ -86,9 +86,7 @@ try {
             'hasPassword' => !empty($user['password_hash'])
         ]
     ]);
-
 } catch (PDOException $e) {
     logDebug('Database error', ['message' => $e->getMessage()]);
     jsonResponse(['success' => false, 'error' => 'Database error'], 500);
 }
-?>

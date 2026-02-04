@@ -1,12 +1,10 @@
 <?php
+
 require_once __DIR__ . '/../../config/database.php';
-
 echo "Setting up Analytics Tables...\n";
-
 $pdo = getDBConnection();
-
 try {
-    // 1. Activity Logs (Engagement)
+// 1. Activity Logs (Engagement)
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS activity_logs (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -19,8 +17,7 @@ try {
         ) ENGINE=InnoDB;
     ");
     echo "Table 'activity_logs' check/create done.\n";
-
-    // 2. Student Risk Scores (computed features + score)
+// 2. Student Risk Scores (computed features + score)
     // Storing features as JSON for flexibility in Phase A/B
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS student_risk_scores (
@@ -37,8 +34,7 @@ try {
         ) ENGINE=InnoDB;
     ");
     echo "Table 'student_risk_scores' check/create done.\n";
-
-    // 3. Alerts (Phase C/D)
+// 3. Alerts (Phase C/D)
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS analytics_alerts (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -52,8 +48,7 @@ try {
         ) ENGINE=InnoDB;
     ");
     echo "Table 'analytics_alerts' check/create done.\n";
-
-    // 4. Interventions (Phase D)
+// 4. Interventions (Phase D)
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS interventions (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -70,8 +65,7 @@ try {
         ) ENGINE=InnoDB;
     ");
     echo "Table 'interventions' check/create done.\n";
-
-    // 5. Intervention Templates (Phase D)
+// 5. Intervention Templates (Phase D)
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS intervention_templates (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -81,8 +75,7 @@ try {
         ) ENGINE=InnoDB;
     ");
     echo "Table 'intervention_templates' check/create done.\n";
-
-    // Pre-populate templates if empty
+// Pre-populate templates if empty
     $stmt = $pdo->query("SELECT COUNT(*) FROM intervention_templates");
     if ($stmt->fetchColumn() == 0) {
         $pdo->exec("
@@ -95,7 +88,6 @@ try {
     }
 
     echo "Database setup completed successfully.\n";
-
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage() . "\n";
     exit(1);

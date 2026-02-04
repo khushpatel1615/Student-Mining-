@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Health Check Endpoint
  * Non-authenticated endpoint to verify backend is reachable
@@ -36,4 +37,3 @@ try {
 }
 
 echo json_encode($response, JSON_PRETTY_PRINT);
-?>

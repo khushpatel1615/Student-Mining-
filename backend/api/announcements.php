@@ -1,7 +1,8 @@
 <?php
+
 /**
  * Announcements API - Create, read, update, delete announcements
- * 
+ *
  * GET    /announcements.php?subject_id=X  - Get announcements for a subject
  * GET    /announcements.php?teacher_id=X  - Get announcements by teacher (for teacher dashboard)
  * POST   /announcements.php               - Create announcement (teacher/admin)
@@ -11,9 +12,7 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
-
 header('Content-Type: application/json');
-
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;
@@ -23,25 +22,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 $user = requireAuth();
 $userId = $user['user_id'];
 $userRole = $user['role'];
-
 try {
     $pdo = getDBConnection();
-
     switch ($_SERVER['REQUEST_METHOD']) {
         case 'GET':
-            handleGet($pdo, $userId, $userRole);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                handleGet($pdo, $userId, $userRole);
+
             break;
         case 'POST':
-            handlePost($pdo, $userId, $userRole);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                handlePost($pdo, $userId, $userRole);
+
             break;
         case 'PUT':
-            handlePut($pdo, $userId, $userRole);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                handlePut($pdo, $userId, $userRole);
+
             break;
         case 'DELETE':
-            handleDelete($pdo, $userId, $userRole);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                handleDelete($pdo, $userId, $userRole);
+
             break;
         default:
-            http_response_code(405);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                http_response_code(405);
             echo json_encode(['success' => false, 'error' => 'Method not allowed']);
     }
 } catch (PDOException $e) {
@@ -53,9 +54,8 @@ function handleGet($pdo, $userId, $userRole)
 {
     $subjectId = $_GET['subject_id'] ?? null;
     $teacherId = $_GET['teacher_id'] ?? null;
-
     if ($subjectId) {
-        // Get announcements for a specific subject (for students viewing subject)
+    // Get announcements for a specific subject (for students viewing subject)
         $stmt = $pdo->prepare("
             SELECT a.id, a.title, a.content, a.is_pinned, a.created_at, a.updated_at,
                    u.full_name as teacher_name, u.avatar_url as teacher_avatar,
@@ -68,14 +68,11 @@ function handleGet($pdo, $userId, $userRole)
         ");
         $stmt->execute([$subjectId]);
         $announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // Fetch attachments
-        attachAttachments($pdo, $announcements);
-
+    // Fetch attachments
+            attachAttachments($pdo, $announcements);
         echo json_encode(['success' => true, 'data' => $announcements]);
-
     } elseif ($teacherId) {
-        // Get announcements by a teacher (for teacher dashboard)
+    // Get announcements by a teacher (for teacher dashboard)
         // Teachers can only see their own, admin can see any
         if ($userRole !== 'admin' && $userId != $teacherId) {
             http_response_code(403);
@@ -93,15 +90,13 @@ function handleGet($pdo, $userId, $userRole)
         ");
         $stmt->execute([$teacherId]);
         $announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // Fetch attachments
+    // Fetch attachments
         if (!empty($announcements)) {
             $ids = array_column($announcements, 'id');
             $placeholders = str_repeat('?,', count($ids) - 1) . '?';
             $stmtAtt = $pdo->prepare("SELECT * FROM announcement_attachments WHERE announcement_id IN ($placeholders)");
             $stmtAtt->execute($ids);
             $allAttachments = $stmtAtt->fetchAll(PDO::FETCH_ASSOC);
-
             $attachmentsMap = [];
             foreach ($allAttachments as $att) {
                 $attachmentsMap[$att['announcement_id']][] = $att;
@@ -109,15 +104,14 @@ function handleGet($pdo, $userId, $userRole)
 
             foreach ($announcements as &$ann) {
                 $ann['attachments'] = $attachmentsMap[$ann['id']] ?? [];
-                // Backward compatibility
+// Backward compatibility
                 $ann['attachment_url'] = !empty($ann['attachments']) ? $ann['attachments'][0]['file_path'] : null;
             }
         }
 
         echo json_encode(['success' => true, 'data' => $announcements]);
-
     } else {
-        // Get all announcements (admin only)
+    // Get all announcements (admin only)
         if ($userRole !== 'admin') {
             http_response_code(403);
             echo json_encode(['success' => false, 'error' => 'Admin access required']);
@@ -135,15 +129,13 @@ function handleGet($pdo, $userId, $userRole)
             LIMIT 100
         ");
         $announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // Fetch attachments
+    // Fetch attachments
         if (!empty($announcements)) {
             $ids = array_column($announcements, 'id');
             $placeholders = str_repeat('?,', count($ids) - 1) . '?';
             $stmtAtt = $pdo->prepare("SELECT * FROM announcement_attachments WHERE announcement_id IN ($placeholders)");
             $stmtAtt->execute($ids);
             $allAttachments = $stmtAtt->fetchAll(PDO::FETCH_ASSOC);
-
             $attachmentsMap = [];
             foreach ($allAttachments as $att) {
                 $attachmentsMap[$att['announcement_id']][] = $att;
@@ -151,7 +143,7 @@ function handleGet($pdo, $userId, $userRole)
 
             foreach ($announcements as &$ann) {
                 $ann['attachments'] = $attachmentsMap[$ann['id']] ?? [];
-                // Backward compatibility
+// Backward compatibility
                 $ann['attachment_url'] = !empty($ann['attachments']) ? $ann['attachments'][0]['file_path'] : null;
             }
         }
@@ -218,26 +210,29 @@ function handlePost($pdo, $userId, $userRole)
         // Handle File Additions (same logic as create)
         $uploadedFiles = [];
         $uploadDir = __DIR__ . '/../uploads/announcements/';
-        if (!is_dir($uploadDir))
+        if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
+        }
 
         // Normalize and loop files
         $normalizeFiles = function ($files) {
+
             $normalized = [];
             if (isset($files['name']) && is_array($files['name'])) {
-                foreach ($files['name'] as $idx => $name)
+                foreach ($files['name'] as $idx => $name) {
                     $normalized[] = ['name' => $name, 'type' => $files['type'][$idx], 'tmp_name' => $files['tmp_name'][$idx], 'error' => $files['error'][$idx], 'size' => $files['size'][$idx]];
+                }
             } else {
                 $normalized[] = $files;
             }
             return $normalized;
         };
-
         $filesToProcess = [];
-        if (isset($_FILES['attachments']))
+        if (isset($_FILES['attachments'])) {
             $filesToProcess = $normalizeFiles($_FILES['attachments']);
-        elseif (isset($_FILES['attachment']))
+        } elseif (isset($_FILES['attachment'])) {
             $filesToProcess = $normalizeFiles($_FILES['attachment']);
+        }
 
         foreach ($filesToProcess as $file) {
             if ($file['error'] === UPLOAD_ERR_OK) {
@@ -246,8 +241,8 @@ function handlePost($pdo, $userId, $userRole)
                 if ($ext === 'pdf' && $file['size'] <= 5 * 1024 * 1024) {
                     $newFileName = md5(time() . $fileName . uniqid()) . '.' . $ext;
                     if (move_uploaded_file($file['tmp_name'], $uploadDir . $newFileName)) {
-                        $stmtAtt = $pdo->prepare("INSERT INTO announcement_attachments (announcement_id, file_name, file_path) VALUES (?, ?, ?)");
-                        $stmtAtt->execute([$announcementId, $fileName, 'backend/uploads/announcements/' . $newFileName]);
+                            $stmtAtt = $pdo->prepare("INSERT INTO announcement_attachments (announcement_id, file_name, file_path) VALUES (?, ?, ?)");
+                            $stmtAtt->execute([$announcementId, $fileName, 'backend/uploads/announcements/' . $newFileName]);
                     }
                 }
             }
@@ -262,7 +257,6 @@ function handlePost($pdo, $userId, $userRole)
     $title = trim($_POST['title'] ?? '');
     $content = trim($_POST['content'] ?? '');
     $isPinned = isset($_POST['is_pinned']) ? filter_var($_POST['is_pinned'], FILTER_VALIDATE_BOOLEAN) : false;
-
     if (!$subjectId || !$title || !$content) {
         http_response_code(400);
         echo json_encode(['success' => false, 'error' => 'subject_id, title, and content are required']);
@@ -289,8 +283,7 @@ function handlePost($pdo, $userId, $userRole)
         $fileType = $_FILES['attachment']['type'];
         $fileNameCmps = explode(".", $fileName);
         $fileExtension = strtolower(end($fileNameCmps));
-
-        // Allowed extensions
+    // Allowed extensions
         if ($fileExtension !== 'pdf') {
             http_response_code(400);
             echo json_encode(['success' => false, 'error' => 'Only PDF files are allowed']);
@@ -312,9 +305,8 @@ function handlePost($pdo, $userId, $userRole)
 
         $newFileName = md5(time() . $fileName) . '.' . $fileExtension;
         $destPath = $uploadDir . $newFileName;
-
         if (move_uploaded_file($fileTmpPath, $destPath)) {
-            // Save relative path for frontend access
+        // Save relative path for frontend access
             $attachmentUrl = 'backend/uploads/announcements/' . $newFileName;
         } else {
             http_response_code(500);
@@ -329,10 +321,8 @@ function handlePost($pdo, $userId, $userRole)
         VALUES (?, ?, ?, ?, ?, ?)
     ");
     $stmt->execute([$subjectId, $userId, $title, $content, $isPinned ? 1 : 0, $attachmentUrl]);
-
     $announcementId = $pdo->lastInsertId();
-
-    // Fetch the created announcement
+// Fetch the created announcement
     $stmt = $pdo->prepare("
         SELECT a.id, a.title, a.content, a.is_pinned, a.attachment_url, a.created_at, a.updated_at,
                u.full_name as teacher_name, u.avatar_url as teacher_avatar,
@@ -344,7 +334,6 @@ function handlePost($pdo, $userId, $userRole)
     ");
     $stmt->execute([$announcementId]);
     $announcement = $stmt->fetch(PDO::FETCH_ASSOC);
-
     echo json_encode([
         'success' => true,
         'message' => 'Announcement created successfully',
@@ -359,7 +348,6 @@ function handlePut($pdo, $userId, $userRole)
     $title = trim($data['title'] ?? '');
     $content = trim($data['content'] ?? '');
     $isPinned = $data['is_pinned'] ?? null;
-
     if (!$announcementId) {
         http_response_code(400);
         echo json_encode(['success' => false, 'error' => 'Announcement ID is required']);
@@ -370,7 +358,6 @@ function handlePut($pdo, $userId, $userRole)
     $stmt = $pdo->prepare("SELECT teacher_id FROM announcements WHERE id = ?");
     $stmt->execute([$announcementId]);
     $announcement = $stmt->fetch(PDO::FETCH_ASSOC);
-
     if (!$announcement) {
         http_response_code(404);
         echo json_encode(['success' => false, 'error' => 'Announcement not found']);
@@ -386,7 +373,6 @@ function handlePut($pdo, $userId, $userRole)
     // Build update query
     $updates = [];
     $params = [];
-
     if ($title) {
         $updates[] = "title = ?";
         $params[] = $title;
@@ -409,19 +395,18 @@ function handlePut($pdo, $userId, $userRole)
     $params[] = $announcementId;
     $stmt = $pdo->prepare("UPDATE announcements SET " . implode(", ", $updates) . " WHERE id = ?");
     $stmt->execute($params);
-
-    /* 
-       Refactored Logic: Use the same helper as POST if possible, but for now duplicate for safety 
+/*
+       Refactored Logic: Use the same helper as POST if possible, but for now duplicate for safety
        since scope is inside function.
     */
 
     $uploadDir = __DIR__ . '/../uploads/announcements/';
     $uploadedFiles = [];
-
-    // We need to parse multipart put if we want to be strict, but simplest is relying on POST override.
+// We need to parse multipart put if we want to be strict, but simplest is relying on POST override.
     // Check $_FILES (if method was spoofed or server config allows)
     if (!empty($_FILES)) {
         $normalizeFiles = function ($files) {
+
             $normalized = [];
             if (isset($files['name']) && is_array($files['name'])) {
                 foreach ($files['name'] as $idx => $name) {
@@ -438,7 +423,6 @@ function handlePut($pdo, $userId, $userRole)
             }
             return $normalized;
         };
-
         $filesToProcess = [];
         if (isset($_FILES['attachments'])) {
             $filesToProcess = $normalizeFiles($_FILES['attachments']);
@@ -454,8 +438,8 @@ function handlePut($pdo, $userId, $userRole)
                     $newFileName = md5(time() . $fileName . uniqid()) . '.' . $ext;
                     $dest = $uploadDir . $newFileName;
                     if (move_uploaded_file($file['tmp_name'], $dest)) {
-                        $stmtAtt = $pdo->prepare("INSERT INTO announcement_attachments (announcement_id, file_name, file_path) VALUES (?, ?, ?)");
-                        $stmtAtt->execute([$announcementId, $fileName, 'backend/uploads/announcements/' . $newFileName]);
+                            $stmtAtt = $pdo->prepare("INSERT INTO announcement_attachments (announcement_id, file_name, file_path) VALUES (?, ?, ?)");
+                            $stmtAtt->execute([$announcementId, $fileName, 'backend/uploads/announcements/' . $newFileName]);
                     }
                 }
             }
@@ -468,7 +452,6 @@ function handlePut($pdo, $userId, $userRole)
 function handleDelete($pdo, $userId, $userRole)
 {
     $announcementId = $_GET['id'] ?? null;
-
     if (!$announcementId) {
         http_response_code(400);
         echo json_encode(['success' => false, 'error' => 'Announcement ID is required']);
@@ -479,7 +462,6 @@ function handleDelete($pdo, $userId, $userRole)
     $stmt = $pdo->prepare("SELECT teacher_id FROM announcements WHERE id = ?");
     $stmt->execute([$announcementId]);
     $announcement = $stmt->fetch(PDO::FETCH_ASSOC);
-
     if (!$announcement) {
         http_response_code(404);
         echo json_encode(['success' => false, 'error' => 'Announcement not found']);
@@ -494,7 +476,6 @@ function handleDelete($pdo, $userId, $userRole)
 
     $stmt = $pdo->prepare("DELETE FROM announcements WHERE id = ?");
     $stmt->execute([$announcementId]);
-
     echo json_encode(['success' => true, 'message' => 'Announcement deleted successfully']);
 }
 
@@ -509,7 +490,6 @@ function attachAttachments($pdo, &$announcements)
     $stmtAtt = $pdo->prepare("SELECT * FROM announcement_attachments WHERE announcement_id IN ($placeholders)");
     $stmtAtt->execute($ids);
     $allAttachments = $stmtAtt->fetchAll(PDO::FETCH_ASSOC);
-
     $attachmentsMap = [];
     foreach ($allAttachments as $att) {
         $attachmentsMap[$att['announcement_id']][] = $att;
@@ -517,7 +497,7 @@ function attachAttachments($pdo, &$announcements)
 
     foreach ($announcements as &$ann) {
         $ann['attachments'] = $attachmentsMap[$ann['id']] ?? [];
-        // Backward compatibility
+// Backward compatibility
         $ann['attachment_url'] = !empty($ann['attachments']) ? $ann['attachments'][0]['file_path'] : null;
     }
 }

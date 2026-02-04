@@ -26,7 +26,8 @@ import {
     MessageSquare,
     Download,
     Bell,
-    Video
+    Video,
+    Mail
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -73,7 +74,8 @@ const Sidebar = ({ role = 'student', onLogout, collapsed, mobileMenuOpen, onTogg
         { id: 'attendance', label: 'Attendance', icon: CheckSquare, tab: 'attendance' },
         { id: 'announcements', label: 'Announcements', icon: Bell, tab: 'announcements' },
         { id: 'videos', label: 'Videos', icon: Video, tab: 'videos' },
-        { id: 'calendar', label: 'Calendar', icon: CalendarDays, tab: 'calendar' }
+        { id: 'calendar', label: 'Calendar', icon: CalendarDays, tab: 'calendar' },
+        { id: 'risk-alerts', label: 'Risk Alerts', icon: Mail, tab: 'risk-alerts' }
     ];
 
     const menuItems = role === 'admin' ? adminMenuItems : studentMenuItems;

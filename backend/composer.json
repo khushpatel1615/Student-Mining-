@@ -1,0 +1,22 @@
+{
+    "name": "student-data-mining/backend",
+    "description": "Student Data Mining REST API",
+    "type": "project",
+    "require": {
+        "php": ">=8.1",
+        "phpmailer/phpmailer": "^7.0"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^3.7"
+    },
+    "scripts": {
+        "lint": "phpcs api includes --standard=PSR12 --report=summary",
+        "lint:full": "phpcs api includes --standard=PSR12 --report=full",
+        "lint:json": "phpcs api includes --standard=PSR12 --report=json",
+        "lint:fix": "phpcbf api includes --standard=PSR12",
+        "lint:check": "phpcs api includes --standard=PSR12 --colors"
+    },
+    "config": {
+        "bin-dir": "vendor/bin"
+    }
+}

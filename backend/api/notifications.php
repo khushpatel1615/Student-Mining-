@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Notifications API
  * Manages in-app notifications for students
@@ -6,31 +7,33 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
-
 setCORSHeaders();
-
 $method = $_SERVER['REQUEST_METHOD'];
 $pdo = getDBConnection();
-
 try {
     switch ($method) {
         case 'GET':
-            handleGet($pdo);
+                                                                                                                                                                                                                                                                                   handleGet($pdo);
+
             break;
         case 'POST':
-            handlePost($pdo);
+                                                                                                                                                                                                                                                                                   handlePost($pdo);
+
             break;
         case 'PUT':
-            handlePut($pdo);
+                                                                                                                                                                                                                                                                                   handlePut($pdo);
+
             break;
         case 'DELETE':
-            handleDelete($pdo);
+                                                                                                                                                                                                                                                                                   handleDelete($pdo);
+
             break;
         case 'OPTIONS':
-            http_response_code(200);
+                                                                                                                                                                                                                                                                                   http_response_code(200);
+
             exit();
         default:
-            http_response_code(405);
+                                                                                                                                                                                                                                                                                   http_response_code(405);
             echo json_encode(['error' => 'Method not allowed']);
     }
 } catch (Exception $e) {
@@ -49,28 +52,22 @@ function handleGet($pdo)
 
     $userId = $user['user_id'];
     $unreadOnly = isset($_GET['unread']) && $_GET['unread'] === 'true';
-
-    // Create notifications table if it doesn't exist
+// Create notifications table if it doesn't exist
     createNotificationsTable($pdo);
-
     $sql = "SELECT * FROM notifications WHERE user_id = ?";
     $params = [$userId];
-
     if ($unreadOnly) {
         $sql .= " AND is_read = 0";
     }
 
     $sql .= " ORDER BY created_at DESC LIMIT 50";
-
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Get unread count
+// Get unread count
     $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0");
     $stmt->execute([$userId]);
     $unreadCount = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
-
     echo json_encode([
         'success' => true,
         'data' => [
@@ -90,15 +87,12 @@ function handlePost($pdo)
     }
 
     createNotificationsTable($pdo);
-
     $data = json_decode(file_get_contents('php://input'), true);
-
-    // Create notification
+// Create notification
     $stmt = $pdo->prepare("
         INSERT INTO notifications (user_id, type, title, message, link, is_read, created_at)
         VALUES (?, ?, ?, ?, ?, 0, NOW())
     ");
-
     $stmt->execute([
         $data['user_id'] ?? $user['user_id'],
         $data['type'] ?? 'info',
@@ -106,7 +100,6 @@ function handlePost($pdo)
         $data['message'],
         $data['link'] ?? null
     ]);
-
     echo json_encode([
         'success' => true,
         'message' => 'Notification created',
@@ -125,16 +118,14 @@ function handlePut($pdo)
 
     $data = json_decode(file_get_contents('php://input'), true);
     $action = $data['action'] ?? null;
-
     if ($action === 'mark_read') {
         $notificationId = $data['notification_id'] ?? null;
-
         if ($notificationId) {
-            // Mark single notification as read
+        // Mark single notification as read
             $stmt = $pdo->prepare("UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?");
             $stmt->execute([$notificationId, $user['user_id']]);
         } else {
-            // Mark all as read
+        // Mark all as read
             $stmt = $pdo->prepare("UPDATE notifications SET is_read = 1 WHERE user_id = ?");
             $stmt->execute([$user['user_id']]);
         }
@@ -156,7 +147,6 @@ function handleDelete($pdo)
     }
 
     $notificationId = $_GET['id'] ?? null;
-
     if ($notificationId) {
         $stmt = $pdo->prepare("DELETE FROM notifications WHERE id = ? AND user_id = ?");
         $stmt->execute([$notificationId, $user['user_id']]);
@@ -183,7 +173,7 @@ function createNotificationsTable($pdo)
             )
         ");
     } catch (PDOException $e) {
-        // Table might already exist
+    // Table might already exist
     }
 }
 
@@ -192,16 +182,13 @@ function createNotification($pdo, $userId, $type, $title, $message, $link = null
 {
     try {
         createNotificationsTable($pdo);
-
         $stmt = $pdo->prepare("
             INSERT INTO notifications (user_id, type, title, message, link, is_read, created_at)
             VALUES (?, ?, ?, ?, ?, 0, NOW())
         ");
-
         $stmt->execute([$userId, $type, $title, $message, $link]);
         return $pdo->lastInsertId();
     } catch (PDOException $e) {
         return false;
     }
 }
-?>

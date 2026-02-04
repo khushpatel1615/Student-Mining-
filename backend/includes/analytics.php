@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Analytics Calculation Functions
  * Core utilities for student performance analytics
@@ -12,19 +13,19 @@
  */
 function calculateGPA($grades, $weighted = false)
 {
-    if (empty($grades))
+    if (empty($grades)) {
         return 0.0;
+    }
 
     $totalPoints = 0;
     $totalCredits = 0;
-
     foreach ($grades as $grade) {
         $gradeValue = floatval($grade['grade'] ?? 0);
-        $credits = floatval($grade['credits'] ?? 3); // Default 3 credits if not specified
+        $credits = floatval($grade['credits'] ?? 3);
+    // Default 3 credits if not specified
 
         // Convert percentage to 4.0 scale
         $gpaPoints = percentageToGPA($gradeValue);
-
         if ($weighted) {
             $totalPoints += $gpaPoints * $credits;
             $totalCredits += $credits;
@@ -42,26 +43,36 @@ function calculateGPA($grades, $weighted = false)
  */
 function percentageToGPA($percentage)
 {
-    if ($percentage >= 90)
+    if ($percentage >= 90) {
         return 4.0;
-    if ($percentage >= 85)
+    }
+    if ($percentage >= 85) {
         return 3.7;
-    if ($percentage >= 80)
+    }
+    if ($percentage >= 80) {
         return 3.3;
-    if ($percentage >= 77)
+    }
+    if ($percentage >= 77) {
         return 3.0;
-    if ($percentage >= 73)
+    }
+    if ($percentage >= 73) {
         return 2.7;
-    if ($percentage >= 70)
+    }
+    if ($percentage >= 70) {
         return 2.3;
-    if ($percentage >= 67)
+    }
+    if ($percentage >= 67) {
         return 2.0;
-    if ($percentage >= 63)
+    }
+    if ($percentage >= 63) {
         return 1.7;
-    if ($percentage >= 60)
+    }
+    if ($percentage >= 60) {
         return 1.3;
-    if ($percentage >= 50)
+    }
+    if ($percentage >= 50) {
         return 1.0;
+    }
     return 0.0;
 }
 
@@ -70,26 +81,36 @@ function percentageToGPA($percentage)
  */
 function getLetterGrade($percentage)
 {
-    if ($percentage >= 90)
+    if ($percentage >= 90) {
         return 'A+';
-    if ($percentage >= 85)
+    }
+    if ($percentage >= 85) {
         return 'A';
-    if ($percentage >= 80)
+    }
+    if ($percentage >= 80) {
         return 'A-';
-    if ($percentage >= 77)
+    }
+    if ($percentage >= 77) {
         return 'B+';
-    if ($percentage >= 73)
+    }
+    if ($percentage >= 73) {
         return 'B';
-    if ($percentage >= 70)
+    }
+    if ($percentage >= 70) {
         return 'B-';
-    if ($percentage >= 67)
+    }
+    if ($percentage >= 67) {
         return 'C+';
-    if ($percentage >= 63)
+    }
+    if ($percentage >= 63) {
         return 'C';
-    if ($percentage >= 60)
+    }
+    if ($percentage >= 60) {
         return 'C-';
-    if ($percentage >= 50)
+    }
+    if ($percentage >= 50) {
         return 'D';
+    }
     return 'F';
 }
 
@@ -98,14 +119,18 @@ function getLetterGrade($percentage)
  */
 function getPerformanceTier($gpa)
 {
-    if ($gpa >= 3.7)
+    if ($gpa >= 3.7) {
         return 'excellent';
-    if ($gpa >= 3.0)
+    }
+    if ($gpa >= 3.0) {
         return 'good';
-    if ($gpa >= 2.5)
+    }
+    if ($gpa >= 2.5) {
         return 'average';
-    if ($gpa >= 2.0)
+    }
+    if ($gpa >= 2.0) {
         return 'below_average';
+    }
     return 'at_risk';
 }
 
@@ -117,12 +142,12 @@ function getPerformanceTier($gpa)
  */
 function calculatePercentile($studentGPA, $allGPAs)
 {
-    if (empty($allGPAs))
+    if (empty($allGPAs)) {
         return 0;
+    }
 
     $count = count($allGPAs);
     $belowCount = 0;
-
     foreach ($allGPAs as $gpa) {
         if ($gpa < $studentGPA) {
             $belowCount++;
@@ -150,10 +175,10 @@ function predictFinalGrade($grades, $currentGrade)
 
     // Simple linear trend analysis
     $gradeValues = array_map(function ($g) {
+
         return floatval($g['grade'] ?? 0);
     }, $grades);
-
-    // Calculate trend
+// Calculate trend
     $n = count($gradeValues);
     $sumX = ($n * ($n + 1)) / 2;
     $sumY = array_sum($gradeValues);
@@ -170,15 +195,12 @@ function predictFinalGrade($grades, $currentGrade)
     // Linear regression slope
     $slope = ($n * $sumXY - $sumX * $sumY) / ($n * $sumXX - $sumX * $sumX);
     $intercept = ($sumY - $slope * $sumX) / $n;
-
-    // Project to next period
+// Project to next period
     $nextX = $n + 1;
     $predictedGrade = $slope * $nextX + $intercept;
-
-    // Ensure in valid range
+// Ensure in valid range
     $predictedGrade = max(0, min(100, $predictedGrade));
-
-    // Calculate confidence based on consistency
+// Calculate confidence based on consistency
     $variance = 0;
     $mean = $sumY / $n;
     foreach ($gradeValues as $grade) {
@@ -186,10 +208,8 @@ function predictFinalGrade($grades, $currentGrade)
     }
     $variance /= $n;
     $stdDev = sqrt($variance);
-
-    // Lower variance = higher confidence
+// Lower variance = higher confidence
     $confidence = max(50, min(95, 100 - ($stdDev * 2)));
-
     return [
         'predicted_grade' => round($predictedGrade, 2),
         'confidence' => round($confidence, 0),
@@ -212,10 +232,8 @@ function calculateRequiredGrade($currentGPA, $targetGPA, $creditsCompleted, $cre
     $targetPoints = $targetGPA * ($creditsCompleted + $creditsRemaining);
     $requiredPoints = $targetPoints - $currentPoints;
     $requiredGPA = $creditsRemaining > 0 ? $requiredPoints / $creditsRemaining : 0;
-
-    // Convert GPA back to percentage (approximate)
+// Convert GPA back to percentage (approximate)
     $requiredPercentage = gpaToPercentage($requiredGPA);
-
     return [
         'required_gpa' => round($requiredGPA, 2),
         'required_percentage' => round($requiredPercentage, 1),
@@ -229,26 +247,36 @@ function calculateRequiredGrade($currentGPA, $targetGPA, $creditsCompleted, $cre
  */
 function gpaToPercentage($gpa)
 {
-    if ($gpa >= 4.0)
+    if ($gpa >= 4.0) {
         return 95;
-    if ($gpa >= 3.7)
+    }
+    if ($gpa >= 3.7) {
         return 88;
-    if ($gpa >= 3.3)
+    }
+    if ($gpa >= 3.3) {
         return 83;
-    if ($gpa >= 3.0)
+    }
+    if ($gpa >= 3.0) {
         return 78;
-    if ($gpa >= 2.7)
+    }
+    if ($gpa >= 2.7) {
         return 75;
-    if ($gpa >= 2.3)
+    }
+    if ($gpa >= 2.3) {
         return 71;
-    if ($gpa >= 2.0)
+    }
+    if ($gpa >= 2.0) {
         return 68;
-    if ($gpa >= 1.7)
+    }
+    if ($gpa >= 1.7) {
         return 64;
-    if ($gpa >= 1.3)
+    }
+    if ($gpa >= 1.3) {
         return 61;
-    if ($gpa >= 1.0)
+    }
+    if ($gpa >= 1.0) {
         return 55;
+    }
     return 45;
 }
 
@@ -261,7 +289,6 @@ function gpaToPercentage($gpa)
 function identifyAtRiskSubjects($grades, $threshold = 70)
 {
     $atRisk = [];
-
     foreach ($grades as $grade) {
         $gradeValue = floatval($grade['grade'] ?? 0);
         if ($gradeValue < $threshold && $gradeValue > 0) {
@@ -277,9 +304,9 @@ function identifyAtRiskSubjects($grades, $threshold = 70)
 
     // Sort by risk level
     usort($atRisk, function ($a, $b) {
+
         return $a['current_grade'] - $b['current_grade'];
     });
-
     return $atRisk;
 }
 
@@ -292,14 +319,13 @@ function identifyAtRiskSubjects($grades, $threshold = 70)
 function generateRecommendations($grades, $attendance = [])
 {
     $recommendations = [];
-
-    // Identify weakest subjects
+// Identify weakest subjects
     $sortedGrades = $grades;
     usort($sortedGrades, function ($a, $b) {
+
         return floatval($a['grade'] ?? 0) - floatval($b['grade'] ?? 0);
     });
-
-    // Recommendation: Focus on weakest subject
+// Recommendation: Focus on weakest subject
     if (!empty($sortedGrades) && floatval($sortedGrades[0]['grade'] ?? 0) < 75) {
         $recommendations[] = [
             'type' => 'study_focus',
@@ -351,15 +377,16 @@ function calculateSubjectDifficulty($allGrades)
     }
 
     $gradeValues = array_map(function ($g) {
+
         return floatval($g['grade'] ?? 0);
     }, $allGrades);
-
     $average = array_sum($gradeValues) / count($gradeValues);
     $passCount = count(array_filter($gradeValues, function ($g) {
-        return $g >= 50; }));
-    $passRate = ($passCount / count($gradeValues)) * 100;
 
-    // Determine difficulty
+        return $g >= 50;
+    }));
+    $passRate = ($passCount / count($gradeValues)) * 100;
+// Determine difficulty
     $difficulty = 'moderate';
     if ($average < 60 || $passRate < 70) {
         $difficulty = 'very_hard';
@@ -376,5 +403,3 @@ function calculateSubjectDifficulty($allGrades)
         'fail_rate' => round(100 - $passRate, 2)
     ];
 }
-
-?>

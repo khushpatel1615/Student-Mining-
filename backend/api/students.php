@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Students API
  * Handles CRUD operations for student management (Admin only)
@@ -6,31 +7,32 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
-
 // Enforce Admin Role for all actions in this file
 // (Or granularly per method if needed, but this file seems admin-focused)
 // We'll allow GET for teachers maybe? For now, stick to Admin as per previous logic.
 requireRole('admin');
-
 $method = $_SERVER['REQUEST_METHOD'];
 $pdo = getDBConnection();
-
 try {
     switch ($method) {
         case 'GET':
-            handleGet($pdo);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        handleGet($pdo);
+
             break;
         case 'POST':
-            handlePost($pdo);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        handlePost($pdo);
+
             break;
         case 'PUT':
-            handlePut($pdo);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        handlePut($pdo);
+
             break;
         case 'DELETE':
-            handleDelete($pdo);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        handleDelete($pdo);
+
             break;
         default:
-            sendError('Method not allowed', 405);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        sendError('Method not allowed', 405);
     }
 } catch (Exception $e) {
     sendError($e->getMessage(), 500);
@@ -42,9 +44,8 @@ try {
 function handleGet($pdo)
 {
     $studentId = $_GET['id'] ?? null;
-
     if ($studentId) {
-        // Get single student
+    // Get single student
         $stmt = $pdo->prepare("
             SELECT u.id, u.email, u.student_id, u.full_name, u.role, u.avatar_url, 
                    u.is_active, u.created_at, u.updated_at, u.last_login,
@@ -55,25 +56,21 @@ function handleGet($pdo)
         ");
         $stmt->execute([$studentId]);
         $student = $stmt->fetch(PDO::FETCH_ASSOC);
-
         if (!$student) {
             sendError('Student not found', 404);
         }
 
         sendResponse(['success' => true, 'data' => $student]);
     } else {
-        // List students
+    // List students
         $page = max(1, intval($_GET['page'] ?? 1));
         $limit = min(100, max(1, intval($_GET['limit'] ?? 20)));
         $offset = ($page - 1) * $limit;
-
         $search = $_GET['search'] ?? '';
         $role = $_GET['role'] ?? '';
         $activeOnly = isset($_GET['active']) ? filter_var($_GET['active'], FILTER_VALIDATE_BOOLEAN) : null;
-
         $conditions = [];
         $params = [];
-
         if (!empty($search)) {
             $conditions[] = "(full_name LIKE ? OR email LIKE ? OR student_id LIKE ?)";
             $searchTerm = "%{$search}%";
@@ -97,13 +94,11 @@ function handleGet($pdo)
         }
 
         $whereClause = count($conditions) > 0 ? 'WHERE ' . implode(' AND ', $conditions) : '';
-
-        // Total count
+    // Total count
         $countStmt = $pdo->prepare("SELECT COUNT(*) as total FROM users $whereClause");
         $countStmt->execute($params);
         $total = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
-
-        // Fetch data
+    // Fetch data
         $sql = "
             SELECT u.id, u.email, u.student_id, u.full_name, u.role, u.avatar_url, 
                    u.is_active, u.created_at, u.updated_at, u.last_login,
@@ -114,14 +109,11 @@ function handleGet($pdo)
             ORDER BY u.created_at DESC
             LIMIT ? OFFSET ?
         ";
-
         $params[] = $limit;
         $params[] = $offset;
-
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
         $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
         sendResponse([
             'success' => true,
             'data' => $students,
@@ -141,7 +133,6 @@ function handleGet($pdo)
 function handlePost($pdo)
 {
     $data = getJsonInput();
-
     if (empty($data['email']) || empty($data['full_name'])) {
         sendError('Email and full name are required');
     }
@@ -168,16 +159,13 @@ function handlePost($pdo)
 
     $password = $data['password'] ?? 'password123';
     $passwordHash = password_hash($password, PASSWORD_DEFAULT);
-
-    // Validate Role (Ensure we allow 'teacher' now!)
+// Validate Role (Ensure we allow 'teacher' now!)
     $validRoles = ['student', 'admin', 'teacher'];
     $role = in_array($data['role'] ?? 'student', $validRoles) ? ($data['role'] ?? 'student') : 'student';
-
     $stmt = $pdo->prepare("
         INSERT INTO users (email, student_id, password_hash, full_name, role, is_active, program_id)
         VALUES (?, ?, ?, ?, ?, TRUE, ?)
     ");
-
     $stmt->execute([
         $data['email'],
         $data['student_id'] ?? null,
@@ -186,7 +174,6 @@ function handlePost($pdo)
         $role,
         $data['program_id'] ?? null
     ]);
-
     sendResponse([
         'success' => true,
         'message' => 'User created successfully',
@@ -200,7 +187,6 @@ function handlePost($pdo)
 function handlePut($pdo)
 {
     $data = getJsonInput();
-
     if (empty($data['id'])) {
         sendError('User ID is required');
     }
@@ -214,7 +200,6 @@ function handlePut($pdo)
 
     $fields = [];
     $params = [];
-
     if (isset($data['email'])) {
         if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
             sendError('Invalid email format');
@@ -271,10 +256,8 @@ function handlePut($pdo)
     }
 
     $params[] = $data['id'];
-
     $stmt = $pdo->prepare("UPDATE users SET " . implode(', ', $fields) . " WHERE id = ?");
     $stmt->execute($params);
-
     sendResponse(['success' => true, 'message' => 'User updated successfully']);
 }
 
@@ -296,7 +279,5 @@ function handleDelete($pdo)
 
     $stmt = $pdo->prepare("UPDATE users SET is_active = FALSE WHERE id = ?");
     $stmt->execute([$studentId]);
-
     sendResponse(['success' => true, 'message' => 'User deactivated successfully']);
 }
-?>
