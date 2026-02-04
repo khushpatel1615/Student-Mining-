@@ -14,42 +14,45 @@ $isCLI = (php_sapi_name() === 'cli');
 $calledFromAPI = defined('CALLED_FROM_API') && CALLED_FROM_API === true;
 
 /**
- * Create required tables for risk alert tracking
+ * Create required tables for risk alert tracking.
+ * Guarded to avoid redeclare when included from the API.
  */
-function createRiskAlertTables($pdo)
-{
-    try {
-        $pdo->exec("
-            CREATE TABLE IF NOT EXISTS risk_alert_logs (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                students_count INT NOT NULL,
-                admins_notified INT NOT NULL,
-                success BOOLEAN DEFAULT TRUE,
-                error_message TEXT,
-                INDEX idx_sent_at (sent_at)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-        ");
+if (!function_exists('createRiskAlertTables')) {
+    function createRiskAlertTables($pdo)
+    {
+        try {
+            $pdo->exec("
+                CREATE TABLE IF NOT EXISTS risk_alert_logs (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    students_count INT NOT NULL,
+                    admins_notified INT NOT NULL,
+                    success BOOLEAN DEFAULT TRUE,
+                    error_message TEXT,
+                    INDEX idx_sent_at (sent_at)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            ");
 
-        $pdo->exec("
-            CREATE TABLE IF NOT EXISTS risk_alert_settings (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                setting_key VARCHAR(50) UNIQUE NOT NULL,
-                setting_value TEXT,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-        ");
+            $pdo->exec("
+                CREATE TABLE IF NOT EXISTS risk_alert_settings (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    setting_key VARCHAR(50) UNIQUE NOT NULL,
+                    setting_value TEXT,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            ");
 
-        // Insert default settings if not exists
-        $pdo->exec("
-            INSERT IGNORE INTO risk_alert_settings (setting_key, setting_value) VALUES
-            ('enabled', '1'),
-            ('min_risk_score_threshold', '50'),
-            ('send_time', '08:00'),
-            ('include_star_students', '0')
-        ");
-    } catch (PDOException $e) {
-        // Table might already exist
+            // Insert default settings if not exists
+            $pdo->exec("
+                INSERT IGNORE INTO risk_alert_settings (setting_key, setting_value) VALUES
+                ('enabled', '1'),
+                ('min_risk_score_threshold', '50'),
+                ('send_time', '08:00'),
+                ('include_star_students', '0')
+            ");
+        } catch (PDOException $e) {
+            // Table might already exist
+        }
     }
 }
 
