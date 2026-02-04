@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Set Password API Endpoint
  * POST /api/set-password.php
@@ -8,9 +9,7 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
-
 setCORSHeaders();
-
 // Only accept POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonResponse(['success' => false, 'error' => 'Method not allowed'], 405);
@@ -18,16 +17,15 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 // Require authentication
 $authUser = requireAuth();
-
 // Get JSON input
 $input = json_decode(file_get_contents('php://input'), true);
-
 if (!$input) {
     jsonResponse(['success' => false, 'error' => 'Invalid JSON input'], 400);
 }
 
 $newPassword = $input['new_password'] ?? '';
-$currentPassword = $input['current_password'] ?? null; // Optional, required only if changing existing password
+$currentPassword = $input['current_password'] ?? null;
+// Optional, required only if changing existing password
 
 // Validate new password
 if (empty($newPassword)) {
@@ -45,12 +43,10 @@ if (!preg_match('/[a-zA-Z]/', $newPassword) || !preg_match('/[0-9]/', $newPasswo
 
 try {
     $pdo = getDBConnection();
-
-    // Get current user's password_hash to check if they already have a password
+// Get current user's password_hash to check if they already have a password
     $stmt = $pdo->prepare("SELECT id, email, password_hash FROM users WHERE id = :id AND is_active = 1");
     $stmt->execute(['id' => $authUser['user_id']]);
     $user = $stmt->fetch();
-
     if (!$user) {
         jsonResponse(['success' => false, 'error' => 'User account not found'], 404);
     }
@@ -68,22 +64,18 @@ try {
 
     // Hash the new password
     $newPasswordHash = password_hash($newPassword, PASSWORD_DEFAULT);
-
-    // Update the password
+// Update the password
     $updateStmt = $pdo->prepare("UPDATE users SET password_hash = :password_hash WHERE id = :id");
     $updateStmt->execute([
         'password_hash' => $newPasswordHash,
         'id' => $user['id']
     ]);
-
     jsonResponse([
         'success' => true,
         'message' => empty($user['password_hash'])
             ? 'Password set successfully! You can now log in with your email/student ID and password.'
             : 'Password changed successfully!'
     ]);
-
 } catch (PDOException $e) {
     jsonResponse(['success' => false, 'error' => 'Database error occurred'], 500);
 }
-?>

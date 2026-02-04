@@ -1,12 +1,10 @@
 <?php
+
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
-
 header('Content-Type: application/json');
-
 $headers = getallheaders();
 $token = isset($headers['Authorization']) ? str_replace('Bearer ', '', $headers['Authorization']) : null;
-
 if (!$token) {
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'No token provided']);
@@ -24,7 +22,6 @@ $pdo = getDBConnection();
 $decoded = (object) $result['payload'];
 $user_id = $decoded->user_id;
 $user_role = $decoded->role;
-
 // Only teachers and admins can access this
 if ($user_role !== 'teacher' && $user_role !== 'admin') {
     http_response_code(403);
@@ -33,12 +30,12 @@ if ($user_role !== 'teacher' && $user_role !== 'admin') {
 }
 
 $action = $_GET['action'] ?? 'my_subjects';
-
 try {
     switch ($action) {
         case 'my_subjects':
             // Get subjects taught by this teacher
-            $stmt = $pdo->prepare("
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              $stmt = $pdo->prepare("
                 SELECT DISTINCT s.id, s.code, s.name, s.credits, s.semester
                 FROM subjects s
                 JOIN teacher_subjects ts ON s.id = ts.subject_id
@@ -47,13 +44,13 @@ try {
             ");
             $stmt->execute([$user_id]);
             $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
             echo json_encode(['success' => true, 'data' => $subjects]);
-            break;
 
+            break;
         case 'subject_students':
             // Get students enrolled in a specific subject
-            $subject_id = $_GET['subject_id'] ?? null;
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              $subject_id = $_GET['subject_id'] ?? null;
             if (!$subject_id) {
                 http_response_code(400);
                 echo json_encode(['success' => false, 'error' => 'Subject ID required']);
@@ -70,13 +67,13 @@ try {
             ");
             $stmt->execute([$subject_id]);
             $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
             echo json_encode(['success' => true, 'data' => $students]);
-            break;
 
+            break;
         case 'subject_stats':
             // Get statistics for a subject
-            $subject_id = $_GET['subject_id'] ?? null;
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              $subject_id = $_GET['subject_id'] ?? null;
             if (!$subject_id) {
                 http_response_code(400);
                 echo json_encode(['success' => false, 'error' => 'Subject ID required']);
@@ -91,11 +88,9 @@ try {
             ");
             $stmt->execute([$subject_id]);
             $enrollment = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            // Get average attendance
-            // Attendance features removed
-            $attendance = ['avg_attendance' => 0];
-
+        // Get average attendance
+                // Attendance features removed
+                $attendance = ['avg_attendance' => 0];
             echo json_encode([
                 'success' => true,
                 'data' => [
@@ -103,14 +98,13 @@ try {
                     'avg_attendance' => round($attendance['avg_attendance'] ?? 0, 2)
                 ]
             ]);
-            break;
 
+            break;
         default:
-            http_response_code(400);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              http_response_code(400);
             echo json_encode(['success' => false, 'error' => 'Invalid action']);
     }
 } catch (PDOException $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
-?>

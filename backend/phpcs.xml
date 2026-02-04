@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="Student Data Mining PHP Standards">
+  <!-- Base rules: PSR12 -->
+  <rule ref="PSR12" />
+
+  <!-- Directories to check -->
+  <file>api</file>
+  <file>includes</file>
+
+  <!-- Exclude directories -->
+  <exclude-pattern>*/vendor/*</exclude-pattern>
+  <exclude-pattern>*/uploads/*</exclude-pattern>
+  <exclude-pattern>*/data/*</exclude-pattern>
+  <exclude-pattern>*/debug/*</exclude-pattern>
+  <exclude-pattern>*/node_modules/*</exclude-pattern>
+
+  <!-- Report settings -->
+  <arg name="basepath" value="."/>
+  <arg name="parallel" value="4"/>
+  <arg name="colors"/>
+  <arg name="extensions" value="php"/>
+  <arg name="report" value="summary"/>
+
+  <!-- Show progress -->
+  <arg value="p"/>
+
+  <!-- Custom rule overrides -->
+  <!-- Allow missing file docblocks for now -->
+  <rule ref="PSR12.Files.FileHeader">
+    <severity>0</severity>
+  </rule>
+
+  <!-- Reduce severity of some rules for gradual adoption -->
+  <rule ref="PSR12.Classes.ClassInstantiation">
+    <severity>5</severity>
+  </rule>
+</ruleset>

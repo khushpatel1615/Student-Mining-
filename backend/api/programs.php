@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Programs API
  * Handles CRUD operations for academic programs
@@ -6,12 +7,9 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
-
 setCORSHeaders();
-
 $method = $_SERVER['REQUEST_METHOD'];
 $pdo = getDBConnection();
-
 // Require authentication for all program routes
 $authUser = getAuthUser();
 if (!$authUser) {
@@ -23,19 +21,23 @@ if (!$authUser) {
 try {
     switch ($method) {
         case 'GET':
-            handleGet($pdo);
+                                                                                                                                                                                                                                                                              handleGet($pdo);
+
             break;
         case 'POST':
-            handlePost($pdo);
+                handlePost($pdo);
+
             break;
         case 'PUT':
-            handlePut($pdo);
+                handlePut($pdo);
+
             break;
         case 'DELETE':
-            handleDelete($pdo);
+                handleDelete($pdo);
+
             break;
         default:
-            http_response_code(405);
+                http_response_code(405);
             echo json_encode(['error' => 'Method not allowed']);
     }
 } catch (Exception $e) {
@@ -49,9 +51,8 @@ try {
 function handleGet($pdo)
 {
     $programId = $_GET['id'] ?? null;
-
     if ($programId) {
-        // Get single program with subject count
+    // Get single program with subject count
         $stmt = $pdo->prepare("
             SELECT p.*, 
                    COUNT(DISTINCT s.id) as total_subjects,
@@ -64,7 +65,6 @@ function handleGet($pdo)
         ");
         $stmt->execute([$programId]);
         $program = $stmt->fetch(PDO::FETCH_ASSOC);
-
         if (!$program) {
             http_response_code(404);
             echo json_encode(['error' => 'Program not found']);
@@ -73,9 +73,8 @@ function handleGet($pdo)
 
         echo json_encode(['success' => true, 'data' => $program]);
     } else {
-        // List all programs
+    // List all programs
         $activeOnly = isset($_GET['active']) ? filter_var($_GET['active'], FILTER_VALIDATE_BOOLEAN) : true;
-
         $sql = "
             SELECT p.*, 
                    COUNT(DISTINCT s.id) as total_subjects,
@@ -83,16 +82,13 @@ function handleGet($pdo)
             FROM programs p
             LEFT JOIN subjects s ON p.id = s.program_id AND s.is_active = TRUE
         ";
-
         if ($activeOnly) {
             $sql .= " WHERE p.is_active = TRUE";
         }
 
         $sql .= " GROUP BY p.id ORDER BY p.name ASC";
-
         $stmt = $pdo->query($sql);
         $programs = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
         echo json_encode(['success' => true, 'data' => $programs]);
     }
 }
@@ -111,8 +107,7 @@ function handlePost($pdo)
     }
 
     $data = json_decode(file_get_contents('php://input'), true);
-
-    // Validate required fields
+// Validate required fields
     if (empty($data['name']) || empty($data['code'])) {
         http_response_code(400);
         echo json_encode(['error' => 'Name and code are required']);
@@ -123,7 +118,6 @@ function handlePost($pdo)
         INSERT INTO programs (name, code, duration_years, total_semesters, description)
         VALUES (?, ?, ?, ?, ?)
     ");
-
     $stmt->execute([
         $data['name'],
         strtoupper($data['code']),
@@ -131,9 +125,7 @@ function handlePost($pdo)
         $data['total_semesters'] ?? 6,
         $data['description'] ?? null
     ]);
-
     $programId = $pdo->lastInsertId();
-
     echo json_encode([
         'success' => true,
         'message' => 'Program created successfully',
@@ -154,7 +146,6 @@ function handlePut($pdo)
     }
 
     $data = json_decode(file_get_contents('php://input'), true);
-
     if (empty($data['id'])) {
         http_response_code(400);
         echo json_encode(['error' => 'Program ID is required']);
@@ -163,7 +154,6 @@ function handlePut($pdo)
 
     $fields = [];
     $params = [];
-
     if (isset($data['name'])) {
         $fields[] = 'name = ?';
         $params[] = $data['name'];
@@ -196,10 +186,8 @@ function handlePut($pdo)
     }
 
     $params[] = $data['id'];
-
     $stmt = $pdo->prepare("UPDATE programs SET " . implode(', ', $fields) . " WHERE id = ?");
     $stmt->execute($params);
-
     echo json_encode(['success' => true, 'message' => 'Program updated successfully']);
 }
 
@@ -216,7 +204,6 @@ function handleDelete($pdo)
     }
 
     $programId = $_GET['id'] ?? null;
-
     if (!$programId) {
         http_response_code(400);
         echo json_encode(['error' => 'Program ID is required']);
@@ -226,7 +213,6 @@ function handleDelete($pdo)
     // Soft delete by setting is_active to false
     $stmt = $pdo->prepare("UPDATE programs SET is_active = FALSE WHERE id = ?");
     $stmt->execute([$programId]);
-
     echo json_encode(['success' => true, 'message' => 'Program deleted successfully']);
 }
 
@@ -237,14 +223,12 @@ function verifyAdminToken()
 {
     $headers = getallheaders();
     $authHeader = $headers['Authorization'] ?? '';
-
     if (empty($authHeader) || !preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches)) {
         return null;
     }
 
     $token = $matches[1];
     $result = verifyToken($token);
-
     if (!$result['valid'] || $result['payload']['role'] !== 'admin') {
         return null;
     }

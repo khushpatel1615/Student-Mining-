@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Notification Helper Functions
  */
 
 /**
  * Create a new notification for a user
- * 
+ *
  * @param PDO $pdo Database connection
  * @param int $userId Target user ID
  * @param string $type Notification type (grade_update, attendance_warning, announcement)

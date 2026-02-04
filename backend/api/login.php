@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Login API Endpoint
  * POST /api/login.php
@@ -7,10 +8,8 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
-
 // Enforce Method
 requireMethod('POST');
-
 // Get Input
 $input = getJsonInput();
 if (!$input) {
@@ -20,15 +19,13 @@ if (!$input) {
 // Validate fields
 $studentId = trim($input['student_id'] ?? '');
 $password = $input['password'] ?? '';
-
 if (empty($studentId) || empty($password)) {
     sendError('Student ID and password are required', 400);
 }
 
 try {
     $pdo = getDBConnection();
-
-    // Check if user exists
+// Check if user exists
     $stmt = $pdo->prepare("
         SELECT id, email, student_id, password_hash, full_name, role, avatar_url, is_active, current_semester 
         FROM users 
@@ -36,7 +33,6 @@ try {
     ");
     $stmt->execute(['identifier1' => $studentId, 'identifier2' => $studentId]);
     $user = $stmt->fetch();
-
     if (!$user) {
         sendError('Account not found. Please check your credentials.', 401);
     }
@@ -69,8 +65,7 @@ try {
     // Update last login
     $updateStmt = $pdo->prepare("UPDATE users SET last_login = NOW() WHERE id = :id");
     $updateStmt->execute(['id' => $user['id']]);
-
-    // Log Activity (fail-safe)
+// Log Activity (fail-safe)
     try {
         $logStmt = $pdo->prepare("INSERT INTO activity_logs (user_id, action, details, ip_address) VALUES (:uid, 'login', 'User logged in', :ip)");
         $logStmt->execute([
@@ -78,13 +73,12 @@ try {
             'ip' => $_SERVER['REMOTE_ADDR']
         ]);
     } catch (Exception $e) {
-        // Continue login even if log fails
+    // Continue login even if log fails
     }
 
     // Generate JWT token
     $token = generateToken($user['id'], $user['email'], $user['role'], $user['full_name']);
-
-    // Success Response
+// Success Response
     sendResponse([
         'success' => true,
         'message' => 'Login successful',
@@ -100,8 +94,6 @@ try {
             'hasPassword' => true
         ]
     ]);
-
 } catch (PDOException $e) {
     sendError('Database error occurred', 500, $e->getMessage());
 }
-?>

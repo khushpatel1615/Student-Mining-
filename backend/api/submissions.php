@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Assignment Submissions API
  * Handles file uploads and submission management
@@ -6,11 +7,8 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
-
 setCORSHeaders();
-
 $method = $_SERVER['REQUEST_METHOD'];
-
 if ($method === 'OPTIONS') {
     http_response_code(200);
     exit();
@@ -27,14 +25,13 @@ if (!$user) {
 $pdo = getDBConnection();
 $userId = $user['user_id'];
 $userRole = $user['role'];
-
 try {
     switch ($method) {
         case 'GET':
             // Get student's submission for an assignment
-            $action = $_GET['action'] ?? 'view';
-            $assignmentId = $_GET['assignment_id'] ?? null;
 
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   $action = $_GET['action'] ?? 'view';
+            $assignmentId = $_GET['assignment_id'] ?? null;
             if ($action === 'list' && ($userRole === 'admin' || $userRole === 'teacher')) {
                 if (!$assignmentId) {
                     http_response_code(400);
@@ -51,7 +48,6 @@ try {
                 ");
                 $stmt->execute([$assignmentId]);
                 $submissions = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
                 echo json_encode(['success' => true, 'data' => $submissions]);
                 exit();
             }
@@ -68,12 +64,12 @@ try {
             ");
             $stmt->execute([$assignmentId, $userId]);
             $submission = $stmt->fetch(PDO::FETCH_ASSOC);
-
             echo json_encode(['success' => true, 'data' => $submission]);
-            break;
 
+            break;
         case 'POST':
             // Submit or resubmit assignment
+
             if ($userRole !== 'student') {
                 http_response_code(403);
                 echo json_encode(['success' => false, 'error' => 'Only students can submit assignments']);
@@ -82,7 +78,6 @@ try {
 
             $assignmentId = $_POST['assignment_id'] ?? null;
             $submissionText = $_POST['submission_text'] ?? null;
-
             if (!$assignmentId) {
                 http_response_code(400);
                 echo json_encode(['success' => false, 'error' => 'Assignment ID required']);
@@ -93,7 +88,6 @@ try {
             $stmt = $pdo->prepare("SELECT due_date FROM assignments WHERE id = ?");
             $stmt->execute([$assignmentId]);
             $assignment = $stmt->fetch(PDO::FETCH_ASSOC);
-
             if (!$assignment) {
                 http_response_code(404);
                 echo json_encode(['success' => false, 'error' => 'Assignment not found']);
@@ -103,12 +97,10 @@ try {
             $dueDate = new DateTime($assignment['due_date']);
             $now = new DateTime();
             $status = ($now > $dueDate) ? 'late' : 'submitted';
-
-            // Handle file upload
+        // Handle file upload
             $filePath = null;
             $fileName = null;
             $fileSize = null;
-
             if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
                 $uploadDir = __DIR__ . '/../uploads/assignments/';
                 if (!is_dir($uploadDir)) {
@@ -117,11 +109,11 @@ try {
 
                 // Validate file
                 $allowedTypes = ['pdf', 'doc', 'docx', 'txt', 'zip', 'rar', 'jpg', 'jpeg', 'png'];
-                $maxSize = 10 * 1024 * 1024; // 10MB
+                $maxSize = 10 * 1024 * 1024;
+            // 10MB
 
                 $fileInfo = pathinfo($_FILES['file']['name']);
                 $fileExt = strtolower($fileInfo['extension'] ?? '');
-
                 if (!in_array($fileExt, $allowedTypes)) {
                     http_response_code(400);
                     echo json_encode(['success' => false, 'error' => 'Invalid file type. Allowed: ' . implode(', ', $allowedTypes)]);
@@ -141,8 +133,7 @@ try {
                 ");
                 $stmt->execute([$assignmentId, $userId]);
                 $existingSubmission = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                // Delete old file if exists
+            // Delete old file if exists
                 if ($existingSubmission && $existingSubmission['file_path']) {
                     $oldFilePath = __DIR__ . '/../uploads/assignments/' . basename($existingSubmission['file_path']);
                     if (file_exists($oldFilePath)) {
@@ -150,19 +141,20 @@ try {
                     }
                 }
 
-                // Generate unique filename
-                $fileName = $userId . '_' . $assignmentId . '_' . time() . '.' . $fileExt;
+                    // Generate unique filename
+                    $fileName = $userId . '_' . $assignmentId . '_' . time() . '.' . $fileExt;
                 $filePath = $uploadDir . $fileName;
-
                 if (!move_uploaded_file($_FILES['file']['tmp_name'], $filePath)) {
-                    http_response_code(500);
-                    echo json_encode(['success' => false, 'error' => 'Failed to upload file']);
-                    exit();
+                        http_response_code(500);
+                        echo json_encode(['success' => false, 'error' => 'Failed to upload file']);
+                        exit();
                 }
 
                 $fileSize = $_FILES['file']['size'];
-                $filePath = 'assignments/' . $fileName; // Store relative path
-                $fileName = $_FILES['file']['name']; // Original filename
+                $filePath = 'assignments/' . $fileName;
+            // Store relative path
+                $fileName = $_FILES['file']['name'];
+            // Original filename
             }
 
             // Insert or update submission
@@ -182,7 +174,6 @@ try {
                     graded_at = NULL,
                     graded_by = NULL
             ");
-
             $stmt->execute([
                 $assignmentId,
                 $userId,
@@ -192,16 +183,16 @@ try {
                 $fileSize,
                 $status
             ]);
-
             echo json_encode([
                 'success' => true,
                 'message' => 'Assignment submitted successfully',
                 'status' => $status
             ]);
-            break;
 
+            break;
         case 'DELETE':
             // Delete submission (before due date only)
+
             if ($userRole !== 'student') {
                 http_response_code(403);
                 echo json_encode(['success' => false, 'error' => 'Unauthorized']);
@@ -209,7 +200,6 @@ try {
             }
 
             $assignmentId = $_GET['assignment_id'] ?? null;
-
             if (!$assignmentId) {
                 http_response_code(400);
                 echo json_encode(['success' => false, 'error' => 'Assignment ID required']);
@@ -225,7 +215,6 @@ try {
             ");
             $stmt->execute([$userId, $assignmentId]);
             $data = $stmt->fetch(PDO::FETCH_ASSOC);
-
             if (!$data) {
                 http_response_code(404);
                 echo json_encode(['success' => false, 'error' => 'Assignment not found']);
@@ -234,7 +223,6 @@ try {
 
             $dueDate = new DateTime($data['due_date']);
             $now = new DateTime();
-
             if ($now > $dueDate) {
                 http_response_code(403);
                 echo json_encode(['success' => false, 'error' => 'Cannot delete submission after due date']);
@@ -255,16 +243,14 @@ try {
                 WHERE assignment_id = ? AND student_id = ?
             ");
             $stmt->execute([$assignmentId, $userId]);
-
             echo json_encode(['success' => true, 'message' => 'Submission deleted']);
-            break;
 
+            break;
         default:
-            http_response_code(405);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   http_response_code(405);
             echo json_encode(['success' => false, 'error' => 'Method not allowed']);
     }
 } catch (PDOException $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
-?>

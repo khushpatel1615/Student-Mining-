@@ -1,4 +1,5 @@
 <?php
+
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
 
@@ -7,7 +8,6 @@ setCORSHeaders();
 $method = $_SERVER['REQUEST_METHOD'];
 $pdo = getDBConnection();
 $DATA_DIR = __DIR__ . '/../data/attendance';
-
 // Require authentication for all attendance routes
 $authUser = getAuthUser();
 if (!$authUser) {
@@ -20,7 +20,6 @@ if (!$authUser) {
 if (!file_exists($DATA_DIR)) {
     mkdir($DATA_DIR, 0777, true);
 }
-
 try {
     if ($method === 'GET') {
         $action = $_GET['action'] ?? '';
@@ -33,9 +32,11 @@ try {
                     exit();
                 }
                 handleFetchSheet($pdo, $DATA_DIR);
+
                 break;
             case 'student_view':
                 handleStudentView($pdo, $DATA_DIR);
+
                 break;
             default:
                 throw new Exception("Invalid action");
@@ -43,7 +44,6 @@ try {
     } elseif ($method === 'POST') {
         $data = json_decode(file_get_contents('php://input'), true);
         $action = $data['action'] ?? '';
-
         switch ($action) {
             case 'save_daily':
                 if (!in_array($authUser['role'], ['admin', 'teacher'])) {
@@ -52,6 +52,7 @@ try {
                     exit();
                 }
                 handleSaveDaily($pdo, $DATA_DIR, $data);
+
                 break;
             default:
                 throw new Exception("Invalid action");
@@ -79,8 +80,9 @@ function handleFetchSheet($pdo, $dataDir)
     // For now, I'll allow it if token is present.
 
     $subjectId = $_GET['subject_id'] ?? null;
-    if (!$subjectId)
+    if (!$subjectId) {
         throw new Exception("Subject ID required");
+    }
 
     // 1. Fetch Students from DB
     $stmt = $pdo->prepare("
@@ -111,7 +113,7 @@ function handleFetchSheet($pdo, $dataDir)
     $dates = [];
 
     if (file_exists($file)) {
-        if (($handle = fopen($file, "r")) !== FALSE) {
+        if (($handle = fopen($file, "r")) !== false) {
             // Read Header: "Student ID", "Name", Date1, Date2...
             $header = fgetcsv($handle);
 
@@ -121,10 +123,10 @@ function handleFetchSheet($pdo, $dataDir)
             }
 
             // Read Rows
-            while (($row = fgetcsv($handle)) !== FALSE) {
+            while (($row = fgetcsv($handle)) !== false) {
                 $sid = $row[0];
                 // If student is valid (still in DB), populate their attendance
-                // Even if not in DB (dropped?), we might want to keep? 
+                // Even if not in DB (dropped?), we might want to keep?
                 // For now, only map to active students or add them if we want to see history of dropped?
                 // User said "all the students who are studying comes to the list". So DB is source of truth for rows.
 
@@ -178,13 +180,13 @@ function handleSaveDaily($pdo, $dataDir, $input)
     $dates = [];
 
     if (file_exists($file)) {
-        if (($handle = fopen($file, "r")) !== FALSE) {
+        if (($handle = fopen($file, "r")) !== false) {
             $row0 = fgetcsv($handle);
             if ($row0) {
                 $headers = array_slice($row0, 0, 2);
                 $dates = array_slice($row0, 2);
             }
-            while (($row = fgetcsv($handle)) !== FALSE) {
+            while (($row = fgetcsv($handle)) !== false) {
                 $sid = $row[0];
                 $name = $row[1];
                 $existingData[$sid] = [
@@ -237,7 +239,7 @@ function handleSaveDaily($pdo, $dataDir, $input)
     }
 
     // Write back to CSV
-    if (($fp = fopen($file, 'w')) !== FALSE) {
+    if (($fp = fopen($file, 'w')) !== false) {
         // Write Header
         $finalHeader = array_merge(['Student ID', 'Student Name'], $dates);
         fputcsv($fp, $finalHeader);
@@ -265,8 +267,9 @@ function handleStudentView($pdo, $dataDir)
     // Let's do specific subject for now to match component usage
     $token = getTokenFromHeader();
     $result = verifyToken($token);
-    if (!$result['valid'])
+    if (!$result['valid']) {
         throw new Exception('Unauthorized');
+    }
     $user = $result['payload'];
 
     $subjectId = $_GET['subject_id'] ?? null;
@@ -284,18 +287,19 @@ function handleStudentView($pdo, $dataDir)
     // Logic must MATCH handleSaveDaily: $sid = $s['student_id'] ?: $s['email'];
     $studentIdKey = $uData['student_id'] ?: $uData['email'];
 
-    if (!$subjectId || !$studentIdKey)
+    if (!$subjectId || !$studentIdKey) {
         throw new Exception("Subject and Student ID required");
+    }
 
     $file = getCsvFilename($dataDir, $subjectId);
     $attendanceRecord = [];
 
     if (file_exists($file)) {
-        if (($handle = fopen($file, "r")) !== FALSE) {
+        if (($handle = fopen($file, "r")) !== false) {
             $header = fgetcsv($handle); // dates start at index 2
             $dates = array_slice($header, 2);
 
-            while (($row = fgetcsv($handle)) !== FALSE) {
+            while (($row = fgetcsv($handle)) !== false) {
                 // Compare with the key we derived
                 if ($row[0] === $studentIdKey) {
                     // Found student
@@ -317,4 +321,3 @@ function handleStudentView($pdo, $dataDir)
         'data' => $attendanceRecord
     ]);
 }
-?>

@@ -1,0 +1,9 @@
+vendor/
+uploads/
+data/
+debug/
+node_modules/
+.git/
+.vscode/
+coverage/
+composer-setup.php

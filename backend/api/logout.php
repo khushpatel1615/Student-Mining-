@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Logout API Endpoint
  * POST /api/logout.php
@@ -7,9 +8,7 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
-
 setCORSHeaders();
-
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonResponse(['success' => false, 'error' => 'Method not allowed'], 405);
 }
@@ -21,4 +20,3 @@ jsonResponse([
     'success' => true,
     'message' => 'Logged out successfully'
 ]);
-?>
