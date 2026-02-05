@@ -20,6 +20,7 @@ import VideoLectures from '../components/VideoLectures/VideoLectures'
 import ActivityFeed from '../components/ActivityFeed/ActivityFeed'
 import MainLayout from '../components/Layout/MainLayout'
 import RiskCenter from '../components/Analytics/RiskCenter'
+import LearningBehaviorDashboard from '../components/Analytics/LearningBehaviorDashboard'
 import RiskAlertSettings from '../components/Analytics/RiskAlertSettings'
 import InsightsDashboard from '../components/Analytics/InsightsDashboard'
 import { CircularProgress } from '../components/CircularProgress'
@@ -309,6 +310,8 @@ function AdminDashboard() {
                 return <AdminOverview />
             case 'risk-center':
                 return <RiskCenter />
+            case 'behavior-analysis':
+                return <LearningBehaviorDashboard />
             case 'insights':
                 return <InsightsDashboard />
 
