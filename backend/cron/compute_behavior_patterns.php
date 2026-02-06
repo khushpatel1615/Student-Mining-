@@ -13,40 +13,8 @@
  * php E:\XAMP\htdocs\StudentDataMining\backend\cron\compute_behavior_patterns.php
  */
 
-// Allow running from command line
-if (php_sapi_name() !== 'cli') {
-    // Check for admin access if run from web
-    require_once __DIR__ . '/../includes/jwt.php';
-    require_once __DIR__ . '/../config/database.php';
-
-    setCORSHeaders();
-
-    $headers = getallheaders();
-    $token = null;
-    $authHeader = isset($headers['Authorization']) ? $headers['Authorization'] : '';
-    if (preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
-        $token = $matches[1];
-    }
-
-    $validation = verifyToken($token);
-    if (!$validation['valid'] || $validation['payload']['role'] !== 'admin') {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'error' => 'Admin access required']);
-        exit;
-    }
-} else {
-    require_once __DIR__ . '/../config/database.php';
-}
-
 define('SCRIPT_START', time());
 define('MAX_EXECUTION_TIME', 3600); // 1 hour max
-
-try {
-    $pdo = getDBConnection();
-} catch (Exception $e) {
-    logError('Database connection failed: ' . $e->getMessage());
-    exit(1);
-}
 
 function logMessage($msg)
 {
@@ -66,70 +34,115 @@ function logError($msg)
     error_log("[$timestamp] BEHAVIOR_PATTERNS ERROR: $msg");
 }
 
-logMessage("Starting behavior pattern computation...");
+function runBehaviorPatternComputation($pdo, $userFilter)
+{
+    logMessage("Starting behavior pattern computation...");
 
-// Determine which users to process
-$userFilter = isset($argv[1]) ? $argv[1] : (isset($_GET['mode']) ? $_GET['mode'] : 'current_week');
-$users = [];
+    $users = [];
 
-if ($userFilter === 'all') {
-    $stmt = $pdo->query("SELECT id FROM users WHERE role = 'student' AND is_active = 1 ORDER BY id");
-    $users = array_column($stmt->fetchAll(PDO::FETCH_ASSOC), 'id');
-} elseif ($userFilter === 'current_week') {
-    // Users with activity in the last 7 days OR students enrolled in current semester
-    $stmt = $pdo->query("
-        SELECT DISTINCT u.id 
-        FROM users u
-        LEFT JOIN learning_sessions ls ON u.id = ls.user_id AND ls.session_start >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-        LEFT JOIN activity_logs al ON u.id = al.user_id AND al.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-        WHERE u.role = 'student' AND u.is_active = 1
-        AND (ls.id IS NOT NULL OR al.id IS NOT NULL OR u.current_semester IS NOT NULL)
-        ORDER BY u.id
-    ");
-    $users = array_column($stmt->fetchAll(PDO::FETCH_ASSOC), 'id');
-} elseif (is_numeric($userFilter)) {
-    $users = [(int) $userFilter];
-} else {
-    logError("Invalid user filter: $userFilter");
-    exit(1);
-}
-
-logMessage("Processing " . count($users) . " users");
-
-$processed = 0;
-$errors = 0;
-$weekStart = date('Y-m-d', strtotime('monday this week'));
-
-foreach ($users as $userId) {
-    if (time() - SCRIPT_START > MAX_EXECUTION_TIME) {
-        logMessage("Max execution time reached, stopping");
-        break;
+    if ($userFilter === 'all') {
+        $stmt = $pdo->query("SELECT id FROM users WHERE role = 'student' AND is_active = 1 ORDER BY id");
+        $users = array_column($stmt->fetchAll(PDO::FETCH_ASSOC), 'id');
+    } elseif ($userFilter === 'current_week') {
+        // Users with activity in the last 7 days OR students enrolled in current semester
+        $stmt = $pdo->query("
+            SELECT DISTINCT u.id 
+            FROM users u
+            LEFT JOIN learning_sessions ls ON u.id = ls.user_id AND ls.session_start >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+            LEFT JOIN activity_logs al ON u.id = al.user_id AND al.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+            WHERE u.role = 'student' AND u.is_active = 1
+            AND (ls.id IS NOT NULL OR al.id IS NOT NULL OR u.current_semester IS NOT NULL)
+            ORDER BY u.id
+        ");
+        $users = array_column($stmt->fetchAll(PDO::FETCH_ASSOC), 'id');
+    } elseif (is_numeric($userFilter)) {
+        $users = [(int) $userFilter];
+    } else {
+        logError("Invalid user filter: $userFilter");
+        return ['processed' => 0, 'errors' => 1, 'execution_time' => 0, 'error' => 'Invalid user filter'];
     }
 
-    try {
-        computeUserPatterns($pdo, $userId, $weekStart);
-        $processed++;
+    logMessage("Processing " . count($users) . " users");
 
-        if ($processed % 50 === 0) {
-            logMessage("Processed $processed users...");
+    $processed = 0;
+    $errors = 0;
+    $weekStart = date('Y-m-d', strtotime('monday this week'));
+
+    foreach ($users as $userId) {
+        if (time() - SCRIPT_START > MAX_EXECUTION_TIME) {
+            logMessage("Max execution time reached, stopping");
+            break;
         }
-    } catch (Exception $e) {
-        logError("Failed to compute patterns for user $userId: " . $e->getMessage());
-        $errors++;
+
+        try {
+            computeUserPatterns($pdo, $userId, $weekStart);
+            $processed++;
+
+            if ($processed % 50 === 0) {
+                logMessage("Processed $processed users...");
+            }
+        } catch (Exception $e) {
+            logError("Failed to compute patterns for user $userId: " . $e->getMessage());
+            $errors++;
+        }
     }
-}
 
-logMessage("Completed: $processed processed, $errors errors");
-logMessage("Execution time: " . (time() - SCRIPT_START) . " seconds");
+    logMessage("Completed: $processed processed, $errors errors");
+    logMessage("Execution time: " . (time() - SCRIPT_START) . " seconds");
 
-// Output result for web requests
-if (php_sapi_name() !== 'cli') {
-    echo json_encode([
-        'success' => true,
+    return [
         'processed' => $processed,
         'errors' => $errors,
         'execution_time' => time() - SCRIPT_START
-    ]);
+    ];
+}
+
+if (!defined('BEHAVIOR_COMPUTE_LIB')) {
+    // Allow running from command line
+    if (php_sapi_name() !== 'cli') {
+        // Check for admin access if run from web
+        require_once __DIR__ . '/../includes/jwt.php';
+        require_once __DIR__ . '/../config/database.php';
+
+        setCORSHeaders();
+
+        $headers = getallheaders();
+        $token = null;
+        $authHeader = isset($headers['Authorization']) ? $headers['Authorization'] : '';
+        if (preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
+            $token = $matches[1];
+        }
+
+        $validation = verifyToken($token);
+        if (!$validation['valid'] || $validation['payload']['role'] !== 'admin') {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'error' => 'Admin access required']);
+            exit;
+        }
+    } else {
+        require_once __DIR__ . '/../config/database.php';
+    }
+
+    try {
+        $pdo = getDBConnection();
+    } catch (Exception $e) {
+        logError('Database connection failed: ' . $e->getMessage());
+        exit(1);
+    }
+
+    // Determine which users to process
+    $userFilter = isset($argv[1]) ? $argv[1] : (isset($_GET['mode']) ? $_GET['mode'] : 'current_week');
+    $result = runBehaviorPatternComputation($pdo, $userFilter);
+
+    // Output result for web requests
+    if (php_sapi_name() !== 'cli') {
+        echo json_encode([
+            'success' => true,
+            'processed' => $result['processed'],
+            'errors' => $result['errors'],
+            'execution_time' => $result['execution_time']
+        ]);
+    }
 }
 
 function computeUserPatterns($pdo, $userId, $weekStart)
@@ -309,11 +322,12 @@ function getAssignmentMetrics($pdo, $userId, $weekStart, $weekEnd)
     $stmt = $pdo->prepare("
         SELECT 
             COUNT(*) as total,
-            SUM(CASE WHEN submitted_at IS NOT NULL THEN 1 ELSE 0 END) as submitted,
-            SUM(CASE WHEN submitted_at IS NOT NULL AND submitted_at <= due_date THEN 1 ELSE 0 END) as on_time
-        FROM assignment_submissions
-        WHERE student_id = ?
-        AND (due_date BETWEEN ? AND ? OR submitted_at BETWEEN ? AND ?)
+            SUM(CASE WHEN s.submitted_at IS NOT NULL THEN 1 ELSE 0 END) as submitted,
+            SUM(CASE WHEN s.submitted_at IS NOT NULL AND s.submitted_at <= a.due_date THEN 1 ELSE 0 END) as on_time
+        FROM assignment_submissions s
+        JOIN assignments a ON s.assignment_id = a.id
+        WHERE s.student_id = ?
+        AND (a.due_date BETWEEN ? AND ? OR s.submitted_at BETWEEN ? AND ?)
     ");
     $stmt->execute([$userId, $weekStart, $weekEnd, $weekStart, $weekEnd]);
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -330,10 +344,11 @@ function getAssignmentMetrics($pdo, $userId, $weekStart, $weekEnd)
 function getGradeMetrics($pdo, $userId, $weekStart, $weekEnd)
 {
     $stmt = $pdo->prepare("
-        SELECT AVG(grade) as avg_grade
-        FROM student_grades
-        WHERE student_id = ?
-        AND graded_date BETWEEN ? AND ?
+        SELECT AVG(sg.marks_obtained) as avg_grade
+        FROM student_grades sg
+        JOIN student_enrollments e ON sg.enrollment_id = e.id
+        WHERE e.user_id = ?
+        AND sg.graded_at BETWEEN ? AND ?
     ");
     $stmt->execute([$userId, $weekStart, $weekEnd]);
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -364,10 +379,11 @@ function getAttendanceMetrics($pdo, $userId, $weekStart, $weekEnd)
 {
     $stmt = $pdo->prepare("
         SELECT COUNT(*) as attended 
-        FROM student_attendance
-        WHERE student_id = ?
-        AND attendance_date BETWEEN ? AND ?
-        AND status IN ('present', 'late')
+        FROM student_attendance sa
+        JOIN student_enrollments e ON sa.enrollment_id = e.id
+        WHERE e.user_id = ?
+        AND sa.attendance_date BETWEEN ? AND ?
+        AND sa.status IN ('present', 'late')
     ");
     $stmt->execute([$userId, $weekStart, $weekEnd]);
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
