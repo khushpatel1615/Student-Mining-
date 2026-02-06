@@ -74,6 +74,50 @@ const UploadIcon = () => (
     </svg>
 )
 
+const MailIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+        <polyline points="22,6 12,13 2,6" />
+    </svg>
+)
+
+const LockIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
+)
+
+const IdCardIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="4" width="18" height="16" rx="2" />
+        <line x1="16" y1="2" x2="16" y2="6" />
+        <line x1="8" y1="2" x2="8" y2="6" />
+        <rect x="7" y="10" width="10" height="8" />
+    </svg>
+)
+
+const UserIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+    </svg>
+)
+
+const GraduationCapIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+        <path d="M6 12v5c3 3 9 3 12 0v-5" />
+    </svg>
+)
+
+const AwardIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="8" r="7" />
+        <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+    </svg>
+)
+
 import * as XLSX from 'xlsx'
 
 
@@ -691,77 +735,122 @@ function StudentManagement() {
                                 <CloseIcon />
                             </button>
                         </div>
-                        <form onSubmit={handleSubmit}>
+                        <form onSubmit={handleSubmit} className="modal-form">
                             <div className="modal-body">
+                                {/* Name Input */}
                                 <div className="form-group">
-                                    <label className="form-label">Full Name *</label>
-                                    <input
-                                        type="text"
-                                        className="form-input"
-                                        value={formData.full_name}
-                                        onChange={e => setFormData({ ...formData, full_name: e.target.value })}
-                                        placeholder="Enter full name"
-                                        required
-                                    />
+                                    <label className="form-label">Full Name <span className="required">*</span></label>
+                                    <div className="input-group">
+                                        <div className="input-icon">
+                                            <UserIcon />
+                                        </div>
+                                        <input
+                                            type="text"
+                                            className="form-input with-icon"
+                                            value={formData.full_name}
+                                            onChange={e => setFormData({ ...formData, full_name: e.target.value })}
+                                            placeholder="John Doe"
+                                            required
+                                        />
+                                    </div>
                                 </div>
+
+                                {/* Email Input */}
                                 <div className="form-group">
-                                    <label className="form-label">Email *</label>
-                                    <input
-                                        type="email"
-                                        className="form-input"
-                                        value={formData.email}
-                                        onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                        placeholder="Enter email address"
-                                        required
-                                    />
+                                    <label className="form-label">Email Address <span className="required">*</span></label>
+                                    <div className="input-group">
+                                        <div className="input-icon">
+                                            <MailIcon />
+                                        </div>
+                                        <input
+                                            type="email"
+                                            className="form-input with-icon"
+                                            value={formData.email}
+                                            onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                            placeholder="john.doe@university.edu"
+                                            required
+                                        />
+                                    </div>
                                 </div>
-                                <div className="form-group">
-                                    <label className="form-label">Student ID</label>
-                                    <input
-                                        type="text"
-                                        className="form-input"
-                                        value={formData.student_id}
-                                        onChange={e => setFormData({ ...formData, student_id: e.target.value })}
-                                        placeholder="Enter student ID (optional)"
-                                    />
+
+                                <div className="form-row">
+                                    {/* Student ID */}
+                                    <div className="form-group half">
+                                        <label className="form-label">Student ID</label>
+                                        <div className="input-group">
+                                            <div className="input-icon">
+                                                <IdCardIcon />
+                                            </div>
+                                            <input
+                                                type="text"
+                                                className="form-input with-icon"
+                                                value={formData.student_id}
+                                                onChange={e => setFormData({ ...formData, student_id: e.target.value })}
+                                                placeholder="ST-2024-001"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Role */}
+                                    <div className="form-group half">
+                                        <label className="form-label">Role</label>
+                                        <div className="input-group">
+                                            <div className="input-icon">
+                                                <AwardIcon />
+                                            </div>
+                                            <select
+                                                className="form-select with-icon"
+                                                value={formData.role}
+                                                onChange={e => setFormData({ ...formData, role: e.target.value })}
+                                            >
+                                                <option value="student">Student</option>
+                                                <option value="admin">Admin</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="form-group">
-                                    <label className="form-label">Department (Program)</label>
-                                    <select
-                                        className="form-select"
-                                        value={formData.program_id}
-                                        onChange={e => setFormData({ ...formData, program_id: e.target.value })}
-                                    >
-                                        <option value="">Select Department</option>
-                                        {programs.map(prog => (
-                                            <option key={prog.id} value={prog.id}>
-                                                {prog.name} ({prog.code})
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="form-group">
-                                    <label className="form-label">Role</label>
-                                    <select
-                                        className="form-select"
-                                        value={formData.role}
-                                        onChange={e => setFormData({ ...formData, role: e.target.value })}
-                                    >
-                                        <option value="student">Student</option>
-                                        <option value="admin">Admin</option>
-                                    </select>
-                                </div>
-                                <div className="form-group">
-                                    <label className="form-label">
-                                        Password {modalMode === 'add' ? '' : '(leave blank to keep unchanged)'}
-                                    </label>
-                                    <input
-                                        type="password"
-                                        className="form-input"
-                                        value={formData.password}
-                                        onChange={e => setFormData({ ...formData, password: e.target.value })}
-                                        placeholder={modalMode === 'add' ? 'Default: password123' : 'Enter new password'}
-                                    />
+
+                                <div className="form-row">
+                                    {/* Department */}
+                                    <div className="form-group half">
+                                        <label className="form-label">Department</label>
+                                        <div className="input-group">
+                                            <div className="input-icon">
+                                                <GraduationCapIcon />
+                                            </div>
+                                            <select
+                                                className="form-select with-icon"
+                                                value={formData.program_id}
+                                                onChange={e => setFormData({ ...formData, program_id: e.target.value })}
+                                            >
+                                                <option value="">Select Dept.</option>
+                                                {programs.map(prog => (
+                                                    <option key={prog.id} value={prog.id}>
+                                                        {prog.code}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    {/* Password */}
+                                    <div className="form-group half">
+                                        <label className="form-label">
+                                            Password <span className="password-hint">{modalMode === 'add' ? '(Default: 123)' : '(Leave blank)'}</span>
+                                        </label>
+                                        <div className="input-group">
+                                            <div className="input-icon">
+                                                <LockIcon />
+                                            </div>
+                                            <input
+                                                type="password"
+                                                className="form-input with-icon"
+                                                value={formData.password}
+                                                onChange={e => setFormData({ ...formData, password: e.target.value })}
+                                                placeholder={modalMode === 'add' ? 'password123' : 'New password'}
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div className="modal-footer">

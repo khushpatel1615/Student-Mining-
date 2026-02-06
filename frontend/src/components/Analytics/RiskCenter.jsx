@@ -130,6 +130,14 @@ const RiskCenter = () => {
         return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
     };
 
+    // Helper to format names to Sentence Case
+    const toSentenceCase = (str) => {
+        if (!str) return '';
+        return str.toLowerCase().split(' ').map(word => {
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        }).join(' ');
+    };
+
     const getScoreColor = (score) => {
         if (score >= 75) return '#22c55e';
         if (score >= 45) return '#f59e0b';
@@ -313,6 +321,10 @@ const RiskCenter = () => {
                                 const factors = student.risk_factors || [];
                                 const scoreColor = getScoreColor(student.risk_score);
 
+                                const colors = ['purple', 'blue', 'teal', 'rose', 'amber'];
+                                const colorIndex = student.full_name.charCodeAt(0) % colors.length;
+                                const avatarColor = colors[colorIndex];
+
                                 return (
                                     <React.Fragment key={student.id}>
                                         <motion.tr
@@ -323,17 +335,21 @@ const RiskCenter = () => {
                                         >
                                             {/* Student */}
                                             <td className="col-student">
-                                                <div className="student-cell">
-                                                    <div className="avatar-circle">
+                                                <div className="student-profile-tile">
+                                                    <div
+                                                        className="circular-avatar"
+                                                        data-color={avatarColor}
+                                                        title={student.full_name}
+                                                    >
                                                         {student.avatar_url ? (
-                                                            <img src={student.avatar_url} alt="" />
+                                                            <img src={student.avatar_url} alt={student.full_name} />
                                                         ) : (
                                                             <span>{getInitials(student.full_name)}</span>
                                                         )}
                                                     </div>
-                                                    <div className="student-text">
-                                                        <span className="name">{student.full_name}</span>
-                                                        <span className="id">{student.student_id}</span>
+                                                    <div className="student-details-modern">
+                                                        <span className="student-name-modern">{toSentenceCase(student.full_name)}</span>
+                                                        <span className="student-email-modern">{student.email || student.student_id}</span>
                                                     </div>
                                                 </div>
                                             </td>
