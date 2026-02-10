@@ -5,7 +5,7 @@ import { Save, CheckCircle, XCircle, AlertTriangle, Calendar, Filter, Loader } f
 import toast from 'react-hot-toast';
 import './AdminAttendance.css';
 
-
+// v2.0 - Modern UI Update
 
 const AdminAttendance = () => {
     const { token } = useAuth();
@@ -58,8 +58,6 @@ const AdminAttendance = () => {
 
     const fetchSubjects = async () => {
         try {
-            // Using teachers.php or subjects.php? subjects.php expects different params usually?
-            // Let's use subjects.php
             const res = await fetch(`${API_BASE}/subjects.php?program_id=${selectedProgram}&semester=${selectedSemester}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -164,8 +162,6 @@ const AdminAttendance = () => {
     const getSemesters = () => {
         const prog = programs.find(p => p.id == selectedProgram);
         if (!prog) return [];
-        // Assuming 2 semesters per year, duration * 2
-        // Or if prog has 'total_semesters'
         const count = prog.total_semesters || (prog.duration_years * 2) || 8;
         return Array.from({ length: count }, (_, i) => i + 1);
     };
@@ -174,65 +170,87 @@ const AdminAttendance = () => {
         <div className="admin-attendance">
             <h2>Attendance Management</h2>
 
-            <div className="filters-section">
-                <div className="filter-group">
-                    <label className="filter-label">Program</label>
-                    <select
-                        className="filter-select"
-                        value={selectedProgram}
-                        onChange={(e) => {
-                            setSelectedProgram(e.target.value);
-                            setSelectedSemester('');
-                            setSelectedSubject('');
-                        }}
-                    >
-                        <option value="">Select Program</option>
-                        {programs.map(p => (
-                            <option key={p.id} value={p.id}>{p.code} - {p.name}</option>
-                        ))}
-                    </select>
-                </div>
+            <div className="filters-container">
+                <div className="filters-section">
+                    <div className="filter-group">
+                        <label className="filter-label">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                                <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                            </svg>
+                            Program
+                        </label>
+                        <select
+                            className="filter-select"
+                            value={selectedProgram}
+                            onChange={(e) => {
+                                setSelectedProgram(e.target.value);
+                                setSelectedSemester('');
+                                setSelectedSubject('');
+                            }}
+                        >
+                            <option value="">Select...</option>
+                            {programs.map(p => (
+                                <option key={p.id} value={p.id}>{p.code} - {p.name}</option>
+                            ))}
+                        </select>
+                    </div>
 
-                <div className="filter-group">
-                    <label className="filter-label">Semester</label>
-                    <select
-                        className="filter-select"
-                        value={selectedSemester}
-                        onChange={(e) => {
-                            setSelectedSemester(e.target.value);
-                            setSelectedSubject('');
-                        }}
-                        disabled={!selectedProgram}
-                    >
-                        <option value="">Select Semester</option>
-                        {getSemesters().map(s => (
-                            <option key={s} value={s}>Semester {s}</option>
-                        ))}
-                    </select>
-                </div>
+                    <div className="filter-group">
+                        <label className="filter-label">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                <line x1="16" y1="2" x2="16" y2="6" />
+                                <line x1="8" y1="2" x2="8" y2="6" />
+                                <line x1="3" y1="10" x2="21" y2="10" />
+                            </svg>
+                            Semester
+                        </label>
+                        <select
+                            className="filter-select"
+                            value={selectedSemester}
+                            onChange={(e) => {
+                                setSelectedSemester(e.target.value);
+                                setSelectedSubject('');
+                            }}
+                            disabled={!selectedProgram}
+                        >
+                            <option value="">Select...</option>
+                            {getSemesters().map(s => (
+                                <option key={s} value={s}>Semester {s}</option>
+                            ))}
+                        </select>
+                    </div>
 
-                <div className="filter-group">
-                    <label className="filter-label">Subject</label>
-                    <select
-                        className="filter-select"
-                        value={selectedSubject}
-                        onChange={(e) => setSelectedSubject(e.target.value)}
-                        disabled={!selectedSemester}
-                    >
-                        <option value="">Select Subject</option>
-                        {subjects.map(s => (
-                            <option key={s.id} value={s.id}>{s.code} - {s.name}</option>
-                        ))}
-                    </select>
-                </div>
+                    <div className="filter-group">
+                        <label className="filter-label">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                            </svg>
+                            Subject
+                        </label>
+                        <select
+                            className="filter-select"
+                            value={selectedSubject}
+                            onChange={(e) => setSelectedSubject(e.target.value)}
+                            disabled={!selectedSemester}
+                        >
+                            <option value="">Select...</option>
+                            {subjects.map(s => (
+                                <option key={s.id} value={s.id}>{s.code} - {s.name}</option>
+                            ))}
+                        </select>
+                    </div>
 
-                <div className="filter-group">
-                    <label className="filter-label">Marking Date</label>
-                    <div className="date-input-wrapper">
-                        <Calendar size={18} className="date-icon" />
+                    <div className="filter-group">
+                        <label className="filter-label">
+                            <Calendar size={14} />
+                            Marking Date
+                        </label>
                         <input
                             type="date"
-                            className="date-input"
+                            className="filter-select date-input"
                             value={markingDate}
                             onChange={(e) => setMarkingDate(e.target.value)}
                         />
@@ -339,6 +357,3 @@ const AdminAttendance = () => {
 };
 
 export default AdminAttendance;
-
-
-
