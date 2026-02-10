@@ -1,7 +1,5 @@
-import { API_BASE } from '../config';
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
 import {
     ArrowLeft,
     User,
@@ -21,6 +19,9 @@ import {
     Trash2,
     Zap
 } from 'lucide-react'
+
+import { useAuth } from '../context/AuthContext'
+import { API_BASE } from '../config';
 import StudentMiningProfile from '../components/Analytics/StudentMiningProfile'
 import './StudentProfilePage.css'
 
@@ -82,7 +83,7 @@ function StudentProfilePage() {
     }, [student, token])
 
     const handleCancelMeeting = async (meetingId) => {
-        if (!confirm('Are you sure you want to cancel this meeting?')) return
+        if (!window.confirm('Are you sure you want to cancel this meeting?')) return
 
         try {
             const response = await fetch(`${API_BASE}/calendar.php?id=${meetingId}`, {
@@ -109,13 +110,13 @@ function StudentProfilePage() {
                         type: 'meeting_cancelled'
                     })
                 })
-                alert('Meeting cancelled successfully')
+                window.alert('Meeting cancelled successfully')
             } else {
-                alert(data.error || 'Failed to delete meeting')
+                window.alert(data.error || 'Failed to delete meeting')
             }
         } catch (err) {
             console.error('Error cancelling meeting:', err)
-            alert('Error cancelling meeting')
+            window.alert('Error cancelling meeting')
         }
     }
 
@@ -164,7 +165,7 @@ function StudentProfilePage() {
             const notifData = await notifResponse.json()
 
             if (notifData.success) {
-                alert(`Meeting request sent to ${student.full_name}!`)
+                window.alert(`Meeting request sent to ${student.full_name}!`)
                 setShowMeetingForm(false)
                 setMeetingData({
                     title: '',
@@ -175,11 +176,11 @@ function StudentProfilePage() {
                 })
                 fetchMeetings()
             } else {
-                alert(notifData.error || 'Failed to send meeting request')
+                window.alert(notifData.error || 'Failed to send meeting request')
             }
         } catch (err) {
             console.error('Error scheduling meeting:', err)
-            alert('Failed to schedule meeting. Network error.')
+            window.alert('Failed to schedule meeting. Network error.')
         } finally {
             setSendingMeeting(false)
         }

@@ -12,6 +12,7 @@ import {
     MoreHorizontal,
     BarChart2
 } from 'lucide-react';
+
 import { useAuth } from '../../../context/AuthContext';
 import { API_BASE } from '../../../config';
 
@@ -71,7 +72,7 @@ const StudentAnalyticsDashboard = () => {
                 token
             });
             const url = `${API_BASE}/student_dashboard.php?${params.toString()}`;
-            const source = new EventSource(url);
+            const source = new window.EventSource(url);
             source.addEventListener('analytics', (event) => {
                 try {
                     const payload = JSON.parse(event.data);
@@ -157,14 +158,13 @@ const StudentAnalyticsDashboard = () => {
     const gradeTrendValue = getTrendValue(displayGrades);
     const attendanceTrendValue = getTrendValue(displayAttendance);
     const riskTrendValue = getTrendValue(riskTrends);
-
     // 4. Functional Branching (Actions)
     const handleChartAction = (action, context) => {
         console.log(`Action triggered: ${action} for ${context}`);
         if (action === 'export') {
-            alert(`Exporting CSV for ${context}...`);
+            window.alert(`Exporting CSV for ${context}...`);
         } else if (action === 'details') {
-            alert(`Opening details view for ${context}...`);
+            window.alert(`Opening details view for ${context}...`);
         }
     };
 

@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
 import {
     LayoutDashboard,
     BarChart3,
@@ -29,6 +28,8 @@ import {
     Video,
     Mail
 } from 'lucide-react';
+
+import { useAuth } from '../../context/AuthContext';
 import './Sidebar.css';
 
 const Sidebar = ({ role = 'student', onLogout, collapsed, mobileMenuOpen, onToggle = () => { } }) => {

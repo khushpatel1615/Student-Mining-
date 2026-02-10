@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Layers, TrendingUp, AlertCircle, Award } from 'lucide-react';
+
 import { useAuth } from '../../../context/AuthContext';
 import { API_BASE } from '../../../config';
 

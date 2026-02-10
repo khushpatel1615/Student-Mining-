@@ -1,5 +1,7 @@
-import { API_BASE } from '../../config';
 import { useState, useEffect } from 'react'
+
+import { API_BASE } from '../../config';
+
 import SubjectCard from './SubjectCard'
 import './SemesterRoadmap.css'
 

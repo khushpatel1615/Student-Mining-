@@ -1,8 +1,9 @@
-import { API_BASE } from '../../config';
 import { useState, useEffect } from 'react'
-import { useAuth } from '../../context/AuthContext'
 import { Star, ThumbsUp, MessageCircle, TrendingUp, Award, ChevronDown } from 'lucide-react'
 import toast from 'react-hot-toast'
+
+import { useAuth } from '../../context/AuthContext'
+import { API_BASE } from '../../config';
 import './CourseReviews.css'
 
 
@@ -52,7 +53,7 @@ function CourseReviews({ subjectId = null, subjectName = '' }) {
             })
             const data = await res.json()
             if (data.success) setTopRated(data.data)
-        } catch (err) { } finally { setLoading(false) }
+        } catch (err) { /* ignore */ } finally { setLoading(false) }
     }
 
     const submitReview = async () => {

@@ -1,6 +1,15 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import {
+    Users,
+    TrendingUp,
+    AlertTriangle,
+    Activity,
+    TrendingDown,
+    ChevronDown
+} from 'lucide-react'
+
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import LogoutModal from '../components/LogoutModal/LogoutModal'
@@ -23,14 +32,6 @@ import LearningBehaviorDashboard from '../components/Analytics/LearningBehaviorD
 import RiskAlertSettings from '../components/Analytics/RiskAlertSettings'
 import InsightsDashboard from '../components/Analytics/InsightsDashboard'
 import { CircularProgress } from '../components/CircularProgress'
-import {
-    Users,
-    TrendingUp,
-    AlertTriangle,
-    Activity,
-    TrendingDown,
-    ChevronDown
-} from 'lucide-react'
 import './AdminDashboard.css'
 
 import { API_BASE } from '../config'
@@ -141,136 +142,7 @@ function AdminDashboard() {
 
     // ========== COMPONENTS ==========
 
-    // Stats Cards Component
-    const StatsCards = () => {
-        const containerVariants = {
-            hidden: { opacity: 0 },
-            visible: {
-                opacity: 1,
-                transition: {
-                    staggerChildren: 0.1
-                }
-            }
-        }
-
-        const cardVariants = {
-            hidden: { opacity: 0, y: 20 },
-            visible: {
-                opacity: 1,
-                y: 0,
-                transition: {
-                    type: 'spring',
-                    stiffness: 100,
-                    damping: 15
-                }
-            }
-        }
-
-        const cards = [
-            {
-                title: 'Total Students',
-                value: stats.totalStudents,
-                subtitle: 'Active Students',
-                icon: Users,
-                gradient: 'gradient-purple',
-                progress: (stats.totalStudents / 100) * 100,
-                trend: '+2 this month',
-                trendUp: true
-            },
-            {
-                title: 'Class Average',
-                value: `${stats.classAverage}%`,
-                subtitle: 'Overall Performance',
-                icon: TrendingUp,
-                gradient: 'gradient-green',
-                progress: stats.classAverage,
-                trend: '+3% improvement',
-                trendUp: true
-            },
-            {
-                title: 'At-Risk Students',
-                value: stats.atRiskCount,
-                subtitle: stats.atRiskCount === 0 ? 'Good Standing' : 'Needs Attention',
-                icon: AlertTriangle,
-                gradient: stats.atRiskCount > 0 ? 'gradient-orange' : 'gradient-green',
-                progress: (stats.atRiskCount / stats.totalStudents) * 100,
-                trend: stats.atRiskCount > 0 ? 'Monitor closely' : 'All students on track',
-                trendUp: stats.atRiskCount === 0
-            },
-            {
-                title: 'Engagement Rate',
-                value: `${stats.engagementRate}%`,
-                subtitle: 'System Activity',
-                icon: Activity,
-                gradient: 'gradient-blue',
-                progress: stats.engagementRate,
-                trend: '+5% from last week',
-                trendUp: true
-            }
-        ]
-
-        const getProgressColor = (gradient) => {
-            switch (gradient) {
-                case 'gradient-purple': return '#6366f1'
-                case 'gradient-blue': return '#3b82f6'
-                case 'gradient-green': return '#22c55e'
-                case 'gradient-orange': return '#f97316'
-                default: return '#6366f1'
-            }
-        }
-
-        return (
-            <motion.div
-                className="stats-grid"
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
-            >
-                {cards.map((card, index) => {
-                    const Icon = card.icon
-                    return (
-                        <motion.div
-                            key={index}
-                            className="stat-card"
-                            variants={cardVariants}
-                            whileHover={{
-                                y: -6,
-                                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.12)',
-                                transition: { duration: 0.2 }
-                            }}
-                        >
-                            <div className="stat-progress-ring">
-                                <CircularProgress
-                                    value={card.progress}
-                                    size={56}
-                                    strokeWidth={6}
-                                    color={getProgressColor(card.gradient)}
-                                    trailColor="rgba(0,0,0,0.05)"
-                                    showValue={false}
-                                />
-                                <div className={`stat-icon-inner ${card.gradient}`}>
-                                    <Icon size={20} />
-                                </div>
-                            </div>
-                            <div className="stat-content">
-                                <span className="stat-title">{card.title}</span>
-                                <span className="stat-value">{card.value}</span>
-                                <div className="stat-footer">
-                                    <span className="stat-subtitle">{card.subtitle}</span>
-                                    {card.trend && (
-                                        <span className={`stat-trend ${card.trendUp ? 'positive' : 'negative'}`}>
-                                            {card.trendUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                                            <span className="trend-text">{card.trend}</span>
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        </motion.div>
-                    )
-                })}
-            </motion.div>
-        )
-    }
+    // StatsCards component removed (unused)
 
     const renderActiveTab = () => {
         switch (activeTab) {

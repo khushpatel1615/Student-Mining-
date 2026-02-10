@@ -1,9 +1,23 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import {
+    BookOpen,
+    Clock,
+    GraduationCap,
+    Award,
+    TrendingUp,
+    TrendingDown,
+    Calendar as CalendarIcon,
+    AlertCircle,
+    CheckCircle,
+    XCircle,
+
+    ChevronDown
+} from 'lucide-react'
+
 import MainLayout from '../components/Layout/MainLayout'
 import { useAuth } from '../context/AuthContext'
-
 import CalendarManagement from '../components/CalendarManagement/CalendarManagement'
 import { CircularProgress } from '../components/CircularProgress'
 import GradesTab from '../components/Student/Grades/GradesTab'
@@ -19,27 +33,12 @@ import Performance from '../components/Student/Performance/Performance'
 import Submissions from '../components/Student/Submissions/Submissions'
 import Difficulty from '../components/Student/Difficulty/Difficulty'
 import Badges from '../components/Student/Badges/Badges'
-
 import ReportGenerator from '../components/Reports/ReportGenerator'
 import AnnouncementsPage from '../components/Discussions/AnnouncementsPage'
 import StudentAttendance from '../components/Student/Attendance/StudentAttendance'
 import QuickActions from '../components/Student/Overview/QuickActions'
 import ActivityFeed from '../components/Student/Overview/ActivityFeed'
 import './StudentDashboard.css'
-import {
-    BookOpen,
-    Clock,
-    GraduationCap,
-    Award,
-    TrendingUp,
-    TrendingDown,
-    Calendar as CalendarIcon,
-    AlertCircle,
-    CheckCircle,
-    XCircle,
-
-    ChevronDown
-} from 'lucide-react'
 
 import { API_BASE } from '../config'
 
@@ -219,61 +218,7 @@ const StudentDashboard = () => {
         }
     }
 
-    // Stats Cards Component (Legacy - using inline now but keeping structure)
-    const StatsCards = () => {
-
-        return (
-            <motion.div
-                className="stats-grid"
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
-            >
-                {cards.map((card, index) => {
-                    const Icon = card.icon
-                    return (
-                        <motion.div
-                            key={index}
-                            className="stat-card"
-                            variants={cardVariants}
-                            whileHover={{
-                                y: -6,
-                                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.12)',
-                                transition: { duration: 0.2 }
-                            }}
-                        >
-                            <div className="stat-progress-ring">
-                                <CircularProgress
-                                    value={card.progress || 0}
-                                    size={56}
-                                    strokeWidth={6}
-                                    color={getProgressColor(card.gradient)}
-                                    trailColor="rgba(0,0,0,0.05)"
-                                    showValue={false}
-                                />
-                                <div className={`stat-icon-inner ${card.gradient}`}>
-                                    <Icon size={20} />
-                                </div>
-                            </div>
-                            <div className="stat-content">
-                                <span className="stat-title">{card.title}</span>
-                                <span className="stat-value">{card.value}</span>
-                                <div className="stat-footer">
-                                    <span className="stat-subtitle">{card.subtitle}</span>
-                                    {card.trend && (
-                                        <span className={`stat-trend ${card.trendUp ? 'positive' : 'negative'}`}>
-                                            {card.trendUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                                            <span className="trend-text">{card.trend}</span>
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        </motion.div>
-                    )
-                })}
-            </motion.div>
-        )
-    }
+    // Stats Cards Logic has been moved inline into the main render for better semester integration
 
     const getGreeting = () => {
         const hour = new Date().getHours()

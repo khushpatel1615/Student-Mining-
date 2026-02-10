@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BookOpen, Star, TrendingUp, CheckCircle } from 'lucide-react';
+
 import { useAuth } from '../../../context/AuthContext';
 import { API_BASE } from '../../../config';
 

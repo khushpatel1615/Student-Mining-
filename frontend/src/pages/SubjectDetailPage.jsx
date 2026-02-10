@@ -1,6 +1,7 @@
-import { API_BASE } from '../config';
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+
+import { API_BASE } from '../config';
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import './SubjectDetailPage.css'

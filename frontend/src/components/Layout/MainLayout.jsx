@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import Sidebar from './Sidebar';
-import Header from './Header';
+
 import NotificationCenter from '../Notifications/NotificationCenter';
 import AdminAIChat from '../Admin/AIChat/AdminAIChat';
+
+import Sidebar from './Sidebar';
+import Header from './Header';
 import './MainLayout.css';
 
 const MainLayout = ({

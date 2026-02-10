@@ -1,6 +1,7 @@
-import { API_BASE } from '../../../config';
 import React, { useState, useRef, useEffect } from 'react';
 import { Camera, Save, Lock, User, Mail, Hash, AlertCircle, CheckCircle } from 'lucide-react';
+
+import { API_BASE } from '../../../config';
 import { useAuth } from '../../../context/AuthContext';
 import './StudentProfile.css';
 

@@ -1,9 +1,10 @@
-/* eslint-disable no-undef */
+ 
 import { describe, test, expect, beforeEach, vi } from 'vitest';
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import RiskCenter from './RiskCenter';
 import { BrowserRouter } from 'react-router-dom';
+
+import RiskCenter from './RiskCenter';
 
 // Mock AuthContext
 vi.mock('../../context/AuthContext', () => ({

@@ -1,5 +1,6 @@
-import { API_BASE } from '../../../config';
 import { useState, useEffect } from 'react'
+
+import { API_BASE } from '../../../config';
 import { useAuth } from '../../../context/AuthContext'
 import './TeacherAssignments.css'
 
@@ -167,9 +168,9 @@ function TeacherAssignments() {
                 </button>
             </div>
 
-            {loading  (
+            {loading ? (
                 <div className="loading">Loading...</div>
-            ) : selectedAssignment  (
+            ) : selectedAssignment ? (
                 <div className="submissions-view">
                     <div className="submissions-header">
                         <div>
@@ -194,7 +195,7 @@ function TeacherAssignments() {
                     </div>
 
                     <div className="submissions-list">
-                        {submissions.length === 0  (
+                        {submissions.length === 0 ? (
                             <div className="empty-state">No submissions yet</div>
                         ) : (
                             submissions.map(sub => (
@@ -208,7 +209,7 @@ function TeacherAssignments() {
                                         </span>
                                     </div>
                                     <div className="submission-actions">
-                                        {sub.status === 'graded'  (
+                                        {sub.status === 'graded' ? (
                                             <div className="graded-info">
                                                 <span className="grade-badge">
                                                     {sub.marks_obtained}/{selectedAssignment.total_points}

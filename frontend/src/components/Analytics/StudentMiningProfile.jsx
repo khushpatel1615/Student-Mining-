@@ -1,6 +1,4 @@
-import { API_BASE } from '../../config';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../../context/AuthContext';
 import { motion } from 'framer-motion';
 import {
     User,
@@ -18,6 +16,9 @@ import {
     RefreshCw,
     Zap
 } from 'lucide-react';
+
+import { useAuth } from '../../context/AuthContext';
+import { API_BASE } from '../../config';
 import './StudentMiningProfile.css';
 
 
