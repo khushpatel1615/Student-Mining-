@@ -5,6 +5,18 @@
 
 .grades-tab-container-modern {
     padding: 0;
+    --grades-accent: var(--primary, #4f46e5);
+    --grades-accent-strong: #4338ca;
+    --grades-accent-soft: rgba(79, 70, 229, 0.12);
+    --grades-surface: var(--bg-card);
+    --grades-surface-2: var(--bg-secondary, #f8fafc);
+    --grades-border: var(--border-light);
+    --grades-text-muted: var(--text-secondary);
+    --grades-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    --grades-shadow-soft: 0 6px 16px rgba(15, 23, 42, 0.06);
+    --grades-radius-lg: 18px;
+    --grades-radius-md: 12px;
+    --grades-radius-sm: 10px;
 }
 
 /* Header Section with Stats */
@@ -13,14 +25,15 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1.5rem;
-    padding: 1.5rem;
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.05));
-    border-radius: 16px;
-    border: 1px solid rgba(99, 102, 241, 0.1);
+    padding: 1.75rem;
+    background: var(--grades-surface);
+    border-radius: var(--grades-radius-lg);
+    border: 1px solid var(--grades-border);
+    box-shadow: var(--grades-shadow-soft);
 }
 
 .header-title-section h2 {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: 700;
     color: var(--text-primary);
     margin: 0 0 0.25rem 0;
@@ -28,28 +41,29 @@
 
 .header-subtitle {
     font-size: 0.875rem;
-    color: var(--text-secondary);
+    color: var(--grades-text-muted);
     margin: 0;
 }
 
 .header-stats-cards {
     display: flex;
-    gap: 1rem;
+    gap: 0.75rem;
 }
 
 .mini-stat-card {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    background: white;
-    border-radius: 12px;
-    border: 1px solid var(--border-light);
-    min-width: 100px;
+    padding: 0.85rem 1.1rem;
+    background: var(--grades-surface-2);
+    border-radius: var(--grades-radius-md);
+    border: 1px solid var(--grades-border);
+    min-width: 108px;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
 }
 
 .mini-stat-card .stat-icon {
-    color: #6366f1;
+    color: var(--grades-accent);
 }
 
 .mini-stat-card .stat-content {
@@ -58,7 +72,7 @@
 }
 
 .mini-stat-card .stat-value {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     font-weight: 700;
     color: var(--text-primary);
     line-height: 1;
@@ -66,7 +80,7 @@
 
 .mini-stat-card .stat-label {
     font-size: 0.7rem;
-    color: var(--text-secondary);
+    color: var(--grades-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-top: 0.25rem;
@@ -78,28 +92,30 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1.5rem;
-    padding: 1rem;
-    background: var(--bg-card);
-    border-radius: 12px;
-    border: 1px solid var(--border-light);
+    padding: 1rem 1.25rem;
+    background: var(--grades-surface);
+    border-radius: var(--grades-radius-lg);
+    border: 1px solid var(--grades-border);
+    box-shadow: var(--grades-shadow-soft);
 }
 
 .filter-group {
     display: flex;
-    gap: 0.75rem;
+    gap: 0.65rem;
 }
 
 .filter-item {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    color: var(--grades-text-muted);
 }
 
 .filter-select {
-    padding: 0.5rem 0.75rem;
-    background: white;
-    border: 1px solid var(--border-light);
-    border-radius: 8px;
+    padding: 0.55rem 0.85rem;
+    background: var(--grades-surface-2);
+    border: 1px solid var(--grades-border);
+    border-radius: var(--grades-radius-sm);
     font-size: 0.875rem;
     color: var(--text-primary);
     cursor: pointer;
@@ -107,62 +123,66 @@
 }
 
 .filter-select:hover {
-    border-color: #6366f1;
+    border-color: var(--grades-accent);
 }
 
 .filter-select:focus {
     outline: none;
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    border-color: var(--grades-accent);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
 }
 
 .action-group {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.65rem;
 }
 
 .action-btn-modern {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.625rem 1rem;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    padding: 0.65rem 1.1rem;
+    background: var(--grades-accent);
     color: white;
-    border: none;
-    border-radius: 8px;
+    border: 1px solid var(--grades-accent);
+    border-radius: var(--grades-radius-sm);
     font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
+    box-shadow: 0 6px 12px rgba(79, 70, 229, 0.18);
 }
 
 .action-btn-modern:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 8px 16px rgba(79, 70, 229, 0.25);
 }
 
 .action-btn-modern.active {
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    background: var(--grades-accent-strong);
+    border-color: var(--grades-accent-strong);
 }
 
 .action-btn-modern.secondary {
-    background: white;
+    background: var(--grades-surface-2);
     color: var(--text-primary);
-    border: 1px solid var(--border-light);
+    border: 1px solid var(--grades-border);
+    box-shadow: none;
 }
 
 .action-btn-modern.secondary:hover {
     background: var(--bg-hover);
-    border-color: #6366f1;
+    border-color: var(--grades-accent);
 }
 
 /* Modern Calculator Panel */
 .calculator-panel-modern {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.03), rgba(139, 92, 246, 0.03));
-    border: 1px solid rgba(99, 102, 241, 0.2);
-    border-radius: 16px;
+    background: var(--grades-surface);
+    border: 1px solid var(--grades-border);
+    border-radius: var(--grades-radius-lg);
     padding: 1.5rem;
     overflow: hidden;
+    box-shadow: var(--grades-shadow-soft);
 }
 
 .panel-header-modern {
@@ -186,10 +206,10 @@
 }
 
 .sim-select-modern {
-    padding: 0.625rem 1rem;
-    background: white;
-    border: 1.5px solid var(--border-light);
-    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    background: var(--grades-surface-2);
+    border: 1px solid var(--grades-border);
+    border-radius: var(--grades-radius-sm);
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--text-primary);
@@ -199,8 +219,8 @@
 
 .sim-select-modern:focus {
     outline: none;
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    border-color: var(--grades-accent);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
 }
 
 .sim-content-modern {
@@ -216,10 +236,10 @@
 }
 
 .sim-input-card-modern {
-    background: white;
+    background: var(--grades-surface-2);
     padding: 1rem;
-    border-radius: 10px;
-    border: 1px solid var(--border-light);
+    border-radius: var(--grades-radius-md);
+    border: 1px solid var(--grades-border);
 }
 
 .sim-input-card-modern .input-label {
@@ -241,20 +261,20 @@
 .sim-input-modern {
     width: 100%;
     padding: 0.625rem;
-    background: var(--bg-secondary);
-    border: 1.5px solid var(--border-light);
-    border-radius: 8px;
+    background: transparent;
+    border: 1px solid var(--grades-border);
+    border-radius: var(--grades-radius-sm);
     font-size: 1rem;
     font-weight: 600;
-    color: #6366f1;
+    color: var(--grades-accent);
     transition: all 0.2s;
 }
 
 .sim-input-modern:focus {
     outline: none;
-    border-color: #6366f1;
-    background: white;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    border-color: var(--grades-accent);
+    background: var(--grades-surface);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
 }
 
 .empty-sim-modern {
@@ -271,9 +291,9 @@
     display: flex;
     gap: 1rem;
     padding: 1.25rem;
-    background: white;
-    border-radius: 12px;
-    border: 1px solid var(--border-light);
+    background: var(--grades-surface-2);
+    border-radius: var(--grades-radius-lg);
+    border: 1px solid var(--grades-border);
 }
 
 .result-card {
@@ -297,7 +317,7 @@
 }
 
 .result-value.primary {
-    color: #6366f1;
+    color: var(--grades-accent);
 }
 
 .result-comparison {
@@ -313,7 +333,7 @@
 }
 
 .result-comparison .projected {
-    color: #6366f1;
+    color: var(--grades-accent);
 }
 
 .result-card.impact {
@@ -324,7 +344,7 @@
 
 .impact-badge {
     padding: 0.5rem 1rem;
-    border-radius: 8px;
+    border-radius: 999px;
     font-size: 0.875rem;
     font-weight: 700;
 }
@@ -343,31 +363,33 @@
 .subjects-list-modern {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.85rem;
 }
 
 .subject-card-modern {
-    background: var(--bg-card);
-    border: 1px solid var(--border-light);
-    border-radius: 12px;
+    background: var(--grades-surface);
+    border: 1px solid var(--grades-border);
+    border-radius: var(--grades-radius-lg);
     overflow: hidden;
     transition: all 0.2s;
+    box-shadow: var(--grades-shadow-soft);
 }
 
 .subject-card-modern:hover {
-    border-color: #6366f1;
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+    border-color: var(--grades-accent);
+    box-shadow: var(--grades-shadow);
 }
 
 .subject-card-modern.expanded {
-    border-color: #6366f1;
+    border-color: var(--grades-accent);
 }
 
 .subject-card-main {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    padding: 1.25rem 1.5rem;
+    gap: 1.25rem;
+    padding: 1.35rem 1.6rem;
     cursor: pointer;
     transition: background 0.2s;
 }
@@ -385,7 +407,7 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.45rem;
 }
 
 .subject-name {
@@ -397,7 +419,7 @@
 
 .grade-badge-modern {
     padding: 0.25rem 0.625rem;
-    border-radius: 6px;
+    border-radius: 999px;
     font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.5px;
@@ -438,7 +460,7 @@
 
 .subject-code {
     font-weight: 600;
-    color: #6366f1;
+    color: var(--grades-accent);
 }
 
 .meta-divider {
@@ -448,7 +470,7 @@
 .subject-grade-section {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1.25rem;
 }
 
 .grade-progress-wrapper {
@@ -459,29 +481,29 @@
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.6rem;
 }
 
 .grade-percentage {
-    font-size: 1.5rem;
+    font-size: 1.45rem;
     font-weight: 800;
     color: var(--text-primary);
 }
 
 .next-grade-hint {
     font-size: 0.7rem;
-    color: #f59e0b;
+    color: #b45309;
     font-weight: 600;
-    background: #fef3c7;
+    background: #fff7ed;
     padding: 0.2rem 0.5rem;
-    border-radius: 4px;
+    border-radius: 999px;
 }
 
 .progress-bar-container {
     width: 100%;
-    height: 8px;
-    background: var(--bg-secondary);
-    border-radius: 4px;
+    height: 6px;
+    background: rgba(148, 163, 184, 0.25);
+    border-radius: 999px;
     overflow: hidden;
 }
 
@@ -492,12 +514,12 @@
 }
 
 .expand-btn-modern {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-light);
-    color: var(--text-secondary);
+    background: var(--grades-surface-2);
+    border: 1px solid var(--grades-border);
+    color: var(--grades-text-muted);
     cursor: pointer;
-    padding: 0.625rem;
-    border-radius: 10px;
+    padding: 0.6rem;
+    border-radius: var(--grades-radius-md);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
@@ -505,17 +527,17 @@
 }
 
 .expand-btn-modern:hover {
-    background: white;
-    color: #6366f1;
-    border-color: #6366f1;
+    background: var(--grades-surface);
+    color: var(--grades-accent);
+    border-color: var(--grades-accent);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+    box-shadow: var(--grades-shadow-soft);
 }
 
 /* Subject Breakdown */
 .subject-breakdown-modern {
-    border-top: 1px solid var(--border-light);
-    background: var(--bg-secondary);
+    border-top: 1px solid var(--grades-border);
+    background: var(--grades-surface-2);
     padding: 1.5rem;
 }
 
@@ -542,18 +564,18 @@
 
 .quick-action-btn {
     padding: 0.5rem;
-    background: white;
-    border: 1px solid var(--border-light);
-    border-radius: 6px;
-    color: var(--text-secondary);
+    background: var(--grades-surface);
+    border: 1px solid var(--grades-border);
+    border-radius: var(--grades-radius-sm);
+    color: var(--grades-text-muted);
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .quick-action-btn:hover {
-    background: #6366f1;
+    background: var(--grades-accent);
     color: white;
-    border-color: #6366f1;
+    border-color: var(--grades-accent);
 }
 
 .breakdown-table-modern {
@@ -567,9 +589,9 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem;
-    background: white;
-    border-radius: 8px;
-    border: 1px solid var(--border-light);
+    background: var(--grades-surface);
+    border-radius: var(--grades-radius-md);
+    border: 1px solid var(--grades-border);
 }
 
 .breakdown-component {
@@ -598,7 +620,7 @@
 
 .score-obtained {
     font-weight: 700;
-    color: #6366f1;
+    color: var(--grades-accent);
 }
 
 .score-max {
@@ -612,9 +634,9 @@
 
 .score-pending-badge {
     padding: 0.375rem 0.75rem;
-    background: #fef3c7;
-    color: #d97706;
-    border-radius: 6px;
+    background: #fff7ed;
+    color: #b45309;
+    border-radius: 999px;
     font-size: 0.8rem;
     font-weight: 600;
 }
@@ -665,7 +687,17 @@
     justify-content: center;
     padding: 4rem;
     font-size: 1rem;
-    color: var(--text-secondary);
+    color: var(--grades-text-muted);
+}
+
+.filter-select:focus-visible,
+.action-btn-modern:focus-visible,
+.expand-btn-modern:focus-visible,
+.quick-action-btn:focus-visible,
+.sim-input-modern:focus-visible,
+.sim-select-modern:focus-visible {
+    outline: 2px solid rgba(79, 70, 229, 0.35);
+    outline-offset: 2px;
 }
 
 /* Responsive Design */
@@ -714,7 +746,7 @@
     }
 
     .subject-card-main {
-        flex-direction: column;
+        grid-template-columns: 1fr;
         align-items: flex-start;
         gap: 1rem;
     }
@@ -742,5 +774,26 @@
 
     .mini-stat-card {
         width: 100%;
+    }
+}
+
+@media (max-width: 560px) {
+    .grades-header-modern,
+    .filter-action-bar,
+    .calculator-panel-modern {
+        padding: 1.1rem;
+        border-radius: var(--grades-radius-md);
+    }
+
+    .subject-card-main {
+        padding: 1.1rem;
+    }
+
+    .grade-progress-wrapper {
+        min-width: 0;
+    }
+
+    .subject-meta-row {
+        flex-wrap: wrap;
     }
 }

@@ -200,6 +200,10 @@
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
+.modal-content.submissions-modal {
+    max-width: 820px;
+}
+
 .modal-header {
     display: flex;
     justify-content: space-between;
@@ -229,6 +233,189 @@
 
 .modal-body {
     padding: 1.5rem;
+}
+
+/* Submissions Modal - Risk UI Inspired */
+.submissions-overlay {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    padding: 20px;
+}
+
+.submissions-modal {
+    width: 100%;
+    max-width: 1080px;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    max-height: 90vh;
+    border: 1px solid #e6ebf2;
+}
+
+.submissions-header {
+    padding: 32px 40px;
+    border-bottom: none;
+    align-items: center;
+    background: #ffffff;
+}
+
+.submissions-header::after {
+    content: '';
+    display: block;
+    height: 1px;
+    background: #edf0f6;
+    margin-top: 16px;
+}
+
+.submissions-header .modal-title-group h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.submissions-header .modal-title-group p {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin: 4px 0 0;
+}
+
+.modal-close-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.15s ease;
+}
+
+.modal-close-btn:hover {
+    background: var(--border-color);
+    color: var(--text-primary);
+}
+
+.submissions-body {
+    padding: 12px 40px 40px;
+    background: #ffffff;
+}
+
+/* Submissions Table */
+.submissions-empty {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 2rem 0;
+}
+
+.submissions-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.submissions-table thead th {
+    text-align: left;
+    padding: 0.75rem 0.5rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #94a3b8;
+    border-bottom: 1px solid #e2e8f0;
+    background: #ffffff;
+}
+
+.submissions-table tbody tr {
+    border-bottom: 1px solid #eef2f7;
+    transition: background 0.2s ease;
+}
+
+.submissions-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.submissions-table td {
+    padding: 0.9rem 0.5rem;
+    vertical-align: middle;
+    color: var(--text-primary);
+}
+
+.submission-student {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.submission-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #eef2ff;
+    color: #6366f1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.75rem;
+}
+
+.submission-name {
+    font-weight: 600;
+}
+
+.submission-id {
+    font-family: "Courier New", monospace;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.submission-date-cell {
+    color: var(--text-secondary);
+}
+
+.submission-file-link {
+    color: #6366f1;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 0.35rem 0.6rem;
+    border-radius: var(--radius-sm);
+    background: #eef2ff;
+    border: 1px solid #dbe4ff;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: all 0.2s;
+}
+
+.submission-file-link:hover {
+    background: #e0e7ff;
+    border-color: #c7d2fe;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.status-badge.status-success {
+    background: #e7f8ed;
+    color: #1b7a3a;
+}
+
+.status-badge.status-urgent {
+    background: rgba(239, 68, 68, 0.15);
+    color: #b91c1c;
 }
 
 .form-group {
@@ -357,5 +544,39 @@
 
     .header-actions {
         flex-direction: column;
+    }
+
+    .submissions-table thead {
+        display: none;
+    }
+
+    .submissions-table,
+    .submissions-table tbody,
+    .submissions-table tr,
+    .submissions-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .submissions-table tr {
+        padding: 0.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        background: var(--bg-secondary);
+        margin-bottom: 0.75rem;
+    }
+
+    .submissions-table td {
+        padding: 0.35rem 0;
+    }
+
+    .submissions-table td::before {
+        content: attr(data-label);
+        display: block;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-tertiary);
+        margin-bottom: 0.2rem;
     }
 }

@@ -35,6 +35,24 @@ try {
 }
 
 /**
+ * Clamp percentage to 0-100 range
+ */
+function clampPercentage($value)
+{
+    if ($value === null) {
+        return null;
+    }
+    $val = (float) $value;
+    if ($val < 0) {
+        return 0;
+    }
+    if ($val > 100) {
+        return 100;
+    }
+    return $val;
+}
+
+/**
  * GET - Get grades for student/enrollment/subject
  */
 function handleGet($pdo)
@@ -117,6 +135,11 @@ function handleGet($pdo)
         ");
         $enrollStmt->execute($subjectIds);
         $enrollments = $enrollStmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($enrollments as &$enrollment) {
+            if (isset($enrollment['final_percentage'])) {
+                $enrollment['final_percentage'] = clampPercentage($enrollment['final_percentage']);
+            }
+        }
 // Bulk fetch grades for all enrollments (Optimized + Chunked)
         if (!empty($enrollments)) {
             $eIds = array_column($enrollments, 'id');
@@ -195,6 +218,11 @@ function handleGet($pdo)
         ");
         $enrollStmt->execute([$subjectId]);
         $enrollments = $enrollStmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($enrollments as &$enrollment) {
+            if (isset($enrollment['final_percentage'])) {
+                $enrollment['final_percentage'] = clampPercentage($enrollment['final_percentage']);
+            }
+        }
 // If no criteria exist for this subject, create default ones
         if (empty($criteria)) {
 // Get subject info to determine criteria type
@@ -307,6 +335,7 @@ function handleGet($pdo)
         }
 
         $percentage = $totalMax > 0 ? round(($totalObtained / $totalMax) * 100, 2) : null;
+        $percentage = clampPercentage($percentage);
         echo json_encode([
             'success' => true,
             'data' => [
@@ -356,6 +385,11 @@ function handleGet($pdo)
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($results as &$result) {
+        if (isset($result['final_percentage'])) {
+            $result['final_percentage'] = clampPercentage($result['final_percentage']);
+        }
+    }
 // Manual grade fetching for MariaDB compatibility (replacing JSON_ARRAYAGG)
     if (!empty($results)) {
         $enrollmentIds = array_column($results, 'enrollment_id');
@@ -672,6 +706,7 @@ function updateFinalPercentage($pdo, $enrollmentId)
     $grade = null;
     if ($result['total_max'] > 0) {
         $percentage = round(($result['total_obtained'] / $result['total_max']) * 100, 2);
+        $percentage = clampPercentage($percentage);
         $grade = calculateGrade($percentage);
     }
 

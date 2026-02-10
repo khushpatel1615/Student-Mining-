@@ -73,10 +73,19 @@ try {
                 }
 
                 if ($user_role === 'student') {
-        // Students see exams for their enrolled subjects
-                    $query .= " JOIN student_enrollments se ON e.subject_id = se.subject_id";
-                    $conditions[] = "se.user_id = ?";
-                    $params[] = $user_id;
+        // Students see exams for all subjects in their program
+                    $progStmt = $pdo->prepare("SELECT program_id FROM users WHERE id = ?");
+                    $progStmt->execute([$user_id]);
+                    $programId = $progStmt->fetchColumn();
+                    if ($programId) {
+                        $conditions[] = "s.program_id = ?";
+                        $params[] = $programId;
+                    } else {
+                        // Fallback to enrolled subjects if program_id is not set
+                        $query .= " JOIN student_enrollments se ON e.subject_id = se.subject_id";
+                        $conditions[] = "se.user_id = ?";
+                        $params[] = $user_id;
+                    }
                 }
 
                 if (!empty($conditions)) {

@@ -9,6 +9,14 @@ import {
 import { useAuth } from '../../../context/AuthContext';
 import './GradesTab.css';
 
+const clampPercentage = (value) => {
+    const num = parseFloat(value);
+    if (isNaN(num)) return 0;
+    if (num < 0) return 0;
+    if (num > 100) return 100;
+    return num;
+};
+
 
 
 const GradesTab = ({ selectedSemester }) => {
@@ -184,7 +192,7 @@ const GradesTab = ({ selectedSemester }) => {
                 <div className="header-title-section">
                     <h2>My Current Subjects</h2>
                     <p className="header-subtitle">
-                        {selectedSemester ? `Semester ${selectedSemester}` : 'Current Semester'} • {currentSubjects.length} Subjects
+                        {selectedSemester ? `Semester ${selectedSemester}` : 'Current Semester'} {'\u2022'} {currentSubjects.length} Subjects
                     </p>
                 </div>
                 <div className="header-stats-cards">
@@ -310,14 +318,14 @@ const GradesTab = ({ selectedSemester }) => {
                                 <div className="sim-results-modern">
                                     <div className="result-card">
                                         <span className="result-label">Projected Grade</span>
-                                        <span className="result-value primary">{simData.projectedFinal.toFixed(1)}%</span>
+                                        <span className="result-value primary">{clampPercentage(simData.projectedFinal).toFixed(1)}%</span>
                                     </div>
                                     <div className="result-card">
                                         <span className="result-label">Semester Average</span>
                                         <div className="result-comparison">
-                                            <span className="current">{simData.currentGlobalAvg.toFixed(1)}%</span>
+                                            <span className="current">{clampPercentage(simData.currentGlobalAvg).toFixed(1)}%</span>
                                             <ArrowRight size={14} />
-                                            <span className="projected">{simData.projectedGlobalAvg.toFixed(1)}%</span>
+                                            <span className="projected">{clampPercentage(simData.projectedGlobalAvg).toFixed(1)}%</span>
                                         </div>
                                     </div>
                                     <div className="result-card impact">
@@ -369,7 +377,7 @@ const SubjectCardModern = ({ subject, expanded, onToggle }) => {
     const finalGrade = subject.final_grade || subject.grade_letter;
     let finalScore = subject.final_percentage || subject.overall_grade;
     if (finalScore && !isNaN(finalScore)) {
-        finalScore = Math.min(parseFloat(finalScore), 100);
+        finalScore = clampPercentage(finalScore);
     } else {
         finalScore = 0;
     }
@@ -399,9 +407,9 @@ const SubjectCardModern = ({ subject, expanded, onToggle }) => {
                     </div>
                     <div className="subject-meta-row">
                         <span className="subject-code">{subject.subject_code || subject.code}</span>
-                        <span className="meta-divider">•</span>
+                        <span className="meta-divider">{'\u2022'}</span>
                         <span className="subject-credits">{subject.credits || 0} Credits</span>
-                        <span className="meta-divider">•</span>
+                        <span className="meta-divider">{'\u2022'}</span>
                         <span className="subject-status">
                             {subject.status === 'active' ? 'In Progress' : 'Completed'}
                         </span>
@@ -467,7 +475,7 @@ const SubjectCardModern = ({ subject, expanded, onToggle }) => {
                                                     <span className="score-obtained">{parseFloat(grade.marks_obtained)}</span>
                                                     <span className="score-max">/ {parseFloat(grade.max_marks)}</span>
                                                     <span className="score-percentage">
-                                                        ({((parseFloat(grade.marks_obtained) / parseFloat(grade.max_marks)) * 100).toFixed(0)}%)
+                                                        ({clampPercentage((parseFloat(grade.marks_obtained) / parseFloat(grade.max_marks)) * 100).toFixed(0)}%)
                                                     </span>
                                                 </>
                                             ) : (

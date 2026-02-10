@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { TrendingUp, Award, BarChart3, Target, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { API_BASE } from '../../../config';
 
 const Performance = () => {
-    const { token } = useAuth();
+    const { token, user } = useAuth();
     const [loading, setLoading] = useState(true);
     const [grades, setGrades] = useState([]);
     const [summary, setSummary] = useState({ gpa: 0, attendance: 0 });
@@ -61,6 +61,19 @@ const Performance = () => {
 
     const trend = getPerformanceTrend();
 
+    const clampPercentage = (value) => {
+        const num = parseFloat(value);
+        if (isNaN(num)) return null;
+        if (num < 0) return 0;
+        if (num > 100) return 100;
+        return num;
+    };
+
+    const currentSemesterGrades = useMemo(() => {
+        if (!user?.current_semester) return grades;
+        return grades.filter(g => g.semester == user.current_semester);
+    }, [grades, user?.current_semester]);
+
     if (loading) {
         return <div style={{ padding: '2rem', textAlign: 'center' }}><div className="spinner"></div><p>Loading performance data...</p></div>;
     }
@@ -98,7 +111,7 @@ const Performance = () => {
 
             <div>
                 <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>📊 Subject-wise Performance</h3>
-                {grades.length === 0 ? (
+                {currentSemesterGrades.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '3rem', background: 'var(--bg-secondary)', borderRadius: '12px' }}>
                         <BarChart3 size={64} style={{ color: 'var(--text-muted)', marginBottom: '1rem' }} />
                         <h3>No grades available</h3>
@@ -106,7 +119,7 @@ const Performance = () => {
                     </div>
                 ) : (
                     <div style={{ display: 'grid', gap: '0.75rem' }}>
-                        {grades.map(grade => (
+                        {currentSemesterGrades.map(grade => (
                             <div key={grade.id} style={{ background: 'var(--bg-secondary)', padding: '1.25rem', borderRadius: '10px', border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ fontWeight: 600, fontSize: '1rem', marginBottom: '0.25rem' }}>{grade.subject_name}</div>
@@ -115,7 +128,9 @@ const Performance = () => {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                                     <div style={{ textAlign: 'center' }}>
                                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Score</div>
-                                        <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>{grade.final_percentage || '-'}/{grade.total_marks || 100}</div>
+                                        <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>
+                                            {clampPercentage(grade.final_percentage) ?? '-'} / 100
+                                        </div>
                                     </div>
                                     <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: getGradeColor(grade.final_grade), color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 700 }}>
                                         {grade.final_grade || 'N/A'}

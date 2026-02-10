@@ -266,7 +266,7 @@ function AssignmentManagement() {
                                 </div>
                                 <div className="meta-item">
                                     <span className="meta-label">Max Marks:</span>
-                                    <span className="meta-value">{assignment.max_marks}</span>
+                                    <span className="meta-value">{assignment.max_marks || assignment.total_points || '-'}</span>
                                 </div>
                                 <div className="meta-item">
                                     <span className="meta-label">Submissions:</span>
@@ -355,50 +355,58 @@ function AssignmentManagement() {
 
             {/* Submissions Modal */}
             {viewingSubmissions && (
-                <div className="modal-overlay" onClick={() => setViewingSubmissions(null)}>
-                    <div className="modal-content" style={{ maxWidth: '800px' }} onClick={e => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h3>Submissions: {assignments.find(a => a.id === viewingSubmissions)?.title}</h3>
-                            <button className="modal-close" onClick={() => setViewingSubmissions(null)}>
+                <div className="modal-overlay submissions-overlay" onClick={() => setViewingSubmissions(null)}>
+                    <div className="modal-container submissions-modal" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header submissions-header">
+                            <div className="modal-title-group">
+                                <h3>Submissions</h3>
+                                <p>Assignment: {assignments.find(a => a.id === viewingSubmissions)?.title}</p>
+                            </div>
+                            <button className="modal-close-btn" onClick={() => setViewingSubmissions(null)}>
                                 <CloseIcon />
                             </button>
                         </div>
-                        <div className="modal-body">
+                        <div className="modal-body submissions-body">
                             {submissions.length === 0 ? (
-                                <p style={{ textAlign: 'center', color: 'gray', padding: '2rem' }}>No submissions yet.</p>
+                                <p className="submissions-empty">No submissions yet.</p>
                             ) : (
-                                <table className="submissions-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <table className="submissions-table">
                                     <thead>
-                                        <tr style={{ borderBottom: '1px solid #eee', textAlign: 'left' }}>
-                                            <th style={{ padding: '0.5rem' }}>Student</th>
-                                            <th style={{ padding: '0.5rem' }}>ID</th>
-                                            <th style={{ padding: '0.5rem' }}>Submitted</th>
-                                            <th style={{ padding: '0.5rem' }}>File</th>
-                                            <th style={{ padding: '0.5rem' }}>Status</th>
+                                        <tr>
+                                            <th>Student</th>
+                                            <th>ID</th>
+                                            <th>Submitted</th>
+                                            <th>File</th>
+                                            <th>Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {submissions.map(sub => (
-                                            <tr key={sub.id} style={{ borderBottom: '1px solid #f9f9f9' }}>
-                                                <td style={{ padding: '0.75rem 0.5rem' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                        <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem' }}>
+                                            <tr key={sub.id}>
+                                                <td data-label="Student">
+                                                    <div className="submission-student">
+                                                        <div className="submission-avatar">
                                                             {sub.full_name?.charAt(0)}
                                                         </div>
-                                                        {sub.full_name}
+                                                        <span className="submission-name">{sub.full_name}</span>
                                                     </div>
                                                 </td>
-                                                <td style={{ padding: '0.5rem', fontFamily: 'monospace' }}>{sub.student_code || sub.student_id}</td>
-                                                <td style={{ padding: '0.5rem' }}>{formatDate(sub.submitted_at)}</td>
-                                                <td style={{ padding: '0.5rem' }}>
+                                                <td className="submission-id" data-label="ID">{sub.student_code || sub.student_id}</td>
+                                                <td className="submission-date-cell" data-label="Submitted">{formatDate(sub.submitted_at)}</td>
+                                                <td data-label="File">
                                                     {sub.file_path ? (
-                                                        <a href={`http://localhost/StudentDataMining/backend/uploads/${sub.file_path}`} target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1', textDecoration: 'none' }}>
+                                                        <a
+                                                            className="submission-file-link"
+                                                            href={`http://localhost/StudentDataMining/backend/uploads/${sub.file_path}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                        >
                                                             View File
                                                         </a>
                                                     ) : '-'}
                                                 </td>
-                                                <td style={{ padding: '0.5rem' }}>
-                                                    <span className={`badge ${sub.status === 'late' ? 'urgent' : 'success'}`} style={{ padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem' }}>
+                                                <td data-label="Status">
+                                                    <span className={`status-badge ${sub.status === 'late' ? 'status-urgent' : 'status-success'}`}>
                                                         {sub.status}
                                                     </span>
                                                 </td>

@@ -248,6 +248,15 @@ function EnrollmentManagement() {
     }
 
     const updateEnrollmentStatus = async (enrollmentId, newStatus) => {
+        const prevEnrollments = enrollments
+        setEnrollments(prev =>
+            prev.map(item =>
+                (item.enrollment_id || item.id) === enrollmentId
+                    ? { ...item, status: newStatus }
+                    : item
+            )
+        )
+
         try {
             const response = await fetch(`${API_BASE}/enrollments.php`, {
                 method: 'PUT',
@@ -263,13 +272,13 @@ function EnrollmentManagement() {
 
             const data = await response.json()
 
-            if (data.success) {
-                fetchEnrollments()
-            } else {
+            if (!data.success) {
                 setError(data.error || 'Failed to update enrollment')
+                setEnrollments(prevEnrollments)
             }
         } catch (err) {
             setError('Network error. Please try again.')
+            setEnrollments(prevEnrollments)
         }
     }
 
