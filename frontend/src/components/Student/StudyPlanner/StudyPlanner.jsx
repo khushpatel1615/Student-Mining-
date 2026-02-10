@@ -9,6 +9,7 @@ const StudyPlanner = () => {
     const [assignments, setAssignments] = useState([]);
     const [exams, setExams] = useState([]);
     const [recommendation, setRecommendation] = useState('');
+    const [recommendations, setRecommendations] = useState([]);
 
     useEffect(() => {
         if (token) {
@@ -42,6 +43,7 @@ const StudyPlanner = () => {
             const recommendationData = await recommendationResponse.json();
             if (recommendationData.success) {
                 setRecommendation(recommendationData.recommendation || '');
+                setRecommendations(recommendationData.recommendations || []);
             }
         } catch (err) {
             console.error(err);
@@ -148,7 +150,13 @@ const StudyPlanner = () => {
                     <AlertCircle size={18} /> Study Tip
                 </h4>
                 <p style={{ fontSize: '0.9rem', color: '#7f1d1d', margin: 0 }}>
-                    {recommendation || 'No recommendation available yet.'}
+                    {recommendations.length > 0
+                        ? recommendations.map((text, idx) => (
+                            <span key={idx} style={{ display: 'block', marginBottom: idx === recommendations.length - 1 ? 0 : '0.5rem' }}>
+                                {text}
+                            </span>
+                        ))
+                        : (recommendation || 'No recommendation available yet.')}
                 </p>
             </div>
         </div>

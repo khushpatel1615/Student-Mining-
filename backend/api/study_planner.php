@@ -31,11 +31,12 @@ try {
         exit();
     }
 
-    $recommendation = generateLearningRecommendation($pdo, $userId);
+    $recommendationData = generateLearningRecommendation($pdo, $userId);
 
     echo json_encode([
         'success' => true,
-        'recommendation' => $recommendation
+        'recommendation' => $recommendationData['primary'],
+        'recommendations' => $recommendationData['all']
     ]);
 } catch (Exception $e) {
     http_response_code(500);
@@ -80,7 +81,12 @@ function generateLearningRecommendation($pdo, $studentId)
     }
 
     if (empty($items)) {
-        return "You're up to date. Review recent notes and keep practicing to stay ahead.";
+        return [
+            'primary' => "You're up to date. Review recent notes and keep practicing to stay ahead.",
+            'all' => [
+                "You're up to date. Review recent notes and keep practicing to stay ahead."
+            ]
+        ];
     }
 
     $today = new DateTimeImmutable('today');
@@ -101,17 +107,24 @@ function generateLearningRecommendation($pdo, $studentId)
         return $a['days_until'] <=> $b['days_until'];
     });
 
-    $target = $items[0];
-    $topics = getTopicsForSubject($pdo, $target['subject_id'] ?? null, $target['subject_name']);
-    $topicText = formatTopicList($topics);
+    $selected = pickTopRecommendations($items, 2);
+    $recommendations = [];
+    foreach ($selected as $target) {
+        $topics = getTopicsForSubject($pdo, $target['subject_id'] ?? null, $target['subject_name']);
+        $topicText = formatTopicList($topics);
+        $recommendations[] = buildRecommendationText(
+            $target['subject_name'],
+            $target['type_label'],
+            $target['urgency'],
+            $target['days_until'],
+            $topicText
+        );
+    }
 
-    return buildRecommendationText(
-        $target['subject_name'],
-        $target['type_label'],
-        $target['urgency'],
-        $target['days_until'],
-        $topicText
-    );
+    return [
+        'primary' => $recommendations[0] ?? '',
+        'all' => $recommendations
+    ];
 }
 
 function fetchStudentAssignments($pdo, $studentId)
@@ -269,4 +282,32 @@ function buildRecommendationText($subjectName, $typeLabel, $urgency, $daysUntil,
     }
 
     return "Prepare for your upcoming {$subject} {$type} by reviewing {$topics} and planning a short study block.";
+}
+
+function pickTopRecommendations($items, $limit)
+{
+    $picked = [];
+    $typesPicked = [];
+    foreach ($items as $item) {
+        if (count($picked) >= $limit) {
+            break;
+        }
+        if (!isset($typesPicked[$item['type']])) {
+            $picked[] = $item;
+            $typesPicked[$item['type']] = true;
+        }
+    }
+
+    if (count($picked) >= $limit) {
+        return $picked;
+    }
+
+    foreach ($items as $item) {
+        if (count($picked) >= $limit) {
+            break;
+        }
+        $picked[] = $item;
+    }
+
+    return $picked;
 }
