@@ -1,6 +1,4 @@
-import { API_BASE } from '../../config';
 import { useState, useEffect, useCallback } from 'react'
-import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { Line, Doughnut, Bar } from 'react-chartjs-2'
 import {
@@ -44,6 +42,9 @@ import {
     RefreshCw,
     X
 } from 'lucide-react'
+
+import { useAuth } from '../../context/AuthContext'
+import { API_BASE } from '../../config';
 import './AdminOverview.css'
 
 // Register ChartJS components
@@ -315,7 +316,17 @@ function AdminOverview() {
         }
     }
 
-
+    const getAttendanceChart = () => {
+        return {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+            datasets: [{
+                label: 'Attendance %',
+                data: [92, 95, 94, 88, 85],
+                backgroundColor: '#3b82f6',
+                borderRadius: 4
+            }]
+        }
+    }
 
     // Quick Actions Handler
     const handleQuickAction = (action) => {
@@ -440,7 +451,7 @@ function AdminOverview() {
             const notifData = await notifResponse.json()
 
             if (notifData.success) {
-                alert(`Meeting request sent to ${selectedStudent.name}! They will receive a notification to accept or suggest a new time.`)
+                window.alert(`Meeting request sent to ${selectedStudent.name}! They will receive a notification to accept or suggest a new time.`)
                 setShowMeetingForm(false)
                 setMeetingData({
                     title: '',
@@ -451,11 +462,11 @@ function AdminOverview() {
                 })
             } else {
                 console.error('Notification error:', notifData)
-                alert(notifData.error || 'Failed to send meeting request. Please check if the student exists.')
+                window.alert(notifData.error || 'Failed to send meeting request. Please check if the student exists.')
             }
         } catch (err) {
             console.error('Error scheduling meeting:', err)
-            alert('Failed to schedule meeting. Network error - please check your connection.')
+            window.alert('Failed to schedule meeting. Network error - please check your connection.')
         } finally {
             setSendingMeeting(false)
         }
@@ -646,35 +657,35 @@ function AdminOverview() {
                             <h3><BarChart3 size={18} /> GPA Trend</h3>
                             <span className="chart-subtitle">Last 8 semesters</span>
                         </div>
-                    <div className="chart-body">
-                        {getGPATrendChart() ? (
-                            <Line
-                                data={getGPATrendChart()}
-                                options={{
-                                    responsive: true,
-                                    maintainAspectRatio: false,
-                                    plugins: {
-                                        legend: { display: false }
-                                    },
-                                    scales: {
-                                        y: {
-                                            min: 0,
-                                            max: 4,
-                                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        <div className="chart-body">
+                            {getGPATrendChart() ? (
+                                <Line
+                                    data={getGPATrendChart()}
+                                    options={{
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        plugins: {
+                                            legend: { display: false }
                                         },
-                                        x: {
-                                            grid: { display: false }
+                                        scales: {
+                                            y: {
+                                                min: 0,
+                                                max: 4,
+                                                grid: { color: 'rgba(0,0,0,0.05)' }
+                                            },
+                                            x: {
+                                                grid: { display: false }
+                                            }
                                         }
-                                    }
-                                }}
-                            />
-                        ) : (
-                            <div className="empty-state">
-                                <BarChart3 size={32} />
-                                <p>No GPA trend data</p>
-                            </div>
-                        )}
-                    </div>
+                                    }}
+                                />
+                            ) : (
+                                <div className="empty-state">
+                                    <BarChart3 size={32} />
+                                    <p>No GPA trend data</p>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     {/* Performance Distribution */}
@@ -683,32 +694,32 @@ function AdminOverview() {
                             <h3><PieChart size={18} /> Performance Distribution</h3>
                             <span className="chart-subtitle">Student grades breakdown</span>
                         </div>
-                    <div className="chart-body doughnut-chart">
-                        {getPerformanceChart() ? (
-                            <Doughnut
-                                data={getPerformanceChart()}
-                                options={{
-                                    responsive: true,
-                                    maintainAspectRatio: false,
-                                    plugins: {
-                                        legend: {
-                                            position: 'right',
-                                            labels: {
-                                                padding: 15,
-                                                usePointStyle: true,
-                                                font: { size: 12 }
+                        <div className="chart-body doughnut-chart">
+                            {getPerformanceChart() ? (
+                                <Doughnut
+                                    data={getPerformanceChart()}
+                                    options={{
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        plugins: {
+                                            legend: {
+                                                position: 'right',
+                                                labels: {
+                                                    padding: 15,
+                                                    usePointStyle: true,
+                                                    font: { size: 12 }
+                                                }
                                             }
                                         }
-                                    }
-                                }}
-                            />
-                        ) : (
-                            <div className="empty-state">
-                                <PieChart size={32} />
-                                <p>No performance data</p>
-                            </div>
-                        )}
-                    </div>
+                                    }}
+                                />
+                            ) : (
+                                <div className="empty-state">
+                                    <PieChart size={32} />
+                                    <p>No performance data</p>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
 

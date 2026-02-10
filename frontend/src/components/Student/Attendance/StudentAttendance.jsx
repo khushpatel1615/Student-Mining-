@@ -1,7 +1,9 @@
-import { API_BASE } from '../../../config';
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../../context/AuthContext';
 import { Calendar, CheckCircle, XCircle, AlertTriangle, ChevronDown, ChevronUp, Loader } from 'lucide-react';
+
+import { API_BASE } from '../../../config';
+import { useAuth } from '../../../context/AuthContext';
+
 import './StudentAttendance.css';
 
 

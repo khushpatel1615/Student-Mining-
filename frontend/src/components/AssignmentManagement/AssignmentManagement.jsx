@@ -1,5 +1,6 @@
-import { API_BASE } from '../../config';
 import { useState, useEffect } from 'react'
+
+import { API_BASE } from '../../config';
 import { useAuth } from '../../context/AuthContext'
 import './AssignmentManagement.css'
 
@@ -172,7 +173,7 @@ function AssignmentManagement() {
     }
 
     const handleDelete = async (id) => {
-        if (!confirm('Are you sure you want to delete this assignment?')) return
+        if (!window.confirm('Are you sure you want to delete this assignment?')) return
 
         try {
             const response = await fetch(`${API_BASE}/assignments.php?id=${id}`, {

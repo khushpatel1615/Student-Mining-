@@ -1,6 +1,4 @@
-import { API_BASE } from '../../config';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../../context/AuthContext';
 import {
     Bell,
     Mail,
@@ -17,6 +15,10 @@ import {
     Users,
     TrendingUp
 } from 'lucide-react';
+
+import { API_BASE } from '../../config';
+import { useAuth } from '../../context/AuthContext';
+
 import './RiskAlertSettings.css';
 
 const RiskAlertSettings = () => {

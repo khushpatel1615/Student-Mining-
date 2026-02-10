@@ -1,5 +1,6 @@
-import { API_BASE } from '../../../config';
 import { useState, useEffect } from 'react'
+
+import { API_BASE } from '../../../config';
 import { useAuth } from '../../../context/AuthContext'
 import './TeacherGrades.css'
 
@@ -192,7 +193,7 @@ function TeacherGrades() {
 
         await Promise.all(promises)
         setSaving(false)
-        alert('All grades saved successfully!')
+        window.alert('All grades saved successfully!')
     }
 
     const calculateTotal = (studentId) => {

@@ -1,8 +1,9 @@
-import { API_BASE } from '../../config';
 import { useState, useEffect } from 'react'
-import { useAuth } from '../../context/AuthContext'
 import { Play, CheckCircle, Clock, Video, Plus, Trash2, Edit2, X } from 'lucide-react'
 import toast from 'react-hot-toast'
+
+import { useAuth } from '../../context/AuthContext'
+import { API_BASE } from '../../config';
 import './VideoLectures.css'
 
 
@@ -46,7 +47,7 @@ function VideoLectures({ subjectId = null }) {
             })
             const data = await res.json()
             if (data.success) setFeatured(data.data)
-        } catch (err) { } finally { setLoading(false) }
+        } catch (err) { /* ignore */ } finally { setLoading(false) }
     }
 
     const addVideo = async () => {
@@ -73,7 +74,7 @@ function VideoLectures({ subjectId = null }) {
     }
 
     const deleteVideo = async (id) => {
-        if (!confirm('Delete this video?')) return
+        if (!window.confirm('Delete this video?')) return
         try {
             await fetch(`${API_BASE}/video_lectures.php`, {
                 method: 'DELETE',
@@ -82,7 +83,7 @@ function VideoLectures({ subjectId = null }) {
             })
             toast.success('Deleted')
             fetchVideos()
-        } catch (err) { }
+        } catch (err) { /* ignore */ }
     }
 
     const updateProgress = async (videoId, seconds, completed = false) => {
@@ -92,7 +93,7 @@ function VideoLectures({ subjectId = null }) {
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'update_progress', video_id: videoId, watched_seconds: seconds, completed })
             })
-        } catch (err) { }
+        } catch (err) { /* ignore */ }
     }
 
     const getYouTubeId = (url) => {

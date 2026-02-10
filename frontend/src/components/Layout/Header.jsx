@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, Sun, Moon, RefreshCw, Menu, ZoomIn, ZoomOut, Maximize, Minimize } from 'lucide-react';
+
 import { useTheme } from '../../context/ThemeContext';
 import './Header.css';
 

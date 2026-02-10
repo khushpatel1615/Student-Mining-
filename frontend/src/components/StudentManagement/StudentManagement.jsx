@@ -1,6 +1,7 @@
-import { API_BASE } from '../../config';
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
+
+import { API_BASE } from '../../config';
 import { useAuth } from '../../context/AuthContext'
 import SkeletonTable from '../SkeletonTable/SkeletonTable'
 import EmptyState from '../EmptyState/EmptyState'
@@ -403,10 +404,10 @@ function StudentManagement() {
     const openEditModal = (student) => {
         setEditingStudent(student)
         setFormData({
-            full_name: student.full_name,
-            email: student.email,
+            full_name: student.full_name || '',
+            email: student.email || '',
             student_id: student.student_id || '',
-            role: student.role,
+            role: student.role || 'student',
             program_id: student.program_id || '', // Populate program_id for editing
             password: ''
         })

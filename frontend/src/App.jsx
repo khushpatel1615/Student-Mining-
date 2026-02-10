@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
+
 import { useAuth } from './context/AuthContext'
 import LoginPage from './pages/LoginPage'
 import StudentDashboard from './pages/StudentDashboard'

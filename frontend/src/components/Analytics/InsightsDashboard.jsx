@@ -1,6 +1,4 @@
-import { API_BASE } from '../../config';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../../context/AuthContext';
 import {
     BarChart3,
     TrendingUp,
@@ -27,6 +25,9 @@ import {
     Filler
 } from 'chart.js';
 import { Bar, Scatter, Doughnut } from 'react-chartjs-2';
+
+import { useAuth } from '../../context/AuthContext';
+import { API_BASE } from '../../config';
 import './InsightsDashboard.css';
 
 ChartJS.register(

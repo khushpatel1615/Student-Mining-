@@ -1,4 +1,3 @@
-import { API_BASE } from '../../../config';
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -6,6 +5,8 @@ import {
     ArrowRight, TrendingUp, TrendingDown, Filter, BookOpen, Award,
     Mail, FileText, Clock
 } from 'lucide-react';
+
+import { API_BASE } from '../../../config';
 import { useAuth } from '../../../context/AuthContext';
 import './GradesTab.css';
 

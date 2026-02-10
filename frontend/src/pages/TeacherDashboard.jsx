@@ -1,12 +1,12 @@
-import { API_BASE } from '../config';
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
+
+import { API_BASE } from '../config';
 import MainLayout from '../components/Layout/MainLayout'
 import { useAuth } from '../context/AuthContext'
 import TeacherAssignments from '../components/Teacher/Assignments/TeacherAssignments'
 import TeacherExams from '../components/Teacher/Exams/TeacherExams'
 import TeacherGrades from '../components/Teacher/Grades/TeacherGrades'
-
 import CalendarManagement from '../components/CalendarManagement/CalendarManagement'
 import './TeacherDashboard.css'
 

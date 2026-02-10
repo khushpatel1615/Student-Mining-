@@ -1,5 +1,6 @@
-import { API_BASE } from '../../../config';
 import { useState, useEffect } from 'react'
+
+import { API_BASE } from '../../../config';
 import { useAuth } from '../../../context/AuthContext'
 import './TeacherExams.css'
 
@@ -96,7 +97,7 @@ function TeacherExams() {
 
             if (studentsData.success) {
                 const studentsList = studentsData.data
-                    const existingResults = resultsData.success && resultsData.data.results ? resultsData.data.results : []
+                const existingResults = resultsData.success && resultsData.data.results ? resultsData.data.results : []
 
                 // Merge students with their results
                 const studentsWithResults = studentsList.map(student => {
@@ -120,13 +121,9 @@ function TeacherExams() {
     const handleCreateExam = async (e) => {
         e.preventDefault()
         try {
-            const numericMarks = marks === '' || marks === null ? null : Number(marks)
-            if (numericMarks === null || Number.isNaN(numericMarks)) {
-                return
-            }
-            const maxMarks = Number(selectedExam?.total_marks ?? selectedExam?.max_marks ?? 0)
-            if (maxMarks > 0 && (numericMarks < 0 || numericMarks > maxMarks)) {
-                alert(`Marks must be between 0 and ${maxMarks}.`)
+            const maxMarks = Number(formData.max_marks || 0)
+            if (maxMarks <= 0) {
+                window.alert(`Max marks must be greater than 0.`)
                 return
             }
             const response = await fetch(`${API_BASE}/exams.php`, {
@@ -157,6 +154,8 @@ function TeacherExams() {
 
     const handleSaveResult = async (studentId, marks, remarks) => {
         try {
+            const numericMarks = marks === '' || marks === null ? null : Number(marks)
+
             const response = await fetch(`${API_BASE}/exams.php`, {
                 method: 'PUT',
                 headers: {
@@ -196,10 +195,10 @@ function TeacherExams() {
             await Promise.all(promises)
             setShowBulkModal(false)
             setBulkResults('')
-            alert('Bulk results uploaded successfully!')
+            window.alert('Bulk results uploaded successfully!')
         } catch (err) {
             console.error('Failed to upload bulk results:', err)
-            alert('Error uploading bulk results. Please check the format.')
+            window.alert('Error uploading bulk results. Please check the format.')
         }
     }
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Brain, TrendingUp, Award, Code, Database, Globe, Palette } from 'lucide-react';
+
 import { useAuth } from '../../../context/AuthContext';
 import { API_BASE } from '../../../config';
 import './SkillsMap.css';

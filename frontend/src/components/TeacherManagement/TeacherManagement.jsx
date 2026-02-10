@@ -1,5 +1,6 @@
-import { API_BASE } from '../../config';
 import { useState, useEffect } from 'react'
+
+import { API_BASE } from '../../config';
 import { useAuth } from '../../context/AuthContext'
 import EmptyState from '../EmptyState/EmptyState'
 import './TeacherManagement.css'
@@ -144,6 +145,34 @@ function TeacherManagement() {
         }
     }
 
+    const handleDeleteTeacher = async (id) => {
+        if (window.confirm('Are you sure you want to delete this teacher?')) {
+            try {
+                const response = await fetch(`${API_BASE}/teachers.php?id=${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'delete',
+                        teacher_id: id
+                    })
+                })
+                const data = await response.json()
+
+                if (data.success) {
+                    setSuccessMessage('Teacher deleted successfully!')
+                    fetchTeachers()
+                } else {
+                    setError(data.error || 'Failed to delete teacher')
+                }
+            } catch (err) {
+                setError('Failed to delete teacher')
+            }
+        }
+    }
+
     const handleAssignSubject = async () => {
         if (!selectedTeacher || !selectedSubject) return
 
@@ -176,7 +205,7 @@ function TeacherManagement() {
     }
 
     const handleRemoveAssignment = async (teacherId, subjectId) => {
-        if (!confirm('Remove this subject assignment?')) return
+        if (!window.confirm('Remove this subject assignment?')) return
 
         try {
             // We need to find the assignment ID from teacher_subjects table

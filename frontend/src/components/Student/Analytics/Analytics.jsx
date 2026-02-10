@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../../../context/AuthContext';
-import { API_BASE } from '../../../config';
 import { motion } from 'framer-motion';
 import { Activity, Users, Award, Zap, AlertTriangle, Bot } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
+import { API_BASE } from '../../../config';
+import { useAuth } from '../../../context/AuthContext';
+
 import { KPICard, LineChartCard, GaugeCard } from './ChartComponents';
 import './Analytics.css';
 

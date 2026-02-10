@@ -1,8 +1,9 @@
-import { API_BASE } from '../../../config';
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, X, Send, Sparkles, Minimize2, Maximize2, Loader } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'framer-motion';
+
+import { API_BASE } from '../../../config';
 import './AdminAIChat.css';
 
 

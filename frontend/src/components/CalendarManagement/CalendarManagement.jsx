@@ -1,14 +1,16 @@
 import { API_BASE } from '../../config';
+
 import { useState, useEffect } from 'react'
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar'
 import { format, parse, startOfWeek, getDay } from 'date-fns'
 import { enUS } from 'date-fns/locale'
-import { useAuth } from '../../context/AuthContext'
 import { Plus, Calendar as CalendarIcon, X, Trash2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createPortal } from 'react-dom'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop'
+
+import { useAuth } from '../../context/AuthContext'
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'
 import './CalendarManagement.css'
 
@@ -143,10 +145,10 @@ const CalendarManagement = ({ role: propRole }) => {
                 closeModal()
                 fetchEvents()
             } else {
-                alert(data.error || 'Operation failed')
+                window.alert(data.error || 'Operation failed')
             }
         } catch (err) {
-            alert('Error connecting to server')
+            window.alert('Error connecting to server')
         } finally {
             setSubmitting(false)
         }
@@ -169,10 +171,10 @@ const CalendarManagement = ({ role: propRole }) => {
                 setShowDeleteConfirm(false)
                 setItemToDelete(null)
             } else {
-                alert(data.error || 'Failed to delete')
+                window.alert(data.error || 'Failed to delete')
             }
         } catch (err) {
-            alert('Error deleting event')
+            window.alert('Error deleting event')
         } finally {
             setSubmitting(false)
         }
@@ -183,7 +185,7 @@ const CalendarManagement = ({ role: propRole }) => {
             // Edit Mode
             const isCreator = event.created_by == user?.id;
             if (role !== 'admin' && !isCreator) {
-                alert("You can only edit events you created.");
+                window.alert("You can only edit events you created.");
                 return;
             }
 
@@ -254,11 +256,11 @@ const CalendarManagement = ({ role: propRole }) => {
             const data = await response.json()
             if (!data.success) {
                 fetchEvents() // Revert on failure
-                alert(data.error || 'Failed to move event')
+                window.alert(data.error || 'Failed to move event')
             }
         } catch (err) {
             fetchEvents() // Revert
-            alert('Error updating event date')
+            window.alert('Error updating event date')
         }
     }
 

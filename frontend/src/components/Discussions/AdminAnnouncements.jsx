@@ -1,8 +1,9 @@
-import { API_BASE } from '../../config';
 import { useState, useEffect } from 'react'
-import { useAuth } from '../../context/AuthContext'
 import { Megaphone, Plus, Trash2, Pin, Eye, Clock, X, Edit } from 'lucide-react'
 import toast from 'react-hot-toast'
+
+import { useAuth } from '../../context/AuthContext'
+import { API_BASE } from '../../config';
 import './DiscussionForum.css'
 
 
@@ -120,11 +121,11 @@ function AdminAnnouncements() {
                 body: JSON.stringify({ action: 'pin', id })
             })
             fetchAnnouncements()
-        } catch (err) { }
+        } catch (err) { /* ignore */ }
     }
 
     const deleteAnnouncement = async (id) => {
-        if (!confirm('Delete this announcement?')) return
+        if (!window.confirm('Delete this announcement?')) return
         try {
             await fetch(`${API_BASE}/discussions.php`, {
                 method: 'DELETE',
@@ -133,7 +134,7 @@ function AdminAnnouncements() {
             })
             toast.success('Deleted')
             fetchAnnouncements()
-        } catch (err) { }
+        } catch (err) { /* ignore */ }
     }
 
     const formatTime = (date) => {

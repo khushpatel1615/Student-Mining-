@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { GoogleOAuthProvider } from '@react-oauth/google'
+
 import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import { ThemeProvider } from './context/ThemeContext.jsx'
@@ -45,8 +46,8 @@ if ('serviceWorker' in navigator) {
             .catch(() => { })
 
         if ('caches' in window) {
-            caches.keys()
-                .then(keys => Promise.all(keys.map(key => caches.delete(key))))
+            window.caches.keys()
+                .then(keys => Promise.all(keys.map(key => window.caches.delete(key))))
                 .catch(() => { })
         }
     }
