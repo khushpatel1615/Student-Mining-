@@ -69,10 +69,24 @@ const CoursePicks = () => {
                 <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <CheckCircle size={20} style={{ color: '#16a34a' }} /> Your Current Courses ({enrolledSubjects.length})
                 </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem', alignItems: 'stretch' }}>
                     {enrolledSubjects.map(course => (
-                        <div key={course.id} style={{ background: 'var(--bg-secondary)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                            <div style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: '0.5rem' }}>{course.name}</div>
+                        <div key={course.id} style={{
+                            background: 'var(--bg-secondary)',
+                            padding: '1rem',
+                            borderRadius: '8px',
+                            border: '1px solid var(--border)',
+                            maxWidth: '100%',
+                            boxSizing: 'border-box',
+                            overflow: 'hidden'
+                        }}>
+                            <div style={{
+                                fontWeight: 600,
+                                fontSize: '0.95rem',
+                                marginBottom: '0.5rem',
+                                lineHeight: '1.4',
+                                wordWrap: 'break-word'
+                            }}>{course.name}</div>
                             <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                                 Grade: <span style={{ fontWeight: 600, color: course.grade === 'F' ? '#dc2626' : '#16a34a' }}>{course.grade || 'In Progress'}</span>
                             </div>
@@ -92,13 +106,41 @@ const CoursePicks = () => {
                         <p style={{ color: 'var(--text-muted)' }}>You're enrolled in all available courses!</p>
                     </div>
                 ) : (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem', alignItems: 'stretch' }}>
                         {availableSubjects.map(subject => (
-                            <div key={subject.id} style={{ background: '#fef3c7', padding: '1.25rem', borderRadius: '10px', border: '2px dashed #f59e0b', position: 'relative' }}>
-                                <div style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', background: '#f59e0b', color: 'white', padding: '0.25rem 0.5rem', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 600 }}>
+                            <div key={subject.id} style={{
+                                background: '#fef3c7',
+                                padding: '2.75rem 1.25rem 1.25rem 1.25rem',
+                                borderRadius: '10px',
+                                border: '2px dashed #f59e0b',
+                                position: 'relative',
+                                overflow: 'hidden',
+                                maxWidth: '100%',
+                                boxSizing: 'border-box'
+                            }}>
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '0.75rem',
+                                    right: '0.75rem',
+                                    background: '#f59e0b',
+                                    color: 'white',
+                                    padding: '0.35rem 0.65rem',
+                                    borderRadius: '6px',
+                                    fontSize: '0.7rem',
+                                    fontWeight: 600,
+                                    letterSpacing: '0.5px',
+                                    whiteSpace: 'nowrap'
+                                }}>
                                     RECOMMENDED
                                 </div>
-                                <div style={{ fontWeight: 600, fontSize: '1rem', marginBottom: '0.5rem', color: '#78350f' }}>{subject.name}</div>
+                                <div style={{
+                                    fontWeight: 600,
+                                    fontSize: '1rem',
+                                    marginBottom: '0.5rem',
+                                    color: '#78350f',
+                                    lineHeight: '1.4',
+                                    wordWrap: 'break-word'
+                                }}>{subject.name}</div>
                                 <div style={{ fontSize: '0.85rem', color: '#92400e', marginBottom: '0.75rem' }}>{subject.code}</div>
                                 <div style={{ fontSize: '0.8rem', color: '#a16207' }}>Credits: {subject.credits || 3}</div>
                             </div>
