@@ -9,7 +9,6 @@ require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../includes/jwt.php';
 setCORSHeaders();
 $method = $_SERVER['REQUEST_METHOD'];
-$pdo = getDBConnection();
 if ($method === 'OPTIONS') {
     http_response_code(200);
     exit();
@@ -34,6 +33,22 @@ try {
     // Access Control
     if ($authUser['role'] !== 'admin' && $requestUserId && $requestUserId != $authUser['user_id']) {
         throw new Exception("Access denied");
+    }
+
+    $pdo = getDBConnection();
+
+    // Check if student_risk_scores table exists
+    $tableCheck = $pdo->query("SHOW TABLES LIKE 'student_risk_scores'");
+    if ($tableCheck->rowCount() === 0) {
+        // Table doesn't exist - return helpful empty response
+        if ($action === 'list') {
+            echo json_encode(['success' => true, 'data' => [], 'message' => 'Risk scores not computed yet. Run compute_features.php first.']);
+        } elseif ($action === 'stats') {
+            echo json_encode(['success' => true, 'data' => ['risk_distribution' => [], 'correlation_att_grade' => [], 'cohort_grades' => []]]);
+        } else {
+            echo json_encode(['success' => true, 'data' => null, 'message' => 'Risk scores not computed yet.']);
+        }
+        exit();
     }
 
     if ($action === 'profile') {

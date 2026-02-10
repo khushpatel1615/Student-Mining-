@@ -16,6 +16,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { API_BASE } from '../../config';
 import { useAuth } from '../../context/AuthContext';
 import {
     AlertTriangle, Users, TrendingDown, Search, RefreshCw,
@@ -28,7 +29,7 @@ import './LearningBehaviorDashboard.css';
 // ============================================================================
 // API CONFIGURATION
 // ============================================================================
-const API_BASE_URL = 'http://localhost/StudentDataMining/backend/api';
+const API_BASE_URL = API_BASE;
 
 // ============================================================================
 // MAIN DASHBOARD COMPONENT

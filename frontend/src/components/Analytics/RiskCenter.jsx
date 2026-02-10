@@ -103,9 +103,13 @@ const RiskCenter = () => {
     const recomputeFeatures = async () => {
         setRefreshing(true);
         try {
-            await fetch(`${API_BASE}/analytics/compute_features.php`, {
+            const response = await fetch(`${API_BASE}/analytics/compute_features.php`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
+            const result = await response.json();
+            if (!response.ok || !result.success) {
+                console.error('Recompute failed:', result.error || response.statusText);
+            }
             await fetchRiskData();
             await fetchStats();
         } catch (err) {
@@ -214,7 +218,7 @@ const RiskCenter = () => {
                     </div>
                     <div className="stat-trend negative">
                         <ArrowUpRight size={14} />
-                        <span>+2 this week</span>
+                        <span>{stats?.risk_distribution?.['At Risk'] || 0} flagged</span>
                     </div>
                 </div>
 
@@ -247,7 +251,7 @@ const RiskCenter = () => {
                     </div>
                     <div className="stat-trend positive">
                         <ArrowUpRight size={14} />
-                        <span>+5 improved</span>
+                        <span>{stats?.risk_distribution?.['Star'] || 0} performing</span>
                     </div>
                 </div>
             </div>
