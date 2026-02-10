@@ -1,3 +1,8 @@
+# Backend Security Configuration
+
+# Prevent directory listing
+Options -Indexes
+
 # Enable CORS for all API endpoints
 # CORS and OPTIONS handled by PHP (backend/config/cors.php)
 
@@ -15,3 +20,15 @@ php_flag log_errors On
 RewriteEngine On
 RewriteCond %{HTTP:Authorization} ^(.*)
 RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
+
+# Prevent access to diagnostic and schema tools
+<FilesMatch "^(check_|diagnose_|setup_|list_|schema_|debug_|test_).*\.(php|txt|log)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+# Prevent access to sensitive environment and dependency files
+<FilesMatch "^\.env|composer\.(json|lock)|package(-lock)?\.json|\.git|\.gitignore|\.md|LICENSE|README">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>

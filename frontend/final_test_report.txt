@@ -1,0 +1,210 @@
+﻿
+> student-data-mining-frontend@0.0.1 test
+> jest --watchAll=false
+
+node.exe : PASS src/__tests__/example.test.js
+At line:1 char:1
++ & "E:\Node Js/node.exe" "E:\Node Js/node_modules/npm/bin/npm-cli.js"  
+...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (PASS src/__tests__/example.t 
+   est.js:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+PASS src/__tests__/api.test.js
+FAIL src/__tests__/auth.test.js
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its 
+dependencies use non-standard JavaScript syntax, or when Jest is not 
+configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform 
+your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see 
+https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see 
+https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can 
+specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation, specify a "transform" option 
+in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary 
+assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the 
+docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    E:\XAMP\htdocs\StudentDataMining\frontend\src\config.js:7
+    const API_BASE = exports.API_BASE = import.meta.env.VITE_API_BASE_URL 
+|| 'http://localhost/StudentDataMining/backend/api';
+                                               ^^^^
+
+    SyntaxError: Cannot use 'import.meta' outside a module
+
+    [0m [90m 4 |[39m [36mconst[39m [33mAuthContext[39m [33m=[39m 
+createContext()
+     [90m 5 |[39m
+    [31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m { 
+[33mAPI_BASE[39m } [36mfrom[39m [32m'../config'[39m
+     [90m   |[39m [31m[1m^[22m[39m
+     [90m 7 |[39m
+     [90m 8 |[39m [36mexport[39m [36mfunction[39m 
+[33mAuthProvider[39m({ children }) {
+     [90m 9 |[39m     [36mconst[39m [user[33m,[39m setUser] 
+[33m=[39m useState([36mnull[39m)[0m
+
+      at Runtime.createScriptFromCode 
+(node_modules/jest-runtime/build/index.js:1318:40)
+      at Object.require (src/context/AuthContext.jsx:6:1)
+      at requireActual (src/__tests__/auth.test.js:19:33)
+      at Object.require (src/components/Login/LoginCard.jsx:3:1)
+      at Object.require (src/__tests__/auth.test.js:3:1)
+
+PASS src/__tests__/integration.test.js
+PASS src/__tests__/TeacherManagement.test.js
+PASS src/components/Analytics/RiskCenter.test.jsx
+PASS src/__tests__/StudentManagement.test.js
+  ● Console
+
+    console.error
+      Warning: A component is changing a controlled input to be 
+uncontrolled. This is likely caused by the value changing from a defined 
+to undefined, which should not happen. Decide between using a controlled 
+or uncontrolled input element for the lifetime of the component. More 
+info: https://reactjs.org/link/controlled-components
+          at input
+          at div
+          at div
+          at div
+          at div
+          at form
+          at div
+          at div
+          at div
+          at StudentManagement (E:\XAMP\htdocs\StudentDataMining\frontend\
+src\components\StudentManagement\StudentManagement.jsx:127:60)
+          at Router (E:\XAMP\htdocs\StudentDataMining\frontend\node_module
+s\react-router\dist\development\chunk-WICQJKU6.js:9335:13)
+          at MemoryRouter (E:\XAMP\htdocs\StudentDataMining\frontend\node_
+modules\react-router\dist\development\chunk-WICQJKU6.js:9251:3)
+
+    [0m [90m 49 |[39m         [36mreturn[39m[33m;[39m
+     [90m 50 |[39m     }
+    [31m[1m>[22m[39m[90m 51 |[39m     
+originalError[33m.[39mcall(console[33m,[39m 
+[33m...[39margs)[33m;[39m
+     [90m    |[39m                   [31m[1m^[22m[39m
+     [90m 52 |[39m }[33m;[39m
+     [90m 53 |[39m
+     [90m 54 |[39m [90m// Mock Response for fetch[39m[0m
+
+      at console.call [as error] (src/__tests__/setup.js:51:19)
+      at printWarning 
+(node_modules/react-dom/cjs/react-dom.development.js:86:30)
+      at error (node_modules/react-dom/cjs/react-dom.development.js:60:7)
+      at updateWrapper 
+(node_modules/react-dom/cjs/react-dom.development.js:1819:7)
+      at updateProperties 
+(node_modules/react-dom/cjs/react-dom.development.js:10151:7)
+      at commitUpdate 
+(node_modules/react-dom/cjs/react-dom.development.js:11047:3)
+      at commitMutationEffectsOnFiber 
+(node_modules/react-dom/cjs/react-dom.development.js:24428:19)
+      at recursivelyTraverseMutationEffects 
+(node_modules/react-dom/cjs/react-dom.development.js:24312:7)
+      at commitMutationEffectsOnFiber 
+(node_modules/react-dom/cjs/react-dom.development.js:24385:9)
+      at recursivelyTraverseMutationEffects 
+(node_modules/react-dom/cjs/react-dom.development.js:24312:7)
+      at commitMutationEffectsOnFiber 
+(node_modules/react-dom/cjs/react-dom.development.js:24385:9)
+      at recursivelyTraverseMutationEffects 
+(node_modules/react-dom/cjs/react-dom.development.js:24312:7)
+      at commitMutationEffectsOnFiber 
+(node_modules/react-dom/cjs/react-dom.development.js:24385:9)
+      at recursivelyTraverseMutationEffects 
+(node_modules/react-dom/cjs/react-dom.development.js:24312:7)
+      at commitMutationEffectsOnFiber 
+(node_modules/react-dom/cjs/react-dom.development.js:24385:9)
+      at recursivelyTraverseMutationEffects 
+(node_modules/react-dom/cjs/react-dom.development.js:24312:7)
+      at commitMutationEffectsOnFiber 
+(node_modules/react-dom/cjs/react-dom.development.js:24385:9)
+      at recursivelyTraverseMutationEffects 
+(node_modules/react-dom/cjs/react-dom.development.js:24312:7)
+      at commitMutationEffectsOnFiber 
+(node_modules/react-dom/cjs/react-dom.development.js:24385:9)
+      at recursivelyTraverseMutationEffects 
+(node_modules/react-dom/cjs/react-dom.development.js:24312:7)
+      at commitMutationEffectsOnFiber 
+(node_modules/react-dom/cjs/react-dom.development.js:24385:9)
+      at recursivelyTraverseMutationEffects 
+(node_modules/react-dom/cjs/react-dom.development.js:24312:7)
+      at commitMutationEffectsOnFiber 
+(node_modules/react-dom/cjs/react-dom.development.js:24385:9)
+      at recursivelyTraverseMutationEffects 
+(node_modules/react-dom/cjs/react-dom.development.js:24312:7)
+      at commitMutationEffectsOnFiber 
+(node_modules/react-dom/cjs/react-dom.development.js:24332:9)
+      at recursivelyTraverseMutationEffects 
+(node_modules/react-dom/cjs/react-dom.development.js:24312:7)
+      at commitMutationEffectsOnFiber 
+(node_modules/react-dom/cjs/react-dom.development.js:24615:9)
+      at recursivelyTraverseMutationEffects 
+(node_modules/react-dom/cjs/react-dom.development.js:24312:7)
+      at commitMutationEffectsOnFiber 
+(node_modules/react-dom/cjs/react-dom.development.js:24615:9)
+      at recursivelyTraverseMutationEffects 
+(node_modules/react-dom/cjs/react-dom.development.js:24312:7)
+      at commitMutationEffectsOnFiber 
+(node_modules/react-dom/cjs/react-dom.development.js:24332:9)
+      at recursivelyTraverseMutationEffects 
+(node_modules/react-dom/cjs/react-dom.development.js:24312:7)
+      at commitMutationEffectsOnFiber 
+(node_modules/react-dom/cjs/react-dom.development.js:24332:9)
+      at recursivelyTraverseMutationEffects 
+(node_modules/react-dom/cjs/react-dom.development.js:24312:7)
+      at commitMutationEffectsOnFiber 
+(node_modules/react-dom/cjs/react-dom.development.js:24471:9)
+      at commitMutationEffects 
+(node_modules/react-dom/cjs/react-dom.development.js:24282:3)
+      at commitRootImpl 
+(node_modules/react-dom/cjs/react-dom.development.js:26849:5)
+      at commitRoot 
+(node_modules/react-dom/cjs/react-dom.development.js:26721:5)
+      at performSyncWorkOnRoot 
+(node_modules/react-dom/cjs/react-dom.development.js:26156:3)
+      at flushSyncCallbacks 
+(node_modules/react-dom/cjs/react-dom.development.js:12042:22)
+      at flushActQueue 
+(node_modules/react/cjs/react.development.js:2667:24)
+      at act (node_modules/react/cjs/react.development.js:2582:11)
+      at node_modules/@testing-library/react/dist/act-compat.js:46:25
+      at Object.eventWrapper 
+(node_modules/@testing-library/react/dist/pure.js:106:28)
+      at fireEvent 
+(node_modules/@testing-library/dom/dist/events.js:12:35)
+      at fireEvent.<computed> [as submit] 
+(node_modules/@testing-library/dom/dist/events.js:110:36)
+      at fireEvent.<computed> [as submit] 
+(node_modules/@testing-library/react/dist/fire-event.js:15:52)
+      at Object.submit (src/__tests__/StudentManagement.test.js:114:19)
+
+
+Test Suites: 1 failed, 6 passed, 7 total
+Tests:       21 passed, 21 total
+Snapshots:   0 total
+Time:        3.038 s
+Ran all test suites.

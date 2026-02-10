@@ -1,0 +1,714 @@
+﻿
+> student-data-mining-frontend@0.0.1 test
+> jest src/__tests__/StudentManagement.test.js --watchAll=false
+
+node.exe : FAIL src/__tests__/StudentManagement.test.js
+At line:1 char:1
++ & "E:\Node Js/node.exe" "E:\Node Js/node_modules/npm/bin/npm-cli.js"  
+...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (FAIL src/__test...agement.te 
+   st.js:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Student Management Feature
+    √ READ: Loads students list on mount (78 ms)
+    × CREATE: Adds new student successfully (47 ms)
+    × DELETE: Removes student (34 ms)
+    √ SEARCH: Filters students (541 ms)
+
+  ● Student Management Feature › CREATE: Adds new student successfully
+
+    TestingLibraryElementError: Unable to find an element with the text: 
+Add New Student, which matches selector 'button'. This could be because 
+the text is broken up by multiple elements. In this case, you can provide 
+a function for your text matcher to make your matcher more flexible.
+
+    Ignored nodes: comments, script, style
+    [36m<body>[39m
+      [36m<div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"student-management"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"student-management-header"[39m
+          [36m>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"student-management-title"[39m
+            [36m>[39m
+              [0mStudent Management[0m
+            [36m</h2>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"btn-add"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [36m>[39m
+                [36m<line[39m
+                  [33mx1[39m=[32m"12"[39m
+                  [33mx2[39m=[32m"12"[39m
+                  [33my1[39m=[32m"5"[39m
+                  [33my2[39m=[32m"19"[39m
+                [36m/>[39m
+                [36m<line[39m
+                  [33mx1[39m=[32m"5"[39m
+                  [33mx2[39m=[32m"19"[39m
+                  [33my1[39m=[32m"12"[39m
+                  [33my2[39m=[32m"12"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [0mAdd Student[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"student-filters"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"search-input-wrapper"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [36m>[39m
+                [36m<circle[39m
+                  [33mcx[39m=[32m"11"[39m
+                  [33mcy[39m=[32m"11"[39m
+                  [33mr[39m=[32m"8"[39m
+                [36m/>[39m
+                [36m<line[39m
+                  [33mx1[39m=[32m"21"[39m
+                  [33mx2[39m=[32m"16.65"[39m
+                  [33my1[39m=[32m"21"[39m
+                  [33my2[39m=[32m"16.65"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [36m<input[39m
+                [33mclass[39m=[32m"search-input"[39m
+                [33mplaceholder[39m=[32m"Search by name, email, or 
+student ID..."[39m
+                [33mtype[39m=[32m"text"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+            [36m<select[39m
+              [33mclass[39m=[32m"filter-select"[39m
+            [36m>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m""[39m
+              [36m>[39m
+                [0mAll Roles[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"student"[39m
+              [36m>[39m
+                [0mStudents[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"admin"[39m
+              [36m>[39m
+                [0mAdmins[0m
+              [36m</option>[39m
+            [36m</select>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"students-table-container"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"skeleton-table-wrapper"[39m
+            [36m>[39m
+              [36m<table[39m
+                [33mclass[39m=[32m"skeleton-table"[39m
+              [36m>[39m
+                [36m<thead>[39m
+                  [36m<tr>[39m
+                    [36m<th>[39m
+                      [36m<div[39m
+                        [33mclass[39m=[32m"skeleton-line shimmer"[39m
+                      [36m/>[39m
+                    [36m</th>[39m
+                    [36m<th>[39m
+                      [36m<div[39m
+                        [33mclass[39m=[32m"skeleton-line shimmer"[39m
+                      [36m/>[39m
+                    [36m</th>[39m
+                    [36m<th>[39m
+                      [36m<div[39m
+                        [33mclass[39m=[32m"skeleton-line shimmer"[39m
+                      [36m/>[39m
+                    [36m</th>[39m
+                    [36m<th>[39m
+                      [36m<div[39m
+                        [33mclass[39m=[32m"skeleton-line shimmer"[39m
+                      [36m/>[39m
+                    [36m</th>[39m
+                    [36m<th>[39m
+                      [36m<div[39m
+                        [33mclass[39m=[32m"skeleton-line shimmer"[39m
+                      [36m/>[39m
+                    [36m</th>[39m
+                    [36m<th>[39m
+                      [36m<div[39m
+                        [33mclass[39m=[32m"skeleton-line shimmer"[39m
+                      [36m/>[39m
+                    [36m</th>[39m
+                    [36m<th>[39m
+                      [36m<div[39m
+                        [33mclass[39m=[32m"skeleton-line shimmer"[39m
+                      [36m/>[39m
+                    [36m</th>[39m
+                  [36m</tr>[39m
+                [36m</thead>[39m
+                [36m<tbody>[39m
+                  [36m<tr>[39m
+                    [36m<td>[39m
+                      [36m<div[39m
+                        [33mclass[39m=[32m"skeleton-line shimmer 
+lead"[39m
+                      [36m/>[39m
+                    [36m</td>[39m
+                    [36m<td>[39m
+                      [36m<div[39m
+                        [33mclass[39m=[32m"skeleton-line shimmer "[39m
+                      [36m/>[39m
+                    [36m</td>[39m
+                    [36m<td>[39m
+                      [36m<div[39m
+                        [33mclass[39m=[32m"skeleton-line shimmer "[39m
+                      [36m/>[39m
+                    [36m</td>[39m
+                    [36m<td>[39m
+                      [36m<div[39m
+                        [33mclass[39m=[32m"skeleton-line shimmer "[39m
+                      [36m/>[39m
+                    [36m</td>[39m
+                    [36m<td>[39m
+                      [36m<div[39m
+                        [33mclass[39m=[32m"skeleton-line shimmer "[39m
+                      [36m/>[39m
+                    [36m</td>[39m
+                    [36m<td>[39m
+                      [36m<div[39m
+                        [33mclass[39m=[32m"skeleton-line shimmer "[39m
+                      [36m/>[39m
+                    [36m</td>[39m
+                    [36m<td>[39m
+                      [36m<div[39m
+                        [33mclass[39m=[32m"skeleton-line shimmer "[39m
+                      [36m/>[39m
+                    [36m</td>[39m
+                  [36m</tr>[39m
+                  [36m<tr>[39m
+                    [36m<td>[39m
+                      [36m<div[39m
+                        [33mclass[39m=[32m"skeleton-line shimmer 
+lead"[39m
+                      [36m/>[39m
+                    [36m</td>[39m
+                    [36m<td>[39m
+                      [36m<div[39m
+                        [33mclass[39m=[32m"skeleton-line shimmer "[39m
+                      [36m/>[39m
+                    [36m</td>[39m
+          ...
+
+    [0m [90m 111 |[39m
+     [90m 112 |[39m         [90m// Submit - Find button[39m
+    [31m[1m>[22m[39m[90m 113 |[39m         [36mconst[39m 
+submitBtn [33m=[39m screen[33m.[39mgetByText([32m'Add New 
+Student'[39m[33m,[39m { selector[33m:[39m [32m'button'[39m }) 
+[33m||[39m screen[33m.[39mgetAllByRole([32m'button'[39m[33m,[39m 
+{ name[33m:[39m [35m/Add Student/i[39m })[[35m0[39m][33m;[39m
+     [90m     |[39m                                  
+[31m[1m^[22m[39m
+     [90m 114 |[39m         [90m// Wait, modal title is "Add New 
+Student". Button in modal?[39m
+     [90m 115 |[39m         [90m// Component: <button ...>{modalMode 
+=== 'add' ? 'Add Student' : 'Save Changes'}</button> ???[39m
+     [90m 116 |[39m         [90m// Need to check modal button 
+text.[39m[0m
+
+      at Object.getElementError 
+(node_modules/@testing-library/dom/dist/config.js:37:19)
+      at node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+      at node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+      at node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+      at Object.getByText (src/__tests__/StudentManagement.test.js:113:34)
+
+  ● Student Management Feature › DELETE: Removes student
+
+    TestingLibraryElementError: Found multiple elements with the text: 
+/Deactivate/i
+
+    Here are the matching elements:
+
+    Ignored nodes: comments, script, style
+    [36m<h3>[39m
+      [0mDeactivate this user?[0m
+    [36m</h3>[39m
+
+    Ignored nodes: comments, script, style
+    [36m<p>[39m
+      [0mAre you sure you want to deactivate [0m
+      [36m<strong>[39m
+        [0mJohn Doe[0m
+      [36m</strong>[39m
+      [0m? They will no longer be able to log in.[0m
+    [36m</p>[39m
+
+    Ignored nodes: comments, script, style
+    [36m<button[39m
+      [33mclass[39m=[32m"btn-danger"[39m
+    [36m>[39m
+      [0mDeactivate[0m
+    [36m</button>[39m
+
+    (If this is intentional, then use the `*AllBy*` variant of the query 
+(like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+    Ignored nodes: comments, script, style
+    [36m<body>[39m
+      [36m<div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"student-management"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"student-management-header"[39m
+          [36m>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"student-management-title"[39m
+            [36m>[39m
+              [0mStudent Management[0m
+            [36m</h2>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"btn-add"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [36m>[39m
+                [36m<line[39m
+                  [33mx1[39m=[32m"12"[39m
+                  [33mx2[39m=[32m"12"[39m
+                  [33my1[39m=[32m"5"[39m
+                  [33my2[39m=[32m"19"[39m
+                [36m/>[39m
+                [36m<line[39m
+                  [33mx1[39m=[32m"5"[39m
+                  [33mx2[39m=[32m"19"[39m
+                  [33my1[39m=[32m"12"[39m
+                  [33my2[39m=[32m"12"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [0mAdd Student[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"student-filters"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"search-input-wrapper"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [36m>[39m
+                [36m<circle[39m
+                  [33mcx[39m=[32m"11"[39m
+                  [33mcy[39m=[32m"11"[39m
+                  [33mr[39m=[32m"8"[39m
+                [36m/>[39m
+                [36m<line[39m
+                  [33mx1[39m=[32m"21"[39m
+                  [33mx2[39m=[32m"16.65"[39m
+                  [33my1[39m=[32m"21"[39m
+                  [33my2[39m=[32m"16.65"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [36m<input[39m
+                [33mclass[39m=[32m"search-input"[39m
+                [33mplaceholder[39m=[32m"Search by name, email, or 
+student ID..."[39m
+                [33mtype[39m=[32m"text"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+            [36m<select[39m
+              [33mclass[39m=[32m"filter-select"[39m
+            [36m>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m""[39m
+              [36m>[39m
+                [0mAll Roles[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"student"[39m
+              [36m>[39m
+                [0mStudents[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"admin"[39m
+              [36m>[39m
+                [0mAdmins[0m
+              [36m</option>[39m
+            [36m</select>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"students-table-container"[39m
+          [36m>[39m
+            [36m<table[39m
+              [33mclass[39m=[32m"students-table"[39m
+            [36m>[39m
+              [36m<thead>[39m
+                [36m<tr>[39m
+                  [36m<th[39m
+                    [33mclass[39m=[32m"text-left"[39m
+                  [36m>[39m
+                    [0mStudent[0m
+                  [36m</th>[39m
+                  [36m<th[39m
+                    [33mclass[39m=[32m"text-right"[39m
+                  [36m>[39m
+                    [0mStudent ID[0m
+                  [36m</th>[39m
+                  [36m<th[39m
+                    [33mclass[39m=[32m"text-center"[39m
+                  [36m>[39m
+                    [0mRole[0m
+                  [36m</th>[39m
+                  [36m<th[39m
+                    [33mclass[39m=[32m"text-left"[39m
+                  [36m>[39m
+                    [0mDept.[0m
+                  [36m</th>[39m
+                  [36m<th[39m
+                    [33mclass[39m=[32m"text-center"[39m
+                  [36m>[39m
+                    [0mStatus[0m
+                  [36m</th>[39m
+                  [36m<th[39m
+                    [33mclass[39m=[32m"text-right"[39m
+                  [36m>[39m
+                    [0mLast Login[0m
+                  [36m</th>[39m
+                  [36m<th[39m
+                    [33mclass[39m=[32m"text-center"[39m
+                  [36m>[39m
+                    [0mActions[0m
+                  [36m</th>[39m
+                [36m</tr>[39m
+              [36m</thead>[39m
+              [36m<tbody>[39m
+                [36m<tr>[39m
+                  [36m<td>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"student-profile-tile"[39m
+                    [36m>[39m
+                      [36m<div[39m
+                        [33mclass[39m=[32m"circular-avatar"[39m
+                        [33mdata-color[39m=[32m"amber"[39m
+                        [33mtitle[39m=[32m"John Doe"[39m
+                      [36m>[39m
+                        [0mJD[0m
+                      [36m</div>[39m
+                      [36m<div[39m
+                        [33mclass[39m=[32m"student-details-modern"[39m
+                      [36m>[39m
+                        [36m<span[39m
+                          [33mclass[39m=[32m"student-name-modern"[39m
+                        [36m>[39m
+                          [0mJohn Doe[0m
+                        [36m</span>[39m
+                        [36m<span[39m
+                          [33mclass[39m=[32m"student-email-modern"[39m
+                        [36m>[39m
+                          [0mjohn@example.com[0m
+                        [36m</span>[39m
+                      [36m</div>[39m
+                    [36m</div>[39m
+                  [36m</td>[39m
+                  [36m<td[39m
+                    [33mclass[39m=[32m"text-center"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"student-id-cell"[39m
+                    [36m>[39m
+                      [0mS001[0m
+                    [36m</span>[39m
+                  [36m</td>[39m
+                  [36m<td[39m
+                    [33mclass[39m=[32m"text-center"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"role-pill student"[39m
+                    [36m>[39m
+                      [0mstudent[0m
+                    [36m</span>[39m
+                  [36m</td>[39m
+                  [36m<td[39m
+                    [33mclass[39m=[32m"text-center"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"dept-cell"[39m
+                    [36m>[39m
+                      [0mBCA[0m
+                    [36m</span>[39m
+                  [36m</td>[39m
+                  [36m<td[39m
+                    [33mclass[39m=[32m"text-center"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33mclass[39m=[32m"status-pill active"[39m
+                      [33mtitle[39m=[32m"Click to deactivate"[39m
+                    [36m>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"status-dot"[39m
+                      [36m/>[39m
+                      [0mActive[0m
+                    [36m</button>[39m
+                  [36m</td>[39m
+                  [36m<td[39m
+                    [33mclass[39m=[32m"text-center"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"last-login-cell never"[39m
+                    [36m>[39m
+                      [0mNever[0m
+                    [36m</span>[39m
+                  [36m</td>[39m
+                  [36m<td[39m
+                    [33mclass[39m=[32m"text-center"[39m
+                  [36m>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"action-buttons-modern"[39m
+                    [36m>[39m
+                      [36m<button[39m
+                        [33mclass[39m=[32m"btn-action-modern"[39m
+                        [33mtitle[39m=[32m"Edit student"[39m
+                      [36m>[39m
+                        [36m<svg[39m
+                          [33mfill[39m=[32m"none"[39m
+                          [33mstroke[39m=[32m"currentColor"[39m
+                          [33mstroke-linecap[39m=[32m"round"[39m
+                          [33mstroke-linejoin[39m=[32m"round"[39m
+                          [33mstroke-width[39m=[32m"2"[39m
+                          [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [36m>[39m
+                          [36m<path[39m
+                            [33md[39m=[32m"M11 4H4a2 2 0 0 0-2 2v14a2 
+2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"[39m
+                          [36m/>[39m
+                          [36m<path[39m
+                            [33md[39m=[32m"M18.5 2.5a2.121 2.121 0 0 1 
+3 3L12 15l-4 1 1-4 9.5-9.5z"[39m
+                          [36m/>[39m
+                        [36m</svg>[39m
+                      [36m</button>[39m
+                      [36m<button[39m
+                        [33mclass[39m=[32m"btn-action-modern 
+delete"[39m
+                        [33mtitle[39m=[32m"Delete student"[39m
+                      [36m>[39m
+                        [36m<svg[39m
+                          [33mfill[39m=[32m"none"[39m
+                          [33mstroke[39m=[32m"currentColor"[39m
+                          [33mstroke-linecap[39m=[32m"round"[39m
+                          [33mstroke-linejoin[39m=[32m"round"[39m
+                          [33mstroke-width[39m=[32m"2"[39m
+                          [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [36m>[39m
+                          [36m<polyline[39m
+                            [33mpoints[39m=[32m"3 6 5 6 21 6"[39m
+                          [36m/>[39m
+                          [36m<path[39m
+                            [33md[39m=[32m"M19 6v14a2 2 0 0 1-2 2H7a2 
+2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"[39m
+                          [36m/>[39m
+                        [36m</svg>[39m
+                      [36m</button>[39m
+                    [36m</div>[39m
+                  [36m</td>[39m
+                [36m</tr>[39m
+              [36m</tbody>[39m
+            [36m</table>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"pagination"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"pagination-info"[39m
+              [36m>[39m
+                [0mShowing [0m
+                [0m1[0m
+                [0m of [0m
+                [0m1[0m
+                [0m users[0m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"pagination-buttons"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"btn-page"[39m
+                  [33mdisabled[39m=[32m""[39m
+                [36m>[39m
+                  [0mPrevious[0m
+                [36m</button>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"btn-page"[39m
+                [36m>[39m
+                  [0mNext[0m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"modal-overlay"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"modal-content"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"modal-header"[39m
+              [36m>[39m
+                [36m<h3[39m
+                  [33mclass[39m=[32m"modal-title"[39m
+                [36m>[39m
+                  [0mConfirm Deactivation[0m
+                [36m</h3>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"modal-close"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [36m>[39m
+                    [36m<line[39m
+                      [33mx1[39m=[32m"18"[39m
+                      [33mx2[39m=[32m"6"[39m
+                      [33my1[39m=[32m"6"[39m
+                      [33my2[39m=[32m"18"[39m
+                    [36m/>[39m
+                    [36m<line[39m
+                      [33mx1[39m=[32m"6"[39m
+                      [33mx2[39m=[32m"18"[39m
+                      [33my1[39m=[32m"6"[39m
+                      [33my2[39m=[32m"18"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</button>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"modal-body"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"delete-confirmation"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"delete-confirmation-icon"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10.29 3.86L1.82 18a2 2 0 0 0 
+1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"[39m
+                      [36m/>[39m
+                      [36m<line[39m
+                        [33mx1[39m=[32m"12"[39m
+                        [33mx2[39m=[32m"12"[39m
+                        [33my1[39m=[32m"9"[39m
+                        [33my2[39m=[32m"13"[39m
+                      [36m/>[39m
+                      [36m<line[39m
+                        [33mx1[39m=[32m"12"[39m
+                        [33mx2[39m=[32m"12.01"[39m
+                        [33my1[39m=[32m"17"[39m
+                        [33my2[39m=[32m"17"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                  [36m</div>[39m
+                  [36m<h3>[39m
+                    [0mDeactivate this user?[0m
+                  [36m</h3>[39m
+                  [36m<p>[39m
+                    [0mAre you sure you want to deactivate [0m
+                    [36m<strong>[39m
+                      [0mJohn Doe[0m
+                    [36m</strong>[39m
+                    [0m? They will no longer be able to log in.[0m
+                  [36m</p>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"modal-footer"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"btn-secondary"[39m
+                [36m>[39m
+                  [0mCancel[0m
+                [36m</button>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"btn-danger"[39m
+                [36m>[39m
+                  [0mDeactivate[0m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</body>[39m
+
+    [0m [90m 180 |[39m
+     [90m 181 |[39m         [90m// Confirm delete in modal[39m
+    [31m[1m>[22m[39m[90m 182 |[39m         [36mconst[39m 
+confirmBtn [33m=[39m 
+screen[33m.[39mgetByText([35m/Deactivate/i[39m)[33m;[39m [90m// 
+Modal button says "Deactivate"[39m
+     [90m     |[39m                                   
+[31m[1m^[22m[39m
+     [90m 183 |[39m         
+fireEvent[33m.[39mclick(confirmBtn)[33m;[39m
+     [90m 184 |[39m
+     [90m 185 |[39m         [36mawait[39m waitFor(() [33m=>[39m 
+{[0m
+
+      at Object.getElementError 
+(node_modules/@testing-library/dom/dist/config.js:37:19)
+      at getElementError 
+(node_modules/@testing-library/dom/dist/query-helpers.js:20:35)
+      at getMultipleElementsFoundError 
+(node_modules/@testing-library/dom/dist/query-helpers.js:23:10)
+      at node_modules/@testing-library/dom/dist/query-helpers.js:55:13
+      at node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+      at Object.getByText (src/__tests__/StudentManagement.test.js:182:35)
+
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 2 passed, 4 total
+Snapshots:   0 total
+Time:        1.747 s, estimated 2 s
+Ran all test suites matching src/__tests__/StudentManagement.test.js.

@@ -1,0 +1,188 @@
+﻿cmd : E:\XAMP\mysql\bin\aria
+_chk.exe: Got error 'Can't 
+find file' when trying to 
+use aria control file 
+'.\aria_log_control'
+At line:1 char:1
++ cmd /c "E:\XAMP\mysql\bin\
+aria_chk.exe --safe-recover 
+--force --sort_ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
+    + CategoryInfo          
+    : NotSpecified: (E:\XA  
+  MP\mysql\b...ia_log_con   
+ trol':String) [], Remot    
+eException
+    + FullyQualifiedErrorId 
+    : NativeCommandError
+ 
+- recovering (with keycache) Aria-table 'E:\XAMP\mysql\data\mysql\columns_priv.MAI'
+Data records: 0
+State updated
+
+---------
+
+- recovering (with keycache) Aria-table 'E:\XAMP\mysql\data\mysql\column_stats.MAI'
+Data records: 0
+State updated
+
+---------
+
+- recovering (with keycache) Aria-table 'E:\XAMP\mysql\data\mysql\db.MAI'
+Data records: 0
+State updated
+
+---------
+
+- recovering (with keycache) Aria-table 'E:\XAMP\mysql\data\mysql\event.MAI'
+Data records: 0
+State updated
+
+---------
+
+- recovering (with keycache) Aria-table 'E:\XAMP\mysql\data\mysql\func.MAI'
+Data records: 0
+State updated
+
+---------
+
+- recovering (with keycache) Aria-table 'E:\XAMP\mysql\data\mysql\global_priv.MAI'
+Data records: 4
+State updated
+
+---------
+
+- recovering (with keycache) Aria-table 'E:\XAMP\mysql\data\mysql\help_category.MAI'
+Data records: 48
+State updated
+
+---------
+
+- recovering (with keycache) Aria-table 'E:\XAMP\mysql\data\mysql\help_keyword.MAI'
+Data records: 37
+State updated
+
+---------
+
+- recovering (with keycache) Aria-table 'E:\XAMP\mysql\data\mysql\help_relation.MAI'
+Data records: 114
+State updated
+
+---------
+
+- recovering (with keycache) Aria-table 'E:\XAMP\mysql\data\mysql\help_topic.MAI'
+Data records: 0
+Data records: 752
+State updated
+
+---------
+
+- recovering (with keycache) Aria-table 'E:\XAMP\mysql\data\mysql\index_stats.MAI'
+Data records: 0
+State updated
+
+---------
+
+- recovering (with keycache) Aria-table 'E:\XAMP\mysql\data\mysql\plugin.MAI'
+Data records: 0
+State updated
+
+---------
+
+- recovering (with keycache) Aria-table 'E:\XAMP\mysql\data\mysql\proc.MAI'
+Data records: 2
+State updated
+
+---------
+
+- recovering (with keycache) Aria-table 'E:\XAMP\mysql\data\mysql\procs_priv.MAI'
+Data records: 0
+State updated
+
+---------
+
+- recovering (with keycache) Aria-table 'E:\XAMP\mysql\data\mysql\proxies_priv.MAI'
+Data records: 1
+Wrong CRC on datapage at 1
+Wrong CRC on datapage at 2
+Wrong CRC on datapage at 3
+Wrong CRC on datapage at 4
+Wrong CRC on datapage at 5
+Wrong CRC on datapage at 6
+Wrong CRC on datapage at 7
+Wrong CRC on datapage at 8
+Wrong CRC on datapage at 9
+Wrong CRC on datapage at 10
+Wrong CRC on datapage at 11
+Wrong CRC on datapage at 12
+Wrong CRC on datapage at 13
+Wrong CRC on datapage at 14
+Wrong CRC on datapage at 15
+Wrong CRC on datapage at 16
+Wrong CRC on datapage at 17
+Wrong CRC on datapage at 18
+Wrong CRC on datapage at 19
+Wrong CRC on datapage at 20
+Wrong CRC on datapage at 21
+Wrong CRC on datapage at 22
+Wrong CRC on datapage at 23
+Wrong CRC on datapage at 24
+Wrong CRC on datapage at 25
+Data records: 0
+State updated
+
+---------
+
+- recovering (with keycache) Aria-table 'E:\XAMP\mysql\data\mysql\roles_mapping.MAI'
+Data records: 0
+State updated
+
+---------
+
+- recovering (with keycache) Aria-table 'E:\XAMP\mysql\data\mysql\servers.MAI'
+Data records: 0
+State updated
+
+---------
+
+- recovering (with keycache) Aria-table 'E:\XAMP\mysql\data\mysql\tables_priv.MAI'
+Data records: 0
+State updated
+
+---------
+
+- recovering (with keycache) Aria-table 'E:\XAMP\mysql\data\mysql\table_stats.MAI'
+Data records: 0
+State updated
+
+---------
+
+- recovering (with keycache) Aria-table 'E:\XAMP\mysql\data\mysql\time_zone.MAI'
+Data records: 0
+State updated
+
+---------
+
+- recovering (with keycache) Aria-table 'E:\XAMP\mysql\data\mysql\time_zone_leap_second.MAI'
+Data records: 0
+State updated
+
+---------
+
+- recovering (with keycache) Aria-table 'E:\XAMP\mysql\data\mysql\time_zone_name.MAI'
+Data records: 0
+State updated
+
+---------
+
+- recovering (with keycache) Aria-table 'E:\XAMP\mysql\data\mysql\time_zone_transition.MAI'
+Data records: 0
+State updated
+
+---------
+
+- recovering (with keycache) Aria-table 'E:\XAMP\mysql\data\mysql\time_zone_transition_type.MAI'
+Data records: 0
+State updated

@@ -1,0 +1,10 @@
+﻿ Volume in drive E is New Volume
+ Volume Serial Number is EE9B-AAFE
+
+ Directory of E:\XAMP\mysql\data\mysql
+
+21-10-2019  07:17             2,713 db.frm
+05-02-2026  15:32            29,801 db.MAD
+09-02-2026  19:03         1,040,384 db.MAI
+               3 File(s)      1,072,898 bytes
+               0 Dir(s)  137,189,216,256 bytes free

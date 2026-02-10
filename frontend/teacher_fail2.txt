@@ -1,0 +1,22 @@
+﻿
+> student-data-mining-frontend@0.0.1 test
+> jest src/__tests__/TeacherManagement.test.js --watchAll=false
+
+node.exe : PASS src/__tests__/TeacherManagement.test.js
+At line:1 char:1
++ & "E:\Node Js/node.exe" "E:\Node Js/node_modules/npm/bin/npm-cli.js"  
+...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (PASS src/__test...agement.te 
+   st.js:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Teacher Management Feature
+    √ READ: Loads teachers list (29 ms)
+    √ CREATE: Adds new teacher (85 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       2 passed, 2 total
+Snapshots:   0 total
+Time:        1.069 s, estimated 2 s
+Ran all test suites matching src/__tests__/TeacherManagement.test.js.

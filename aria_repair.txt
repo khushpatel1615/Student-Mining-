@@ -1,0 +1,240 @@
+﻿cmd : E:\XAMP\mysql\bin\aria
+_chk.exe: Got error 'Can't 
+find file' when trying to 
+use aria control file 
+'.\aria_log_control'
+At line:1 char:1
++ cmd /c "E:\XAMP\mysql\bin\
+aria_chk.exe --recover 
+E:\XAMP\mysql\data\m ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
+    + CategoryInfo          
+    : NotSpecified: (E:\XA  
+  MP\mysql\b...ia_log_con   
+ trol':String) [], Remot    
+eException
+    + FullyQualifiedErrorId 
+    : NativeCommandError
+ 
+- recovering (with sort) Aria-table 'E:\XAMP\mysql\data\mysql\columns_priv.MAI'
+Data records: 0
+- Fixing index 1
+aria_chk.exe: error: 
+aria_sort_buffer_size is 
+too small. Current 
+aria_sort_buffer_size: 
+16384  rows: 234  
+sort_length: 1006
+aria_chk.exe: error: Create 
+index by sort failed
+State updated
+
+---------
+
+Aria table 'E:\XAMP\mysql\da
+ta\mysql\columns_priv.MAI' 
+is not fixed because of 
+errors
+Try fixing it by using the 
+--safe-recover (-o), the 
+--force (-f) option or by 
+not using the --quick (-q) 
+flag
+- recovering (with sort) Aria-table 'E:\XAMP\mysql\data\mysql\column_stats.MAI'
+Data records: 0
+- Fixing index 1
+State updated
+
+---------
+
+- recovering (with sort) Aria-table 'E:\XAMP\mysql\data\mysql\db.MAI'
+Data records: 0
+- Fixing index 1
+- Fixing index 2
+State updated
+
+---------
+
+- recovering (with sort) Aria-table 'E:\XAMP\mysql\data\mysql\event.MAI'
+Data records: 0
+- Fixing index 1
+State updated
+
+---------
+
+- recovering (with sort) Aria-table 'E:\XAMP\mysql\data\mysql\func.MAI'
+Data records: 0
+- Fixing index 1
+State updated
+
+---------
+
+- recovering (with sort) Aria-table 'E:\XAMP\mysql\data\mysql\global_priv.MAI'
+Data records: 4
+- Fixing index 1
+State updated
+
+---------
+
+- recovering (with sort) Aria-table 'E:\XAMP\mysql\data\mysql\help_category.MAI'
+Data records: 48
+- Fixing index 1
+- Fixing index 2
+State updated
+
+---------
+
+- recovering (with sort) Aria-table 'E:\XAMP\mysql\data\mysql\help_keyword.MAI'
+Data records: 37
+- Fixing index 1
+- Fixing index 2
+State updated
+
+---------
+
+- recovering (with sort) Aria-table 'E:\XAMP\mysql\data\mysql\help_relation.MAI'
+Data records: 114
+- Fixing index 1
+State updated
+
+---------
+
+aria_chk.exe: error: 
+aria_sort_buffer_size is 
+too small. Current 
+aria_sort_buffer_size: 
+16384  rows: 107588  
+sort_length: 9
+aria_chk.exe: error: Create 
+index by sort failed
+- recovering (with sort) Aria-table 'E:\XAMP\mysql\data\mysql\help_topic.MAI'
+Data records: 752
+- Fixing index 1
+State updated
+
+---------
+
+Aria table 'E:\XAMP\mysql\da
+ta\mysql\help_topic.MAI' is 
+not fixed because of errors
+Try fixing it by using the 
+--safe-recover (-o), the 
+--force (-f) option or by 
+not using the --quick (-q) 
+flag
+- recovering (with sort) Aria-table 'E:\XAMP\mysql\data\mysql\index_stats.MAI'
+Data records: 0
+- Fixing index 1
+State updated
+
+---------
+
+- recovering (with sort) Aria-table 'E:\XAMP\mysql\data\mysql\plugin.MAI'
+Data records: 0
+- Fixing index 1
+State updated
+
+---------
+
+- recovering (with sort) Aria-table 'E:\XAMP\mysql\data\mysql\proc.MAI'
+Data records: 2
+- Fixing index 1
+State updated
+
+---------
+
+- recovering (with sort) Aria-table 'E:\XAMP\mysql\data\mysql\procs_priv.MAI'
+Data records: 0
+- Fixing index 1
+- Fixing index 2
+State updated
+
+---------
+
+- recovering (with sort) Aria-table 'E:\XAMP\mysql\data\mysql\proxies_priv.MAI'
+Data records: 1
+- Fixing index 1
+aria_chk.exe: error: 
+aria_sort_buffer_size is 
+too small. Current 
+aria_sort_buffer_size: 
+16384  rows: 6185  
+sort_length: 849
+aria_chk.exe: error: Create 
+index by sort failed
+Aria table 'E:\XAMP\mysql\da
+ta\mysql\proxies_priv.MAI' 
+is not fixed because of 
+errors
+Try fixing it by using the 
+--safe-recover (-o), the 
+--force (-f) option or by 
+not using the --quick (-q) 
+flag
+State updated
+
+---------
+
+- recovering (with sort) Aria-table 'E:\XAMP\mysql\data\mysql\roles_mapping.MAI'
+Data records: 0
+- Fixing index 1
+State updated
+
+---------
+
+- recovering (with sort) Aria-table 'E:\XAMP\mysql\data\mysql\servers.MAI'
+Data records: 0
+- Fixing index 1
+State updated
+
+---------
+
+- recovering (with sort) Aria-table 'E:\XAMP\mysql\data\mysql\tables_priv.MAI'
+Data records: 0
+- Fixing index 1
+- Fixing index 2
+State updated
+
+---------
+
+- recovering (with sort) Aria-table 'E:\XAMP\mysql\data\mysql\table_stats.MAI'
+Data records: 0
+- Fixing index 1
+State updated
+
+---------
+
+- recovering (with sort) Aria-table 'E:\XAMP\mysql\data\mysql\time_zone.MAI'
+Data records: 0
+- Fixing index 1
+State updated
+
+---------
+
+- recovering (with sort) Aria-table 'E:\XAMP\mysql\data\mysql\time_zone_leap_second.MAI'
+Data records: 0
+- Fixing index 1
+State updated
+
+---------
+
+- recovering (with sort) Aria-table 'E:\XAMP\mysql\data\mysql\time_zone_name.MAI'
+Data records: 0
+- Fixing index 1
+State updated
+
+---------
+
+- recovering (with sort) Aria-table 'E:\XAMP\mysql\data\mysql\time_zone_transition.MAI'
+Data records: 0
+- Fixing index 1
+State updated
+
+---------
+
+- recovering (with sort) Aria-table 'E:\XAMP\mysql\data\mysql\time_zone_transition_type.MAI'
+Data records: 0
+- Fixing index 1
+State updated

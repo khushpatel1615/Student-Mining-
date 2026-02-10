@@ -16,23 +16,23 @@ $pdo = getDBConnection();
 try {
     switch ($method) {
         case 'GET':
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        handleGet($pdo);
+            handleGet($pdo);
 
             break;
         case 'POST':
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        handlePost($pdo);
+            handlePost($pdo);
 
             break;
         case 'PUT':
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        handlePut($pdo);
+            handlePut($pdo);
 
             break;
         case 'DELETE':
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        handleDelete($pdo);
+            handleDelete($pdo);
 
             break;
         default:
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        sendError('Method not allowed', 405);
+            sendError('Method not allowed', 405);
     }
 } catch (Exception $e) {
     sendError($e->getMessage(), 500);
@@ -45,7 +45,7 @@ function handleGet($pdo)
 {
     $studentId = $_GET['id'] ?? null;
     if ($studentId) {
-    // Get single student
+        // Get single student
         $stmt = $pdo->prepare("
             SELECT u.id, u.email, u.student_id, u.full_name, u.role, u.avatar_url, 
                    u.is_active, u.created_at, u.updated_at, u.last_login,
@@ -62,7 +62,7 @@ function handleGet($pdo)
 
         sendResponse(['success' => true, 'data' => $student]);
     } else {
-    // List students
+        // List students
         $page = max(1, intval($_GET['page'] ?? 1));
         $limit = min(100, max(1, intval($_GET['limit'] ?? 20)));
         $offset = ($page - 1) * $limit;
@@ -94,11 +94,11 @@ function handleGet($pdo)
         }
 
         $whereClause = count($conditions) > 0 ? 'WHERE ' . implode(' AND ', $conditions) : '';
-    // Total count
+        // Total count
         $countStmt = $pdo->prepare("SELECT COUNT(*) as total FROM users $whereClause");
         $countStmt->execute($params);
         $total = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
-    // Fetch data
+        // Fetch data
         $sql = "
             SELECT u.id, u.email, u.student_id, u.full_name, u.role, u.avatar_url, 
                    u.is_active, u.created_at, u.updated_at, u.last_login,
@@ -157,9 +157,17 @@ function handlePost($pdo)
         }
     }
 
-    $password = $data['password'] ?? 'password123';
+    $userGeneratedPassword = null;
+    if (!empty($data['password'])) {
+        $password = $data['password'];
+    } else {
+        // Generate secure random password (8 chars) if not provided
+        $password = bin2hex(random_bytes(4));
+        $userGeneratedPassword = $password;
+    }
+
     $passwordHash = password_hash($password, PASSWORD_DEFAULT);
-// Validate Role (Ensure we allow 'teacher' now!)
+    // Validate Role (Ensure we allow 'teacher' now!)
     $validRoles = ['student', 'admin', 'teacher'];
     $role = in_array($data['role'] ?? 'student', $validRoles) ? ($data['role'] ?? 'student') : 'student';
     $stmt = $pdo->prepare("
@@ -174,10 +182,17 @@ function handlePost($pdo)
         $role,
         $data['program_id'] ?? null
     ]);
+
+    $responseData = ['id' => $pdo->lastInsertId()];
+    if ($userGeneratedPassword) {
+        $responseData['generated_password'] = $userGeneratedPassword;
+        $responseData['note'] = 'Please save this password. It stands in place of the default.';
+    }
+
     sendResponse([
         'success' => true,
         'message' => 'User created successfully',
-        'data' => ['id' => $pdo->lastInsertId()]
+        'data' => $responseData
     ], 201);
 }
 

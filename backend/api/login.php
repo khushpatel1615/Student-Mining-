@@ -25,7 +25,7 @@ if (empty($studentId) || empty($password)) {
 
 try {
     $pdo = getDBConnection();
-// Check if user exists
+    // Check if user exists
     $stmt = $pdo->prepare("
         SELECT id, email, student_id, password_hash, full_name, role, avatar_url, is_active, current_semester 
         FROM users 
@@ -33,8 +33,21 @@ try {
     ");
     $stmt->execute(['identifier1' => $studentId, 'identifier2' => $studentId]);
     $user = $stmt->fetch();
-    if (!$user) {
-        sendError('Account not found. Please check your credentials.', 401);
+    // Check if no password (OAuth only)
+    if ($user && empty($user['password_hash'])) {
+        sendResponse([
+            'success' => false,
+            'status' => 'error',
+            'error' => 'No password set for this account. Please sign in with Google.',
+            'requiresGoogle' => true
+        ], 401);
+    }
+
+    // Verify user and password together to prevent enumeration
+    if (!$user || !password_verify($password, $user['password_hash'])) {
+        // Add random delay to prevent timing attacks
+        usleep(rand(100000, 300000));
+        sendError('Invalid credentials. Please check your Student ID and Password.', 401);
     }
 
     // Check if inactive
@@ -47,25 +60,10 @@ try {
         ], 403);
     }
 
-    // Check if no password (OAuth only)
-    if (empty($user['password_hash'])) {
-        sendResponse([
-            'success' => false,
-            'status' => 'error',
-            'error' => 'No password set for this account. Please sign in with Google.',
-            'requiresGoogle' => true
-        ], 401);
-    }
-
-    // Verify password
-    if (!password_verify($password, $user['password_hash'])) {
-        sendError('Invalid password. Please try again.', 401);
-    }
-
     // Update last login
     $updateStmt = $pdo->prepare("UPDATE users SET last_login = NOW() WHERE id = :id");
     $updateStmt->execute(['id' => $user['id']]);
-// Log Activity (fail-safe)
+    // Log Activity (fail-safe)
     try {
         $logStmt = $pdo->prepare("INSERT INTO activity_logs (user_id, action, details, ip_address) VALUES (:uid, 'login', 'User logged in', :ip)");
         $logStmt->execute([
@@ -73,12 +71,12 @@ try {
             'ip' => $_SERVER['REMOTE_ADDR']
         ]);
     } catch (Exception $e) {
-    // Continue login even if log fails
+        // Continue login even if log fails
     }
 
     // Generate JWT token
     $token = generateToken($user['id'], $user['email'], $user['role'], $user['full_name']);
-// Success Response
+    // Success Response
     sendResponse([
         'success' => true,
         'message' => 'Login successful',

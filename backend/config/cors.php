@@ -10,21 +10,19 @@ function handleCORS()
     if (php_sapi_name() === 'cli')
         return;
 
-    // 1. Get Allowed Origin
-    $allowedOrigin = defined('ALLOWED_ORIGIN') ? ALLOWED_ORIGIN : 'http://localhost:5173';
+    // 1. Get Allowed Origins (array)
+    $allowedOrigins = defined('ALLOWED_ORIGINS') ? ALLOWED_ORIGINS : ['http://localhost:5173'];
 
     // 2. Handle Origin & Credentials
     $requestOrigin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
 
-
-    if ($requestOrigin && $requestOrigin === $allowedOrigin) {
+    if ($requestOrigin && in_array($requestOrigin, $allowedOrigins)) {
         header("Access-Control-Allow-Origin: $requestOrigin");
         header("Access-Control-Allow-Credentials: true");
     } else {
-        // If no Origin header (e.g. server-side/Postman) or mismatch, 
-        // we can either block or just output the default allowed origin.
-        // Safest for 'allow-credentials: true' is to output the specific allowed origin.
-        header("Access-Control-Allow-Origin: $allowedOrigin");
+        // Default to first allowed origin if no match
+        $defaultOrigin = $allowedOrigins[0] ?? 'http://localhost:5173';
+        header("Access-Control-Allow-Origin: $defaultOrigin");
         header("Access-Control-Allow-Credentials: true");
     }
 
