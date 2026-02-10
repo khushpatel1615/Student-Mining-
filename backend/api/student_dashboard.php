@@ -185,6 +185,11 @@ function handleGet($pdo, $dataDir)
             foreach ($subjectData['components'] as $comp) {
                 if ($comp['marks_obtained'] !== null && $comp['max_marks'] > 0) {
                     $componentPercent = ($comp['marks_obtained'] / $comp['max_marks']) * 100;
+                    if ($componentPercent > 100) {
+                        $componentPercent = 100;
+                    } elseif ($componentPercent < 0) {
+                        $componentPercent = 0;
+                    }
                     $weightedScore += ($componentPercent * $comp['weight_percentage']) / 100;
                     $totalWeight += $comp['weight_percentage'];
                 }
@@ -192,6 +197,11 @@ function handleGet($pdo, $dataDir)
 
             if ($totalWeight > 0) {
                 $overallPercentage = round(($weightedScore / $totalWeight) * 100, 2);
+                if ($overallPercentage > 100) {
+                    $overallPercentage = 100;
+                } elseif ($overallPercentage < 0) {
+                    $overallPercentage = 0;
+                }
                 $subjectData['overall_grade'] = $overallPercentage;
 
                 $gradeData = calculateGrade($overallPercentage); // Returns letter and points (0-10)

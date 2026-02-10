@@ -8,6 +8,7 @@ const StudyPlanner = () => {
     const [loading, setLoading] = useState(true);
     const [assignments, setAssignments] = useState([]);
     const [exams, setExams] = useState([]);
+    const [recommendation, setRecommendation] = useState('');
 
     useEffect(() => {
         if (token) {
@@ -34,6 +35,14 @@ const StudyPlanner = () => {
             if (examData.success) {
                 setExams(examData.data || []);
             }
+
+            const recommendationResponse = await fetch(`${API_BASE}/study_planner.php`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const recommendationData = await recommendationResponse.json();
+            if (recommendationData.success) {
+                setRecommendation(recommendationData.recommendation || '');
+            }
         } catch (err) {
             console.error(err);
         } finally {
@@ -42,8 +51,13 @@ const StudyPlanner = () => {
     };
 
     const getDaysUntil = (dateString) => {
-        const diff = new Date(dateString) - new Date();
-        return Math.ceil(diff / (1000 * 60 * 60 * 24));
+        if (!dateString) return 0;
+        const now = new Date();
+        const due = new Date(dateString);
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const dueDay = new Date(due.getFullYear(), due.getMonth(), due.getDate());
+        const diff = dueDay - today;
+        return Math.round(diff / (1000 * 60 * 60 * 24));
     };
 
     const getUrgencyColor = (days) => {
@@ -134,7 +148,7 @@ const StudyPlanner = () => {
                     <AlertCircle size={18} /> Study Tip
                 </h4>
                 <p style={{ fontSize: '0.9rem', color: '#7f1d1d', margin: 0 }}>
-                    Plan to start assignments at least 3 days before the deadline. For exams, begin reviewing 1-2 weeks in advance for best results!
+                    {recommendation || 'No recommendation available yet.'}
                 </p>
             </div>
         </div>

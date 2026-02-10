@@ -44,6 +44,9 @@ try {
                 $stmt->execute([$assignment_id]);
                 $assignment = $stmt->fetch(PDO::FETCH_ASSOC);
                 if ($assignment) {
+                    if (!isset($assignment['max_marks']) || $assignment['max_marks'] === null) {
+                        $assignment['max_marks'] = $assignment['total_points'] ?? null;
+                    }
                         // Get submissions for this assignment
                                     $stmt = $pdo->prepare("
                         SELECT sub.*, u.full_name as student_name, u.student_id
@@ -88,6 +91,11 @@ try {
                 $stmt = $pdo->prepare($query);
                 $stmt->execute($params);
                 $assignments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                foreach ($assignments as &$assignment) {
+                    if (!isset($assignment['max_marks']) || $assignment['max_marks'] === null) {
+                        $assignment['max_marks'] = $assignment['total_points'] ?? null;
+                    }
+                }
             // If student, fetch their submissions
                 if ($user_role === 'student') {
                     foreach ($assignments as &$assignment) {

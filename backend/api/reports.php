@@ -26,6 +26,21 @@ try {
     echo json_encode(['error' => $e->getMessage()]);
 }
 
+function clampPercentage($value)
+{
+    if ($value === null) {
+        return null;
+    }
+    $val = (float) $value;
+    if ($val < 0) {
+        return 0;
+    }
+    if ($val > 100) {
+        return 100;
+    }
+    return $val;
+}
+
 function handleGet($pdo)
 {
     $user = getAuthUser();
@@ -119,6 +134,11 @@ function generateReportCard($pdo, $studentId)
     ");
     $stmt->execute([$studentId, $currentSemester]);
     $grades = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($grades as &$grade) {
+        if (isset($grade['score'])) {
+            $grade['score'] = clampPercentage($grade['score']);
+        }
+    }
 // Calculate GPA
     $totalPoints = 0;
     $totalCredits = 0;
@@ -208,6 +228,11 @@ function generateTranscript($pdo, $studentId)
     ");
     $stmt->execute([$studentId]);
     $allGrades = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($allGrades as &$grade) {
+        if (isset($grade['score'])) {
+            $grade['score'] = clampPercentage($grade['score']);
+        }
+    }
 // Group by semester
     $semesters = [];
     foreach ($allGrades as $grade) {
@@ -385,6 +410,7 @@ function generatePerformanceReport($pdo, $studentId)
         }
         if ($grade['score'] !== null && $grade['max_marks'] > 0) {
             $percentage = round(($grade['score'] / $grade['max_marks']) * 100, 1);
+            $percentage = clampPercentage($percentage);
             $subjects[$name]['components'][$grade['component_name']] = $percentage;
         }
     }
