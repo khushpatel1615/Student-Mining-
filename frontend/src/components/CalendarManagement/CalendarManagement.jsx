@@ -341,12 +341,7 @@ const CalendarManagement = ({ role: propRole }) => {
                 )}
             </div>
 
-            <div className="calendar-grid-wrapper" style={{
-                height: '750px',
-                background: 'transparent',
-                borderRadius: '24px',
-                position: 'relative'
-            }}>
+            <div className="calendar-grid-wrapper">
                 <DnDCalendar
                     localizer={localizer}
                     events={events
