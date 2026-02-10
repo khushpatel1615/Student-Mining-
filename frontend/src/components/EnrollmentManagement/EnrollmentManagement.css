@@ -243,25 +243,25 @@
 }
 
 .status-active {
-    background: #ecfdf3 !important;
+    background: #ffffff !important;
     color: #16a34a !important;
     border-color: #86efac !important;
 }
 
 .status-completed {
-    background: #eef2ff !important;
+    background: #ffffff !important;
     color: #4f46e5 !important;
     border-color: #c7d2fe !important;
 }
 
 .status-dropped {
-    background: #f1f5f9 !important;
+    background: #ffffff !important;
     color: #64748b !important;
     border-color: #e2e8f0 !important;
 }
 
 .status-failed {
-    background: #fef2f2 !important;
+    background: #ffffff !important;
     color: #dc2626 !important;
     border-color: #fecaca !important;
 }
