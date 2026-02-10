@@ -23,6 +23,9 @@ $method = $_SERVER['REQUEST_METHOD'];
 $decoded = (object) $result['payload'];
 $user_id = $decoded->user_id;
 $user_role = $decoded->role;
+
+// Ensure required tables exist (for older installs)
+ensureExamTables($pdo);
 try {
     switch ($method) {
         case 'GET':
@@ -60,7 +63,7 @@ try {
             } else {
             // Get all exams
                 $query = "
-                    SELECT e.*, s.name as subject_name, s.code as subject_code, s.semester as subject_semester,
+                    SELECT DISTINCT e.*, s.name as subject_name, s.code as subject_code, s.semester as subject_semester,
                            u.full_name as teacher_name
                     FROM exams e
                     LEFT JOIN subjects s ON e.subject_id = s.id
@@ -78,18 +81,26 @@ try {
                 }
 
                 if ($user_role === 'student') {
-        // Students see exams for all subjects in their program
-                    $progStmt = $pdo->prepare("SELECT program_id FROM users WHERE id = ?");
-                    $progStmt->execute([$user_id]);
-                    $programId = $progStmt->fetchColumn();
-                    if ($programId) {
-                        $conditions[] = "s.program_id = ?";
-                        $params[] = $programId;
+                    // Students see exams for their enrolled subjects; fallback to program+current semester
+                    $studentStmt = $pdo->prepare("SELECT program_id, current_semester FROM users WHERE id = ?");
+                    $studentStmt->execute([$user_id]);
+                    $student = $studentStmt->fetch(PDO::FETCH_ASSOC);
+
+                    $query .= " LEFT JOIN student_enrollments se ON e.subject_id = se.subject_id AND se.user_id = ?";
+                    $params[] = $user_id;
+
+                    $enrolledClause = "(se.user_id IS NOT NULL AND se.status IN ('active', 'completed'))";
+                    $fallbackClause = "";
+                    if ($student && $student['program_id'] && $student['current_semester']) {
+                        $fallbackClause = "(s.program_id = ? AND s.semester = ?)";
+                        $params[] = (int) $student['program_id'];
+                        $params[] = (int) $student['current_semester'];
+                    }
+
+                    if ($fallbackClause) {
+                        $conditions[] = "(" . $enrolledClause . " OR " . $fallbackClause . ")";
                     } else {
-                        // Fallback to enrolled subjects if program_id is not set
-                        $query .= " JOIN student_enrollments se ON e.subject_id = se.subject_id";
-                        $conditions[] = "se.user_id = ?";
-                        $params[] = $user_id;
+                        $conditions[] = $enrolledClause;
                     }
                 }
 
@@ -239,4 +250,22 @@ try {
 } catch (PDOException $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+}
+
+function ensureExamTables($pdo)
+{
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS exam_results (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            exam_id INT NOT NULL,
+            student_id INT NOT NULL,
+            marks_obtained DECIMAL(5,2) DEFAULT NULL,
+            remarks VARCHAR(255) DEFAULT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            UNIQUE KEY unique_exam_result (exam_id, student_id),
+            INDEX idx_exam (exam_id),
+            INDEX idx_student (student_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ");
 }
