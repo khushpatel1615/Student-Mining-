@@ -42,11 +42,7 @@ set_time_limit(300); // Allow 5 minutes for computation
 try {
     $pdo = getDBConnection();
 
-    // 1. Get ALL active students
-    $stmt = $pdo->query("SELECT id FROM users WHERE role = 'student' AND is_active = 1");
-    $users = array_column($stmt->fetchAll(PDO::FETCH_ASSOC), 'id');
-
-    // 2. Run the computation in-process to avoid exec/CLI failures
+    // Run the computation in-process to avoid exec/CLI failures
     define('BEHAVIOR_COMPUTE_LIB', true);
     require_once __DIR__ . '/../../cron/compute_behavior_patterns.php';
 
@@ -59,7 +55,7 @@ try {
     echo json_encode([
         'success' => true,
         'message' => 'Analysis refreshed successfully',
-        'details' => count($users) . ' students processed',
+        'details' => ($result['processed'] ?? 0) . ' students processed',
         'processed' => $result['processed'] ?? 0,
         'errors' => $result['errors'] ?? 0,
         'execution_time' => $result['execution_time'] ?? 0

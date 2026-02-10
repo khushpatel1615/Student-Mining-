@@ -300,10 +300,10 @@ function aggregateMetrics($sessions, $activityLogs)
     $metrics['days_active'] = count($daysActive);
     $metrics['study_consistency_score'] = min(100, round((count($daysActive) / 7) * 100, 2));
 
-    // Engagement scores
-    $metrics['video_engagement_score'] = min(100, round(($contentTypeCounts['video'] / max(7, 1)) * 100, 2));
-    $metrics['assignment_engagement_score'] = min(100, round(($contentTypeCounts['assignment'] / max(5, 1)) * 100, 2));
-    $metrics['discussion_engagement_score'] = min(100, round(($contentTypeCounts['discussion'] / max(5, 1)) * 100, 2));
+    // Engagement scores (normalized against weekly targets: 7 videos, 5 assignments, 5 discussions)
+    $metrics['video_engagement_score'] = min(100, round(($contentTypeCounts['video'] / 7) * 100, 2));
+    $metrics['assignment_engagement_score'] = min(100, round(($contentTypeCounts['assignment'] / 5) * 100, 2));
+    $metrics['discussion_engagement_score'] = min(100, round(($contentTypeCounts['discussion'] / 5) * 100, 2));
 
     // Overall engagement (average of all scores)
     $engagementScores = [
@@ -492,5 +492,5 @@ function insertOrUpdatePattern($pdo, $userId, $weekStart, $patternData)
 }
 
 if (php_sapi_name() === 'cli') {
-    exit($processed > 0 && $errors === 0 ? 0 : 1);
+    exit(($result['processed'] ?? 0) > 0 && ($result['errors'] ?? 0) === 0 ? 0 : 1);
 }

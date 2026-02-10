@@ -24,38 +24,29 @@
  */
 
 // ============================================================================
-// CORS HEADERS - MUST BE FIRST
-// ============================================================================
-header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: http://localhost:5173');
-header('Access-Control-Allow-Methods: GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
-header('Access-Control-Allow-Credentials: true');
-header('Access-Control-Max-Age: 86400'); // 24 hours cache
-
-// Handle OPTIONS preflight request
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(204);
-    exit;
-}
-
-// Only allow GET requests
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    http_response_code(405);
-    echo json_encode(['success' => false, 'error' => 'Method not allowed', 'allowed_methods' => ['GET']]);
-    exit;
-}
-
-// ============================================================================
 // DEPENDENCIES
 // ============================================================================
 try {
+    require_once __DIR__ . '/../../config/cors.php';
     require_once __DIR__ . '/../../includes/jwt.php';
     require_once __DIR__ . '/../../config/database.php';
 } catch (Exception $e) {
     error_log('Failed to load dependencies: ' . $e->getMessage());
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => 'Server configuration error']);
+    exit;
+}
+
+// ============================================================================
+// CORS HEADERS - Uses centralized handler
+// ============================================================================
+header('Content-Type: application/json; charset=utf-8');
+handleCORS(); // Handles CORS headers + OPTIONS preflight automatically
+
+// Only allow GET requests
+if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+    http_response_code(405);
+    echo json_encode(['success' => false, 'error' => 'Method not allowed', 'allowed_methods' => ['GET']]);
     exit;
 }
 
