@@ -100,7 +100,7 @@ function TeacherExams() {
 
                 // Merge students with their results
                 const studentsWithResults = studentsList.map(student => {
-                    const result = existingResults.find(r => r.student_id === student.id)
+                    const result = existingResults.find(r => String(r.student_id) === String(student.id))
                     return {
                         ...student,
                         marks_obtained: result?.marks_obtained || '',

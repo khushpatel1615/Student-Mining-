@@ -28,12 +28,13 @@ try {
         case 'GET':
             // Get exams
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               $subject_id = $_GET['subject_id'] ?? null;
+                $subject_id = $_GET['subject_id'] ?? null;
+                $semester = $_GET['semester'] ?? null;
             $exam_id = $_GET['id'] ?? null;
             if ($exam_id) {
                 // Get single exam
                 $stmt = $pdo->prepare("
-                    SELECT e.*, s.name as subject_name, s.code as subject_code,
+                    SELECT e.*, s.name as subject_name, s.code as subject_code, s.semester as subject_semester,
                            u.full_name as teacher_name
                     FROM exams e
                     LEFT JOIN subjects s ON e.subject_id = s.id
@@ -59,7 +60,7 @@ try {
             } else {
             // Get all exams
                 $query = "
-                    SELECT e.*, s.name as subject_name, s.code as subject_code,
+                    SELECT e.*, s.name as subject_name, s.code as subject_code, s.semester as subject_semester,
                            u.full_name as teacher_name
                     FROM exams e
                     LEFT JOIN subjects s ON e.subject_id = s.id
@@ -70,6 +71,10 @@ try {
                 if ($subject_id) {
                     $conditions[] = "e.subject_id = ?";
                     $params[] = $subject_id;
+                }
+                if ($semester) {
+                    $conditions[] = "s.semester = ?";
+                    $params[] = $semester;
                 }
 
                 if ($user_role === 'student') {

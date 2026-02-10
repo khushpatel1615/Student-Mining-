@@ -26,11 +26,10 @@ try {
 }
 
 /**
- * Helper to get attendance stats from CSV
+ * Helper to get attendance stats from DB
  */
-function getSubjectAttendanceFromCsv($dataDir, $subjectId, $studentIdKey)
+function getSubjectAttendanceFromDb($pdo, $userId, $subjectId)
 {
-    $file = $dataDir . "/attendance_subject_{$subjectId}.csv";
     $stats = [
         'present' => 0,
         'absent' => 0,
@@ -41,36 +40,32 @@ function getSubjectAttendanceFromCsv($dataDir, $subjectId, $studentIdKey)
         'records' => []
     ];
 
-    if (file_exists($file)) {
-        if (($handle = fopen($file, "r")) !== false) {
-            $header = fgetcsv($handle);
-            if ($header && count($header) > 2) {
-                $dates = array_slice($header, 2);
-                while (($row = fgetcsv($handle)) !== false) {
-                    if ($row[0] === $studentIdKey) {
-                        foreach ($dates as $i => $date) {
-                            $status = $row[$i + 2] ?? '-';
-                            if ($status === '-') {
-                                continue;
-                            }
+    $stmt = $pdo->prepare("
+        SELECT sa.attendance_date, sa.status
+        FROM student_attendance sa
+        JOIN student_enrollments se ON se.id = sa.enrollment_id
+        WHERE se.user_id = ? AND se.subject_id = ?
+        ORDER BY sa.attendance_date
+    ");
+    $stmt->execute([$userId, $subjectId]);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-                            $stats['total_classes']++;
-                            if ($status === 'P') {
-                                $stats['present']++;
-                            } elseif ($status === 'A') {
-                                $stats['absent']++;
-                            } elseif ($status === 'E' || $status === 'L') {
-                                $stats['excused']++; // Simplified
-                            }
-
-                            $stats['records'][] = ['date' => $date, 'status' => $status];
-                        }
-                        break;
-                    }
-                }
-            }
-            fclose($handle);
+    foreach ($rows as $row) {
+        $stats['total_classes']++;
+        $status = $row['status'];
+        if ($status === 'present') {
+            $stats['present']++;
+        } elseif ($status === 'absent') {
+            $stats['absent']++;
+        } elseif ($status === 'late') {
+            $stats['late']++;
+        } elseif ($status === 'excused') {
+            $stats['excused']++;
         }
+        $stats['records'][] = [
+            'date' => $row['attendance_date'],
+            'status' => $status
+        ];
     }
 
     if ($stats['total_classes'] > 0) {
@@ -84,6 +79,16 @@ function handleGet($pdo, $dataDir)
 {
     $auth = getAuthUser();
     $userId = $auth['user_id'];
+
+    // Optional analytics action
+    if (isset($_GET['action']) && $_GET['action'] === 'analytics') {
+        handleAnalytics($pdo, $dataDir, $userId);
+        return;
+    }
+    if (isset($_GET['action']) && $_GET['action'] === 'analytics_stream') {
+        handleAnalyticsStream($pdo, $dataDir, $userId);
+        return;
+    }
 
     // 1. Get Complete Student Profile
     $stmt = $pdo->prepare("
@@ -101,9 +106,6 @@ function handleGet($pdo, $dataDir)
     if (!$student) {
         sendError('User not found', 404);
     }
-
-    // Determine CSV key (consistent with attendance.php)
-    $studentIdKey = $student['student_id'] ?: $student['email'];
 
     if (!$student['program_id']) {
         sendResponse([
@@ -212,8 +214,8 @@ function handleGet($pdo, $dataDir)
                 $earnedCredits += $subject['credits'];
             }
 
-            // Real Attendance from CSV
-            $attStats = getSubjectAttendanceFromCsv($dataDir, $subject['id'], $studentIdKey);
+            // Real Attendance from DB
+            $attStats = getSubjectAttendanceFromDb($pdo, $userId, $subject['id']);
             $subjectData['attendance'] = $attStats;
 
             $totalPresentOverall += $attStats['present'];
@@ -263,6 +265,305 @@ function handleGet($pdo, $dataDir)
     ]);
 }
 
+function handleAnalytics($pdo, $dataDir, $userId)
+{
+    $range = isset($_GET['range']) ? $_GET['range'] : '30d'; // 7d, 30d, term
+    $requestedSemester = isset($_GET['semester']) ? intval($_GET['semester']) : null;
+    $data = buildAnalyticsData($pdo, $dataDir, $userId, $range, $requestedSemester);
+
+    sendResponse([
+        'success' => true,
+        'data' => $data
+    ]);
+}
+
+function handleAnalyticsStream($pdo, $dataDir, $userId)
+{
+    $range = isset($_GET['range']) ? $_GET['range'] : '30d'; // 7d, 30d, term
+    $requestedSemester = isset($_GET['semester']) ? intval($_GET['semester']) : null;
+
+    @ini_set('output_buffering', 'off');
+    @ini_set('zlib.output_compression', 0);
+    while (ob_get_level() > 0) {
+        ob_end_flush();
+    }
+    ob_implicit_flush(true);
+    set_time_limit(0);
+
+    header('Content-Type: text/event-stream');
+    header('Cache-Control: no-cache');
+    header('Connection: keep-alive');
+    header('X-Accel-Buffering: no');
+
+    $retryMs = 5000;
+    echo "retry: {$retryMs}\n\n";
+    flush();
+
+    while (true) {
+        if (connection_aborted()) {
+            break;
+        }
+
+        $payload = buildAnalyticsData($pdo, $dataDir, $userId, $range, $requestedSemester);
+        echo "event: analytics\n";
+        echo "data: " . json_encode(['success' => true, 'data' => $payload]) . "\n\n";
+        flush();
+
+        sleep(15);
+    }
+}
+
+function buildAnalyticsData($pdo, $dataDir, $userId, $range, $requestedSemester)
+{
+    // 1. Get student profile
+    $stmt = $pdo->prepare("
+        SELECT 
+            u.id, u.email, u.full_name, u.avatar_url, u.student_id, 
+            u.program_id, u.current_semester, u.created_at as enrollment_date,
+            p.name as program_name, p.code as program_code
+        FROM users u
+        LEFT JOIN programs p ON u.program_id = p.id
+        WHERE u.id = ?
+    ");
+    $stmt->execute([$userId]);
+    $student = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$student || !$student['program_id']) {
+        return [
+            'enrolled' => false,
+            'summary' => [],
+            'trends' => ['grades' => [], 'attendance' => [], 'risk' => []]
+        ];
+    }
+
+    $semester = $requestedSemester ?: ($student['current_semester'] ?? 1);
+
+    // 2. Fetch subjects for semester
+    $stmt = $pdo->prepare("
+        SELECT id, name, code, credits 
+        FROM subjects 
+        WHERE program_id = ? AND semester = ? AND is_active = 1
+    ");
+    $stmt->execute([$student['program_id'], $semester]);
+    $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // 3. Attendance trend from DB (date -> present/total)
+    $attendanceByDate = [];
+    $totalPresentOverall = 0;
+    $totalClassesOverall = 0;
+
+    $stmt = $pdo->prepare("
+        SELECT sa.attendance_date as date,
+               SUM(CASE WHEN sa.status = 'present' THEN 1 ELSE 0 END) AS present,
+               COUNT(*) AS total
+        FROM student_attendance sa
+        JOIN student_enrollments se ON se.id = sa.enrollment_id
+        JOIN subjects s ON s.id = se.subject_id
+        WHERE se.user_id = ? AND s.program_id = ? AND s.semester = ?
+        GROUP BY sa.attendance_date
+        ORDER BY sa.attendance_date
+    ");
+    $stmt->execute([$userId, $student['program_id'], $semester]);
+    $attendanceRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($attendanceRows as $row) {
+        $date = $row['date'];
+        $present = (int) $row['present'];
+        $total = (int) $row['total'];
+        $attendanceByDate[$date] = ['present' => $present, 'total' => $total];
+        $totalPresentOverall += $present;
+        $totalClassesOverall += $total;
+    }
+
+    // 4. Grade trend from student_grades (graded_at -> avg percent)
+    $gradeByDate = [];
+    $stmt = $pdo->prepare("
+        SELECT sg.graded_at, sg.marks_obtained, ec.max_marks
+        FROM student_enrollments se
+        JOIN student_grades sg ON sg.enrollment_id = se.id
+        JOIN evaluation_criteria ec ON ec.id = sg.criteria_id
+        WHERE se.user_id = ? AND sg.graded_at IS NOT NULL
+    ");
+    $stmt->execute([$userId]);
+    $grades = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($grades as $g) {
+        if ($g['max_marks'] <= 0 || $g['marks_obtained'] === null) {
+            continue;
+        }
+        $date = substr($g['graded_at'], 0, 10);
+        $pct = ($g['marks_obtained'] / $g['max_marks']) * 100;
+        if (!isset($gradeByDate[$date])) {
+            $gradeByDate[$date] = ['sum' => 0, 'count' => 0];
+        }
+        $gradeByDate[$date]['sum'] += $pct;
+        $gradeByDate[$date]['count'] += 1;
+    }
+
+    // 5. Determine date window
+    $dateWindow = getDateWindow($range, array_keys($attendanceByDate), array_keys($gradeByDate));
+    $startDate = $dateWindow['start'];
+    $endDate = $dateWindow['end'];
+
+    // 6. Build trend arrays
+    $attendanceTrend = [];
+    foreach ($attendanceByDate as $date => $vals) {
+        if ($date < $startDate || $date > $endDate) continue;
+        $pct = $vals['total'] > 0 ? round(($vals['present'] / $vals['total']) * 100, 1) : 0;
+        $attendanceTrend[] = ['t' => $date, 'value' => $pct];
+    }
+    usort($attendanceTrend, function ($a, $b) { return strcmp($a['t'], $b['t']); });
+
+    $gradeTrend = [];
+    foreach ($gradeByDate as $date => $vals) {
+        if ($date < $startDate || $date > $endDate) continue;
+        $avg = $vals['count'] > 0 ? round($vals['sum'] / $vals['count'], 1) : 0;
+        $gradeTrend[] = ['t' => $date, 'value' => $avg];
+    }
+    usort($gradeTrend, function ($a, $b) { return strcmp($a['t'], $b['t']); });
+
+    // 7. Summary metrics
+    $overallAttendance = $totalClassesOverall > 0
+        ? round(($totalPresentOverall / $totalClassesOverall) * 100, 1)
+        : 0;
+
+    $latestGrade = !empty($gradeTrend) ? $gradeTrend[count($gradeTrend) - 1]['value'] : 0;
+    $riskScore = calculateRiskScore($overallAttendance, $latestGrade);
+    $riskLabel = getRiskLabel($riskScore);
+    $engagement = getEngagementLevel($overallAttendance, $latestGrade);
+
+    // 8. Risk trend (merge dates)
+    $riskTrend = [];
+    $allDates = array_unique(array_merge(
+        array_map(function ($x) { return $x['t']; }, $attendanceTrend),
+        array_map(function ($x) { return $x['t']; }, $gradeTrend)
+    ));
+    sort($allDates);
+    $lastAttendance = $overallAttendance;
+    $lastGrade = $latestGrade;
+    foreach ($allDates as $date) {
+        foreach ($attendanceTrend as $a) {
+            if ($a['t'] === $date) {
+                $lastAttendance = $a['value'];
+                break;
+            }
+        }
+        foreach ($gradeTrend as $g) {
+            if ($g['t'] === $date) {
+                $lastGrade = $g['value'];
+                break;
+            }
+        }
+        $riskTrend[] = ['t' => $date, 'value' => calculateRiskScore($lastAttendance, $lastGrade)];
+    }
+
+    $insights = buildInsights($gradeTrend, $attendanceTrend, $riskScore, $riskLabel, $overallAttendance, $latestGrade);
+
+    return [
+        'enrolled' => true,
+        'summary' => [
+            'attendance_rate' => $overallAttendance,
+            'average_grade' => $latestGrade,
+            'risk_score' => $riskScore,
+            'risk_label' => $riskLabel,
+            'engagement' => $engagement,
+            'updated_at' => date('c')
+        ],
+        'insights' => $insights,
+        'trends' => [
+            'grades' => $gradeTrend,
+            'attendance' => $attendanceTrend,
+            'risk' => $riskTrend
+        ],
+        'meta' => [
+            'range' => $range,
+            'semester' => $semester
+        ]
+    ];
+}
+
+function buildInsights($gradeTrend, $attendanceTrend, $riskScore, $riskLabel, $overallAttendance, $latestGrade)
+{
+    $insights = [];
+
+    // Grade trend insight
+    if (count($gradeTrend) >= 2) {
+        $last = $gradeTrend[count($gradeTrend) - 1]['value'];
+        $prev = $gradeTrend[count($gradeTrend) - 2]['value'];
+        if ($prev > 0) {
+            $delta = (($last - $prev) / $prev) * 100;
+            if ($delta >= 2) {
+                $insights[] = [
+                    'type' => 'grade_improvement',
+                    'tone' => 'success',
+                    'title' => 'Grade Improvement',
+                    'message' => 'Your grades improved by ' . round($delta, 1) . '% since the last assessment.'
+                ];
+            } elseif ($delta <= -2) {
+                $insights[] = [
+                    'type' => 'grade_drop',
+                    'tone' => 'warning',
+                    'title' => 'Grade Dip',
+                    'message' => 'Your grades dropped by ' . abs(round($delta, 1)) . '% since the last assessment.'
+                ];
+            }
+        }
+    }
+
+    // Attendance insight
+    if ($overallAttendance > 0) {
+        if ($overallAttendance < 90) {
+            $insights[] = [
+                'type' => 'attendance_watch',
+                'tone' => 'warning',
+                'title' => 'Attendance Watch',
+                'message' => 'Your attendance is ' . $overallAttendance . '%. Try to stay above 90% to avoid risk.'
+            ];
+        } elseif ($overallAttendance >= 95) {
+            $insights[] = [
+                'type' => 'attendance_strong',
+                'tone' => 'success',
+                'title' => 'Great Attendance',
+                'message' => 'Your attendance is excellent at ' . $overallAttendance . '%. Keep it up!'
+            ];
+        }
+    }
+
+    // Risk insight
+    if ($riskScore >= 70) {
+        $insights[] = [
+            'type' => 'risk_high',
+            'tone' => 'danger',
+            'title' => 'High Risk Alert',
+            'message' => 'Your risk score is ' . $riskScore . '. Consider scheduling a check-in with your advisor.'
+        ];
+    } elseif ($riskScore >= 40) {
+        $insights[] = [
+            'type' => 'risk_moderate',
+            'tone' => 'warning',
+            'title' => 'Moderate Risk',
+            'message' => 'Your risk score is ' . $riskScore . '. Focus on consistent attendance and assessments.'
+        ];
+    } else {
+        $insights[] = [
+            'type' => 'risk_safe',
+            'tone' => 'success',
+            'title' => 'Low Risk',
+            'message' => 'You are in the safe zone. Keep your current momentum.'
+        ];
+    }
+
+    // If no grade trend, add a neutral insight
+    if (empty($gradeTrend)) {
+        $insights[] = [
+            'type' => 'no_grades',
+            'tone' => 'neutral',
+            'title' => 'Grades Pending',
+            'message' => 'No graded assessments yet. Insights will appear after your first marks are uploaded.'
+        ];
+    }
+
+    return $insights;
+}
+
 function calculateGrade($percentage)
 {
     if ($percentage >= 90) {
@@ -284,6 +585,47 @@ function calculateGrade($percentage)
         return ['letter' => 'D', 'points' => 5];
     }
     return ['letter' => 'F', 'points' => 0];
+}
+
+function getDateWindow($range, $attendanceDates, $gradeDates)
+{
+    $today = date('Y-m-d');
+    if ($range === '7d') {
+        return ['start' => date('Y-m-d', strtotime('-6 days')), 'end' => $today];
+    }
+    if ($range === '30d') {
+        return ['start' => date('Y-m-d', strtotime('-29 days')), 'end' => $today];
+    }
+
+    // term: pick earliest date we have, fallback to 120 days
+    $allDates = array_merge($attendanceDates, $gradeDates);
+    sort($allDates);
+    if (!empty($allDates)) {
+        return ['start' => $allDates[0], 'end' => $today];
+    }
+    return ['start' => date('Y-m-d', strtotime('-120 days')), 'end' => $today];
+}
+
+function calculateRiskScore($attendanceRate, $gradePercent)
+{
+    $attendanceRate = max(0, min(100, $attendanceRate));
+    $gradePercent = max(0, min(100, $gradePercent));
+    $score = 100 - (($attendanceRate * 0.6) + ($gradePercent * 0.4));
+    return round(max(0, min(100, $score)), 1);
+}
+
+function getRiskLabel($riskScore)
+{
+    if ($riskScore >= 70) return 'High Risk';
+    if ($riskScore >= 40) return 'Moderate';
+    return 'Safe';
+}
+
+function getEngagementLevel($attendanceRate, $gradePercent)
+{
+    if ($attendanceRate >= 90 && $gradePercent >= 75) return 'High';
+    if ($attendanceRate >= 75 && $gradePercent >= 60) return 'Medium';
+    return 'Low';
 }
 
 function getGPAGrade($gpa)

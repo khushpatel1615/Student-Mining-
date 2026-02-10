@@ -3,15 +3,15 @@
 }
 
 .filters-section {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(180px, 1fr));
     gap: 1rem;
     margin-bottom: 2rem;
     background: var(--bg-secondary);
     padding: 1rem;
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-color);
-    flex-wrap: wrap;
-    align-items: flex-end;
+    align-items: end;
 }
 
 .filter-group {
@@ -32,7 +32,29 @@
     border-radius: var(--radius-md);
     background: var(--bg-primary);
     color: var(--text-primary);
-    min-width: 200px;
+    min-width: 180px;
+    height: 44px;
+}
+
+.filter-group input[type="date"] {
+    height: 44px;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+@media (max-width: 1200px) {
+    .filters-section {
+        grid-template-columns: repeat(2, minmax(180px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .filters-section {
+        grid-template-columns: 1fr;
+    }
 }
 
 .attendance-table-container {
