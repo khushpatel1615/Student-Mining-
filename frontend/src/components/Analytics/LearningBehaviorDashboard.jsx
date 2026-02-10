@@ -413,7 +413,7 @@ export function LearningBehaviorDashboard() {
                                 rel="noopener noreferrer"
                                 className="notice-link"
                             >
-                                Run Setup Script ->
+                                Run Setup Script →
                             </a>
                         )}
                     </div>

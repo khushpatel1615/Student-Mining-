@@ -22,7 +22,7 @@ function ReportGenerator() {
         setLoading(type)
         setActiveReport(type)
         try {
-            const response = await fetch(`${API_BASE}/reports.php - action=${type}`, {
+            const response = await fetch(`${API_BASE}/reports.php?action=${type}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             const data = await response.json()
@@ -43,7 +43,7 @@ function ReportGenerator() {
         try {
             // Pre-generate content to catch errors early
             const content = renderReportContent()
-            const reportTitle = reportData - .report_type || 'Report'
+            const reportTitle = reportData?.report_type || 'Report'
 
             const printWindow = window.open('', '_blank')
             if (!printWindow) {
@@ -117,7 +117,7 @@ function ReportGenerator() {
                     .footer { margin-top: 40px; font-size: 10px; color: #666; border-top: 1px solid #eee; padding-top: 10px; }
                 </style></head><body>
                 
-                ${(activeReport !== 'transcript' && activeReport !== 'report_card')  -  `
+                ${(activeReport !== 'transcript' && activeReport !== 'report_card') ? `
                     <div class="header">
                         <div class="logo">GANPAT UNIVERSITY</div>
                         <div>Generated: ${new Date().toLocaleDateString()}</div>
@@ -146,11 +146,11 @@ function ReportGenerator() {
         if (!reportData) return ''
 
         if (activeReport === 'report_card') {
-            const studentName = reportData.student - .name || 'Student';
-            const studentId = reportData.student - .id || '20291341059';
-            const studentProgram = reportData.student - .program || 'COMPUTER ENGINEERING';
-            const studentSemester = reportData.student - .semester || 'I';
-            const grades = reportData.academic - .grades || [];
+            const studentName = reportData.student?.name || 'Student';
+            const studentId = reportData.student?.id || '20291341059';
+            const studentProgram = reportData.student?.program || 'COMPUTER ENGINEERING';
+            const studentSemester = reportData.student?.semester || 'I';
+            const grades = reportData.academic?.grades || [];
 
             // Calculations
             const getGradePoints = (grade) => {
@@ -175,7 +175,7 @@ function ReportGenerator() {
                 return {
                     ...g,
                     code: g.subject_code || `1ES${100 + index}`,
-                    type: g.subject_type  -  g.subject_type.toUpperCase() : (index % 3 === 0  -  'PRACTICAL' : 'THEORY'),
+                    type: g.subject_type ? g.subject_type.toUpperCase() : (index % 3 === 0 ? 'PRACTICAL' : 'THEORY'),
                     gradePoints: points,
                     creditPoints: creditPoints,
                     credits: creditVal,
@@ -184,7 +184,7 @@ function ReportGenerator() {
                 };
             });
 
-            const sgpa = totalCredits > 0  -  (totalGradePoints / totalCredits).toFixed(2) : '0.00';
+            const sgpa = totalCredits > 0 ? (totalGradePoints / totalCredits).toFixed(2) : '0.00';
 
             return `
                 <div class="ganpat-header">
@@ -327,11 +327,11 @@ function ReportGenerator() {
         }
 
         if (activeReport === 'transcript') {
-            const studentName = reportData.student - .name || 'Student';
-            const studentId = reportData.student - .id || 'N/A';
-            const studentProgram = reportData.student - .program || 'Program Not Specified';
-            const cgpa = reportData.summary - .cgpa  -  -  0;
-            const standing = reportData.summary - .standing || 'N/A';
+            const studentName = reportData.student?.name || 'Student';
+            const studentId = reportData.student?.id || 'N/A';
+            const studentProgram = reportData.student?.program || 'Program Not Specified';
+            const cgpa = reportData.summary?.cgpa || 0;
+            const standing = reportData.summary?.standing || 'N/A';
             const semesters = reportData.semesters || [];
 
             return `
@@ -384,10 +384,10 @@ function ReportGenerator() {
                             </tr>
                         </thead>
                         <tbody>
-                            ${semesters.length > 0  -  semesters.map(sem => `
+                            ${semesters.length > 0 ? semesters.map(sem => `
                                 <tr>
                                     <td colspan="6" class="term-header">
-                                        SEMESTER ${sem.semester || 'N/A'}  -  ${sem.academic_year || new Date().getFullYear()}  -  Level ${sem.semester || 'N/A'}
+                                        SEMESTER ${sem.semester || 'N/A'} ? ${sem.academic_year || new Date().getFullYear()} ? Level ${sem.semester || 'N/A'}
                                     </td>
                                 </tr>
                                 ${(sem.courses || []).map(c => `
@@ -424,9 +424,9 @@ function ReportGenerator() {
 
         if (activeReport === 'attendance_report') {
             // Safely access all properties with defaults
-            const studentName = reportData.student - .name || 'Student';
-            const overallPercentage = reportData.summary - .overall_percentage || 0;
-            const status = reportData.summary - .status || 'N/A';
+            const studentName = reportData.student?.name || 'Student';
+            const overallPercentage = reportData.summary?.overall_percentage || 0;
+            const status = reportData.summary?.status || 'N/A';
             const bySubject = reportData.by_subject || [];
 
             return `
@@ -438,7 +438,7 @@ function ReportGenerator() {
                 <h3>Subject Breakdown</h3>
                 <table>
                     <tr><th>Subject</th><th>Present</th><th>Absent</th><th>Late</th><th>%</th><th>Status</th></tr>
-                    ${bySubject.length > 0  -  bySubject.map(s => `
+                    ${bySubject.length > 0 ? bySubject.map(s => `
                         <tr>
                             <td>${s.subject_name || 'N/A'}</td>
                             <td>${s.present || 0}</td>
@@ -454,9 +454,9 @@ function ReportGenerator() {
 
         if (activeReport === 'performance_report') {
             // Safely access all properties with defaults
-            const overallAverage = reportData.analysis - .overall_average || 0;
-            const strengths = reportData.analysis - .strengths || [];
-            const improvements = reportData.analysis - .areas_for_improvement || [];
+            const overallAverage = reportData.analysis?.overall_average || 0;
+            const strengths = reportData.analysis?.strengths || [];
+            const improvements = reportData.analysis?.areas_for_improvement || [];
             const recommendations = reportData.recommendations || [];
 
             return `
@@ -465,15 +465,15 @@ function ReportGenerator() {
                 </div>
                 <h3>Strengths</h3>
                 <ul>
-                    ${strengths.length > 0  -  strengths.map(s => `<li><strong>${s.name || 'N/A'}:</strong> ${Number(s.average || 0).toFixed(1)}%</li>`).join('') : '<li>No data available</li>'}
+                    ${strengths.length > 0 ? strengths.map(s => `<li><strong>${s.name || 'N/A'}:</strong> ${Number(s.average || 0).toFixed(1)}%</li>`).join('') : '<li>No data available</li>'}
                 </ul>
                 <h3>Areas for Improvement</h3>
                 <ul>
-                    ${improvements.length > 0  -  improvements.map(s => `<li><strong>${s.name || 'N/A'}:</strong> ${Number(s.average || 0).toFixed(1)}%</li>`).join('') : '<li>No data available</li>'}
+                    ${improvements.length > 0 ? improvements.map(s => `<li><strong>${s.name || 'N/A'}:</strong> ${Number(s.average || 0).toFixed(1)}%</li>`).join('') : '<li>No data available</li>'}
                 </ul>
                 <h3>Recommendations</h3>
                 <ul>
-                    ${recommendations.length > 0  -  recommendations.map(r => `<li>${r}</li>`).join('') : '<li>No recommendations available</li>'}
+                    ${recommendations.length > 0 ? recommendations.map(r => `<li>${r}</li>`).join('') : '<li>No recommendations available</li>'}
                 </ul>
             `
         }
@@ -493,11 +493,11 @@ function ReportGenerator() {
                 {reportTypes.map(type => (
                     <div
                         key={type.id}
-                        className={`report-type-card ${activeReport === type.id  -  'active' : ''}`}
+                        className={`report-type-card ${activeReport === type.id ? 'active' : ''}`}
                         onClick={() => generateReport(type.id)}
                     >
                         <div className="card-icon" style={{ background: `${type.color}20`, color: type.color }}>
-                            {loading === type.id  -  <Loader className="spin" size={24} /> : <type.icon size={24} />}
+                            {loading === type.id ? <Loader className="spin" size={24} /> : <type.icon size={24} />}
                         </div>
                         <div className="card-content">
                             <h3>{type.name}</h3>
@@ -579,9 +579,9 @@ function ReportGenerator() {
                     {activeReport === 'attendance_report' && reportData.by_subject && (
                         <div className="preview-content">
                             <div className="student-info">
-                                <div className="info-item"><span>Student</span><strong>{reportData.student - .name}</strong></div>
+                                <div className="info-item"><span>Student</span><strong>{reportData.student?.name}</strong></div>
                                 <div className="info-item"><span>Overall</span><strong>{reportData.summary.overall_percentage}%</strong></div>
-                                <div className="info-item"><span>Status</span><strong className={reportData.summary.status.includes('Warning')  -  'warning' : 'success'}>{reportData.summary.status}</strong></div>
+                                <div className="info-item"><span>Status</span><strong className={reportData.summary.status.includes('Warning') ? 'warning' : 'success'}>{reportData.summary.status}</strong></div>
                             </div>
                             <table className="grades-table">
                                 <thead><tr><th>Subject</th><th>Present</th><th>Absent</th><th>Late</th><th>%</th><th>Status</th></tr></thead>
@@ -592,7 +592,7 @@ function ReportGenerator() {
                                             <td>{s.present}</td>
                                             <td>{s.absent}</td>
                                             <td>{s.late}</td>
-                                            <td className={s.percentage >= 75  -  'success' : 'warning'}>{s.percentage}%</td>
+                                            <td className={s.percentage >= 75 ? 'success' : 'warning'}>{s.percentage}%</td>
                                             <td>{s.status}</td>
                                         </tr>
                                     ))}
@@ -636,3 +636,4 @@ function ReportGenerator() {
 }
 
 export default ReportGenerator
+

@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 import { TextEncoder, TextDecoder } from 'util';
 
 global.TextEncoder = TextEncoder;
@@ -71,4 +72,4 @@ global.Response = class Response {
     }
 };
 
-global.fetch = jest.fn();
+global.fetch = vi.fn();

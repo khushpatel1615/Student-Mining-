@@ -228,11 +228,11 @@ const AdminAttendance = () => {
 
                 <div className="filter-group">
                     <label className="filter-label">Marking Date</label>
-                    <div className="date-input-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <Calendar size={18} className="text-gray-500" />
+                    <div className="date-input-wrapper">
+                        <Calendar size={18} className="date-icon" />
                         <input
                             type="date"
-                            className="filter-select"
+                            className="date-input"
                             value={markingDate}
                             onChange={(e) => setMarkingDate(e.target.value)}
                         />
