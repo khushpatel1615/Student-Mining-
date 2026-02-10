@@ -176,12 +176,12 @@ function TeacherManagement() {
     }
 
     const handleRemoveAssignment = async (teacherId, subjectId) => {
-        if (!confirm('Remove this subject assignmentInfo')) return
+        if (!confirm('Remove this subject assignment?')) return
 
         try {
             // We need to find the assignment ID from teacher_subjects table
             // For now, we'll use a workaround by fetching teacher details and matching
-            const response = await fetch(`${API_BASE}/teachers.phpInfoid=${teacherId}`, {
+            const response = await fetch(`${API_BASE}/teachers.php?id=${teacherId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             const teacherData = await response.json()
@@ -190,7 +190,7 @@ function TeacherManagement() {
                 // Find the assignment - the subject.id in assigned_subjects might be the assignment ID
                 // Actually looking at the API, we need the teacher_subjects.id, not subject.id
                 // Let's use a direct delete that takes teacher_id and subject_id
-                const deleteRes = await fetch(`${API_BASE}/teachers.phpInfoteacher_id=${teacherId}&subject_id=${subjectId}`, {
+                const deleteRes = await fetch(`${API_BASE}/teachers.php?teacher_id=${teacherId}&subject_id=${subjectId}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` }
                 })
@@ -228,7 +228,7 @@ function TeacherManagement() {
     // Get subjects filtered by semester
     const getFilteredSubjects = () => {
         if (!selectedTeacher) return []
-        const assignedIds = selectedTeacher.assigned_subjectsInfo.map(s => s.id) || []
+        const assignedIds = selectedTeacher.assigned_subjects?.map(s => s.id) || []
         let filtered = subjects.filter(s => !assignedIds.includes(s.id))
 
         if (selectedSemester) {
@@ -266,7 +266,7 @@ function TeacherManagement() {
             {error && <div className="error-message">{error}</div>}
             {successMessage && <div className="success-message">{successMessage}</div>}
 
-            {teachers.length === 0 Info (
+            {teachers.length === 0 ? (
                 <EmptyState
                     icon={UserIcon}
                     title="No Teachers Found"
@@ -280,7 +280,7 @@ function TeacherManagement() {
                         <div key={teacher.id} className="teacher-card">
                             <div className="teacher-header">
                                 <div className="teacher-avatar">
-                                    {teacher.avatar_url Info (
+                                    {teacher.avatar_url ? (
                                         <img src={teacher.avatar_url} alt={teacher.full_name} />
                                     ) : (
                                         getInitials(teacher.full_name)
@@ -293,12 +293,12 @@ function TeacherManagement() {
                             </div>
 
                             <span className="subject-count">
-                                {teacher.assigned_subjectsInfo.length || 0} subjects assigned
+                                {teacher.assigned_subjects?.length || 0} subjects assigned
                             </span>
 
                             <div className="assigned-subjects">
                                 <h4>Assigned Subjects</h4>
-                                {teacher.assigned_subjectsInfo.length > 0 Info (
+                                {teacher.assigned_subjects?.length > 0 ? (
                                     teacher.assigned_subjects.map(subject => (
                                         <span key={subject.id} className="subject-tag">
                                             <span className="semester-badge">S{subject.semester}</span>
@@ -388,7 +388,7 @@ function TeacherManagement() {
                                     className="btn btn-primary"
                                     disabled={addingTeacher || !newTeacher.email || !newTeacher.full_name}
                                 >
-                                    {addingTeacher Info 'Creating...' : 'Create Teacher'}
+                                    {addingTeacher ? 'Creating...' : 'Create Teacher'}
                                 </button>
                             </div>
                         </form>
@@ -401,7 +401,7 @@ function TeacherManagement() {
                 <div className="modal-overlay" onClick={() => setShowAssignModal(false)}>
                     <div className="modal" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h3>Assign Subject to {selectedTeacherInfo.full_name}</h3>
+                            <h3>Assign Subject to {selectedTeacher?.full_name}</h3>
                             <button className="close-btn" onClick={() => setShowAssignModal(false)}>
                                 <XIcon />
                             </button>
@@ -430,7 +430,7 @@ function TeacherManagement() {
                                 onChange={e => setSelectedSubject(e.target.value)}
                             >
                                 <option value="">-- Select a subject --</option>
-                                {selectedSemester Info (
+                                {selectedSemester ? (
                                     getFilteredSubjects().map(subject => (
                                         <option key={subject.id} value={subject.id}>
                                             {subject.code} - {subject.name}

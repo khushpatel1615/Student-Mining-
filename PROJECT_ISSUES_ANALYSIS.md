@@ -1,0 +1,206 @@
+# Project Issues Analysis & Fixes
+
+**Analysis Date:** 2026-02-10  
+**Status:** ✅ BUILD PASSES | ❌ TESTS FAIL
+
+---
+
+## Executive Summary
+
+The project **builds successfully** but has **7 failing test suites**. The main issues are:
+
+1. **Test Configuration**: Tests use Jest but the project uses Vitest
+2. **Syntax Error**: Malformed URL in `ReportGenerator.jsx`
+3. **File Extensions**: JSX syntax in `.js` files
+4. **Missing Test Config**: No Vitest configuration in `vite.config.js`
+
+---
+
+## 🔴 Critical Issues
+
+### 1. ReportGenerator.jsx - Malformed URL (Line 25)
+**File:** `frontend/src/components/Reports/ReportGenerator.jsx`  
+**Line:** 25  
+**Issue:** Incorrect URL syntax with ` - ` instead of `?`
+
+```javascript
+// ❌ WRONG
+const response = await fetch(`${API_BASE}/reports.php - action=${type}`, {
+
+// ✅ CORRECT
+const response = await fetch(`${API_BASE}/reports.php?action=${type}`, {
+```
+
+**Impact:** Report generation will fail with network errors  
+**Fix:** Replace ` - ` with `?`
+
+---
+
+## 🟡 Test Suite Issues
+
+### Test Configuration Problem
+**Status:** 7/7 test suites failing
+
+The project uses **Vitest** for running (as evidenced by `npx vitest run`), but all test files are configured for **Jest**:
+
+- ❌ Uses `jest.mock()` instead of `vi.mock()`
+- ❌ Uses `jest.fn()` instead of `vi.fn()`  
+- ❌ setup.js references `jest` globals
+- ❌ No vitest configuration in vite.config.js
+
+### Failing Test Files
+
+| File | Issue | Lines |
+|------|-------|-------|
+| `api.test.js` | `describe is not defined` | 3 |
+| `example.test.js` | `describe is not defined` | 1 |
+| `auth.test.js` | Invalid JS syntax (JSX in .js) | 16 |
+| `integration.test.js` | Invalid JS syntax | - |
+| `StudentManagement.test.js` | Invalid JS syntax | - |
+| `TeacherManagement.test.js` | Parse failure (JSX in .js) | 41 |
+| `RiskCenter.test.jsx` | `jest is not defined` | 8 |
+
+### Root Causes
+
+1. **Missing Vitest Globals**
+   - Files use `describe`, `test`, `expect` without importing
+   - Need either:
+     - Import from vitest: `import { describe, test, expect } from 'vitest'`
+     - OR enable globals in vite.config.js
+
+2. **Jest vs Vitest APIs**
+   - `jest.mock()` → `vi.mock()`
+   - `jest.fn()` → `vi.fn()`
+   - `jest.clearAllMocks()` → `vi.clearAllMocks()`
+
+3. **File Extensions**
+   - Files with JSX should use `.jsx` extension
+   - OR configure vite to handle `.js` files with JSX
+
+---
+
+## 📋 Detailed Issues List
+
+### Frontend Issues
+
+#### 1. Test Files Need Migration (7 files)
+**Location:** `frontend/src/__tests__/`
+- [ ] api.test.js
+- [ ] auth.test.js
+- [ ] example.test.js
+- [ ] integration.test.js
+- [ ] StudentManagement.test.js
+- [ ] TeacherManagement.test.js
+- [ ] RiskCenter.test.jsx (in components/Analytics/)
+
+**Required Changes:**
+1. Add vitest imports or enable globals
+2. Replace `jest.*` with `vi.*`
+3. Update setup.js to use vitest
+4. Add vitest config to vite.config.js
+
+#### 2. Vite Configuration Missing Test Setup
+**File:** `vite.config.js`
+
+Needs test configuration:
+```javascript
+test: {
+  globals: true,
+  environment: 'jsdom',
+  setupFiles: './src/__tests__/setup.js',
+}
+```
+
+#### 3. Package.json Script Mismatch
+**File:** `package.json` line 10-13
+
+Scripts reference `jest` but should use `vitest`:
+```json
+"test": "jest",           // ❌ Should be "vitest"
+"test:watch": "jest --watch",  // ❌ Should be "vitest --watch"
+```
+
+---
+
+## 🟢 Build Status
+
+### Production Build: ✅ PASSING
+```
+✓ 4604 modules transformed
+✓ built in 8.83s
+```
+
+**Warning:**  Chunk size > 500kB (normal for single-page apps)
+
+### Dev Server: ✅ RUNNING
+- Port: 5173
+- Running for: 17+ minutes
+- No errors in console
+
+---
+
+## 🔧 Recommended Fixes (Priority Order)
+
+### Priority 1: Critical Runtime Bug
+1. **Fix ReportGenerator.jsx URL** (1 line change)
+   - Line 25: Replace ` - action=` with `?action=`
+
+### Priority 2: Test Infrastructure
+2. **Add Vitest Configuration**
+   - Update `vite.config.js` with test config
+   - Enable globals or add imports
+
+3. **Migrate Test Setup**
+   - Update `setup.js` to use vitest APIs
+   - Replace `global.fetch = jest.fn()` with `vi.fn()`
+
+4. **Update Package Scripts**
+   - Change jest commands to vitest
+
+### Priority 3: Test File Migration
+5. **Update All Test Files**
+   - Add vitest imports
+   - Replace jest.* calls with vi.*
+   - Ensure JSX files have .jsx extension
+
+---
+
+## ✅ Verification Steps
+
+After applying fixes:
+
+```bash
+# 1. Verify build still passes
+npm run build
+
+# 2. Run tests
+npm test
+
+# 3. Check dev server
+npm run dev
+```
+
+---
+
+## 📊 Issue Statistics
+
+- **Total Issues Found:** 10
+- **Critical (Runtime):** 1
+- **High (Testing):** 8
+- **Medium (Config):** 1
+- **Build Status:** ✅ Passing
+- **Test Status:** ❌ 0/7 passing
+
+---
+
+## 🎯 Next Steps
+
+1. ✅ Review this analysis
+2. ⏳ Apply Priority 1 fix (ReportGenerator)
+3. ⏳ Configure Vitest properly
+4. ⏳ Migrate test files
+5. ⏳ Verify all tests pass
+
+---
+
+*Generated by Antigravity AI Code Analysis*

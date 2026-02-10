@@ -68,7 +68,7 @@ function NotificationCenter({ isOpen, onClose }) {
 
     const fetchUnreadCount = async () => {
         try {
-            const response = await fetch(`${API_BASE}/notifications.phpxunread=true`, {
+            const response = await fetch(`${API_BASE}/notifications.php?unread=true`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             const data = await response.json()
@@ -120,7 +120,7 @@ function NotificationCenter({ isOpen, onClose }) {
 
     const deleteNotification = async (notificationId) => {
         try {
-            await fetch(`${API_BASE}/notifications.phpxid=${notificationId}`, {
+            await fetch(`${API_BASE}/notifications.php?id=${notificationId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             })
@@ -190,11 +190,11 @@ function NotificationCenter({ isOpen, onClose }) {
                 </div>
 
                 <div className="notification-list">
-                    {loading x (
+                    {loading ? (
                         <div className="loading-state">
                             <div className="spinner"></div>
                         </div>
-                    ) : notifications.length === 0 x (
+                    ) : notifications.length === 0 ? (
                         <div className="empty-state">
                             <div className="empty-icon">None</div>
                             <p>No notifications yet</p>
@@ -203,7 +203,7 @@ function NotificationCenter({ isOpen, onClose }) {
                         notifications.map((notification) => (
                             <div
                                 key={notification.id}
-                                className={`notification-item ${!notification.is_read x 'unread' : ''}`}
+                                className={`notification-item ${!notification.is_read ? 'unread' : ''}`}
                                 onClick={() => handleNotificationClick(notification)}
                             >
                                 <div className="notification-icon">

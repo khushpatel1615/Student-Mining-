@@ -217,7 +217,7 @@ function SubjectDetailPage() {
                         <CalendarIcon />
                         <div className="stat-content">
                             <span className="stat-label">Attendance</span>
-                            <span className={`stat-value ${attendance?.percentage >= 75 | 'good' : 'warning'}`}>
+                            <span className={`stat-value ${attendance?.percentage >= 75 ? 'good' : 'warning'}`}>
                                 {attendance?.percentage || '-'}%
                             </span>
                         </div>
@@ -228,28 +228,28 @@ function SubjectDetailPage() {
             {/* Navigation Tabs */}
             <nav className="subject-nav">
                 <button
-                    className={`nav-tab ${activeTab === 'announcements' | 'active' : ''}`}
+                    className={`nav-tab ${activeTab === 'announcements' ? 'active' : ''}`}
                     onClick={() => setActiveTab('announcements')}
                 >
                     <MegaphoneIcon />
                     Announcements
                 </button>
                 <button
-                    className={`nav-tab ${activeTab === 'grades' | 'active' : ''}`}
+                    className={`nav-tab ${activeTab === 'grades' ? 'active' : ''}`}
                     onClick={() => setActiveTab('grades')}
                 >
                     <GradesIcon />
                     Grades
                 </button>
                 <button
-                    className={`nav-tab ${activeTab === 'attendance' | 'active' : ''}`}
+                    className={`nav-tab ${activeTab === 'attendance' ? 'active' : ''}`}
                     onClick={() => setActiveTab('attendance')}
                 >
                     <CalendarIcon />
                     Attendance
                 </button>
                 <button
-                    className={`nav-tab ${activeTab === 'info' | 'active' : ''}`}
+                    className={`nav-tab ${activeTab === 'info' ? 'active' : ''}`}
                     onClick={() => setActiveTab('info')}
                 >
                     <InfoIcon />
@@ -261,7 +261,7 @@ function SubjectDetailPage() {
             <main className="subject-content">
                 {activeTab === 'announcements' && (
                     <div className="announcements-section">
-                        {announcements.length === 0 | (
+                        {announcements.length === 0 ? (
                             <div className="empty-announcements">
                                 <MegaphoneIcon />
                                 <p>No announcements yet for this course.</p>
@@ -269,7 +269,7 @@ function SubjectDetailPage() {
                         ) : (
                             <div className="announcements-list">
                                 {announcements.map(announcement => (
-                                    <div key={announcement.id} className={`announcement-card ${announcement.is_pinned | 'pinned' : ''}`}>
+                                    <div key={announcement.id} className={`announcement-card ${announcement.is_pinned ? 'pinned' : ''}`}>
                                         <div className="announcement-header">
                                             <div className="megaphone-icon">
                                                 <MegaphoneIcon />
@@ -372,21 +372,21 @@ function SubjectDetailPage() {
                                                 {item.max_marks}
                                             </td>
                                             <td className="points">
-                                                {item.marks_obtained !== null | (
+                                                {item.marks_obtained !== null ? (
                                                     <span className="font-medium">{item.marks_obtained}</span>
                                                 ) : (
                                                     <span className="text-muted">-</span>
                                                 )}
                                             </td>
                                             <td className="status">
-                                                {item.marks_obtained !== null | (
+                                                {item.marks_obtained !== null ? (
                                                     <span className="status-badge status-completed">Graded</span>
                                                 ) : (
                                                     <span className="status-badge status-pending">Pending</span>
                                                 )}
                                             </td>
                                             <td className="remarks-cell">
-                                                {item.remarks | (
+                                                {item.remarks ? (
                                                     <div className="feedback-content">
                                                         <p className="remark-text">{item.remarks}</p>
                                                     </div>
@@ -414,7 +414,7 @@ function SubjectDetailPage() {
                                             a 15.9155 15.9155 0 0 1 0 -31.831"
                                     />
                                     <path
-                                        className={`circle ${attendance?.percentage >= 75 | 'good' : 'warning'}`}
+                                        className={`circle ${attendance?.percentage >= 75 ? 'good' : 'warning'}`}
                                         strokeDasharray={`${attendance?.percentage || 0}, 100`}
                                         d="M18 2.0845
                                             a 15.9155 15.9155 0 0 1 0 31.831
@@ -494,7 +494,7 @@ function SubjectDetailPage() {
                                     <span className="label">Enrolled On</span>
                                     <span className="value">
                                         {enrollment?.enrolled_at
-                                            | new Date(enrollment.enrolled_at).toLocaleDateString()
+                                            ? new Date(enrollment.enrolled_at).toLocaleDateString()
                                             : 'N/A'}
                                     </span>
                                 </div>

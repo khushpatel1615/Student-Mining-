@@ -1,11 +1,12 @@
 /* eslint-disable no-undef */
+import { describe, test, expect, beforeEach, vi } from 'vitest';
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import RiskCenter from './RiskCenter';
 import { BrowserRouter } from 'react-router-dom';
 
 // Mock AuthContext
-jest.mock('../../context/AuthContext', () => ({
+vi.mock('../../context/AuthContext', () => ({
     useAuth: () => ({
         token: 'mock-token',
         user: { role: 'admin' },
@@ -14,14 +15,14 @@ jest.mock('../../context/AuthContext', () => ({
 }));
 
 // Mock API Config
-jest.mock('../../config', () => ({
+vi.mock('../../config', () => ({
     API_BASE: 'http://localhost/api',
 }));
 
 describe('RiskCenter Component', () => {
     beforeEach(() => {
-        global.fetch = jest.fn();
-        jest.clearAllMocks();
+        global.fetch = vi.fn();
+        vi.clearAllMocks();
     });
 
     const mockStudents = [
