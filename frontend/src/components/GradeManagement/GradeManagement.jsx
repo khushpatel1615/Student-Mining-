@@ -364,7 +364,7 @@ function GradeManagement() {
                 >
                     <option value="">Select Subject</option>
                     {selectedProgram && (
-                        <option value="all">📚 All Subjects</option>
+                        <option value="all">All Subjects</option>
                     )}
                     {subjects.map(s => (
                         <option key={s.id} value={s.id}>{s.name} ({s.code})</option>

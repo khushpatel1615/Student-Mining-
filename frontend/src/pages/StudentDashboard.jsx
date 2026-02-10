@@ -205,8 +205,7 @@ const StudentDashboard = () => {
         if (token && user) {
             fetchDashboardData()
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [token, user]) // Intentionally exclude fetchDashboardData to prevent infinite loop
+    }, [token, user, selectedSemester, fetchDashboardData])
 
 
 
@@ -289,16 +288,21 @@ const StudentDashboard = () => {
         : dashboardData.courses;
 
     // Calculate semester-specific GPA and attendance
-    const semesterStats = selectedSemester ? {
-        gpa: filteredCourses.length > 0
-            ? (filteredCourses.reduce((sum, c) => sum + (parseFloat(c.overall_score) || 0), 0) / filteredCourses.length / 25).toFixed(2)
-            : 0,
-        attendance: filteredCourses.length > 0
-            ? Math.round(filteredCourses.reduce((sum, c) => sum + (c.attendance?.percentage || 0), 0) / filteredCourses.length)
-            : 0,
-        credits: filteredCourses.reduce((sum, c) => sum + (parseInt(c.credits) || 0), 0)
-    } : {
-        gpa: dashboardData.gpa,
+    const semesterStats = selectedSemester ? (() => {
+        const avgPercent = filteredCourses.length > 0
+            ? (filteredCourses.reduce((sum, c) => sum + (parseFloat(c.overall_score) || 0), 0) / filteredCourses.length)
+            : 0;
+        return {
+            gpa10: Number((avgPercent / 10).toFixed(2)),
+            gpa4: Number((avgPercent / 25).toFixed(2)),
+            attendance: filteredCourses.length > 0
+                ? Math.round(filteredCourses.reduce((sum, c) => sum + (c.attendance?.percentage || 0), 0) / filteredCourses.length)
+                : 0,
+            credits: filteredCourses.reduce((sum, c) => sum + (parseInt(c.credits) || 0), 0)
+        };
+    })() : {
+        gpa10: Number(dashboardData.gpa || 0),
+        gpa4: Number(dashboardData.gpa_4 || 0),
         attendance: dashboardData.attendance,
         credits: dashboardData.credits
     };
@@ -324,7 +328,7 @@ const StudentDashboard = () => {
                             <div className="welcome-text">
                                 <h1>
                                     {getGreeting()}, <span style={{ whiteSpace: 'nowrap' }}>{user?.full_name}!</span>
-                                    <span style={{ display: 'inline-block', marginLeft: '8px' }}>👋</span>
+                                    <span style={{ display: 'inline-block', marginLeft: '8px' }}>Hi</span>
                                 </h1>
                                 <p>Here's your academic summary{selectedSemester ? ` for Semester ${selectedSemester}` : ' for the semester'}.</p>
                             </div>
@@ -367,31 +371,33 @@ const StudentDashboard = () => {
                                     {[
                                         {
                                             title: selectedSemester ? 'Semester GPA' : 'Current GPA',
-                                            value: dashboardData.gpa,
+                                            value: semesterStats.gpa10,
                                             subtitle: `Scale 10.0`,
                                             icon: GraduationCap,
                                             gradient: 'gradient-purple',
-                                            progress: (dashboardData.gpa / 10.0) * 100,
-                                            trend: dashboardData.gpa_text,
-                                            trendUp: dashboardData.gpa >= 6.0
+                                            progress: (semesterStats.gpa10 / 10.0) * 100,
+                                            trend: selectedSemester ? (semesterStats.gpa10 >= 6.0 ? 'On Track' : 'Needs Improvement') : dashboardData.gpa_text,
+                                            trendUp: semesterStats.gpa10 >= 6.0
                                         },
                                         {
                                             title: 'GPA (4.0)',
-                                            value: dashboardData.gpa_4,
+                                            value: semesterStats.gpa4,
                                             subtitle: 'US Standard',
                                             icon: TrendingUp,
                                             gradient: 'gradient-green',
-                                            progress: (dashboardData.gpa_4 / 4.0) * 100,
+                                            progress: (semesterStats.gpa4 / 4.0) * 100,
                                             trend: 'On Track',
                                             trendUp: true
                                         },
                                         {
                                             title: 'Credits',
-                                            value: dashboardData.credits,
+                                            value: semesterStats.credits,
                                             subtitle: selectedSemester ? `This Semester` : 'Total Earned',
                                             icon: Award,
                                             gradient: 'gradient-blue',
-                                            progress: (dashboardData.credits / (dashboardData.total_credits || 1)) * 100,
+                                            progress: selectedSemester
+                                                ? (semesterStats.credits > 0 ? 100 : 0)
+                                                : (dashboardData.credits / (dashboardData.total_credits || 1)) * 100,
                                             trend: 'Academic Progress',
                                             trendUp: true
                                         },
@@ -455,7 +461,7 @@ const StudentDashboard = () => {
 
                             {/* Quick Actions & Activity Feed Row */}
                             <div className="content-grid" style={{ marginBottom: '1.5rem', gridTemplateColumns: '2fr 1fr' }}>
-                                <ActivityFeed />
+                                <ActivityFeed activities={notifications} />
                                 <QuickActions setActiveTab={setActiveTab} />
                             </div>
 
@@ -516,9 +522,9 @@ const StudentDashboard = () => {
                                                         <div className="item-title-row">
                                                             <span className="item-title">{item.title}</span>
                                                             <span className={`event-type-badge ${item.status}`}>
-                                                                {item.status === 'exam' ? '📝 Exam' :
-                                                                    item.status === 'assignment' ? '📄 Assignment' :
-                                                                        item.status === 'holiday' ? '🎉 Holiday' : '📅 Event'}
+                                                                {item.status === 'exam' ? 'Exam' :
+                                                                    item.status === 'assignment' ? 'Assignment' :
+                                                                        item.status === 'holiday' ? 'Holiday' : 'Event'}
                                                             </span>
                                                         </div>
                                                         <div className="item-meta">Due: {item.due}</div>
@@ -527,8 +533,8 @@ const StudentDashboard = () => {
                                                         item.days_left <= 3 ? 'urgent' :
                                                             item.days_left <= 7 ? 'warning' : 'pending'
                                                         }`}>
-                                                        {item.days_left === 0 ? '🔥 Today!' :
-                                                            item.days_left === 1 ? '⚠️ Tomorrow' :
+                                                        {item.days_left === 0 ? 'Today!' :
+                                                            item.days_left === 1 ? 'Tomorrow' :
                                                                 `${item.days_left} days`}
                                                     </div>
                                                 </div>

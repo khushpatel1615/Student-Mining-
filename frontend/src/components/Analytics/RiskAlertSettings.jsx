@@ -237,7 +237,7 @@ const RiskAlertSettings = () => {
                 <div className={`message-banner ${message.type}`}>
                     {message.type === 'success' ? <CheckCircle size={20} /> : <XCircle size={20} />}
                     <span>{message.text}</span>
-                    <button onClick={() => setMessage(null)}>×</button>
+                    <button onClick={() => setMessage(null)}>x</button>
                 </div>
             )}
 
@@ -481,7 +481,7 @@ const RiskAlertSettings = () => {
                                                 {log.success ? 'Alert Sent Successfully' : 'Alert Failed'}
                                             </span>
                                             <span className="history-meta">
-                                                {log.students_count} students • {log.admins_notified} admins
+                                                {log.students_count} students - {log.admins_notified} admins
                                             </span>
                                             {log.error_message && (
                                                 <span className="history-error">{log.error_message}</span>
@@ -506,7 +506,7 @@ const RiskAlertSettings = () => {
 
             {/* Cron Setup Info */}
             <div className="cron-info">
-                <h4>📋 Automated Daily Emails Setup</h4>
+                <h4>Automated Daily Emails Setup</h4>
                 <p>To enable automatic daily emails, add the following cron job to your server:</p>
                 <code>0 8 * * * php /path/to/StudentDataMining/backend/cron/send_risk_alerts.php</code>
                 <p className="note">This will send emails every day at 8:00 AM server time.</p>

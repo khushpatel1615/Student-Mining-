@@ -95,7 +95,7 @@ const TeacherDashboard = () => {
                 {/* Welcome Banner */}
                 <div className="welcome-banner">
                     <div className="welcome-content">
-                        <h1>{getGreeting()}, {user?.full_name}! 👋</h1>
+                        <h1>{getGreeting()}, {user?.full_name}!</h1>
                         <p>Manage your classes, assignments, and student performance.</p>
                     </div>
                 </div>

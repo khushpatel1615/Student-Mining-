@@ -11,49 +11,49 @@ const QuickActionsPanel = ({ userRole = 'student' }) => {
     // Role-based actions
     const studentActions = [
         {
-            icon: '📝',
+            icon: 'ASG',
             title: 'Assignments',
             description: '3 pending',
             action: () => {
-                toast('Assignments feature coming soon!', { icon: '📝' })
+                toast('Assignments feature coming soon!', { icon: 'ASG' })
             },
             badge: 3,
             color: 'blue'
         },
         {
-            icon: '📊',
+            icon: 'GRADE',
             title: 'Grades',
             description: 'View all grades',
             action: () => navigate('/student/dashboard?tab=grades'),
             color: 'purple'
         },
         {
-            icon: '📅',
+            icon: 'ATT',
             title: 'Attendance',
             description: 'View attendance',
             action: () => navigate('/student/dashboard?tab=attendance'),
             color: 'green'
         },
         {
-            icon: '📄',
+            icon: 'RPT',
             title: 'Download Report',
             description: 'Get transcript',
             action: () => setActiveModal('report'),
             color: 'orange'
         },
         {
-            icon: '📧',
+            icon: 'MSG',
             title: 'Contact Advisor',
             description: 'Get help',
             action: () => setActiveModal('contact'),
             color: 'indigo'
         },
         {
-            icon: '📚',
+            icon: 'RES',
             title: 'Resources',
             description: 'Study materials',
             action: () => {
-                toast('Resources library coming soon!', { icon: '📚' })
+                toast('Resources library coming soon!', { icon: 'RES' })
             },
             color: 'teal'
         }
@@ -61,28 +61,28 @@ const QuickActionsPanel = ({ userRole = 'student' }) => {
 
     const adminActions = [
         {
-            icon: '👥',
+            icon: 'STU',
             title: 'Student Enrollment',
             description: 'Manage students',
             action: () => navigate('/admin/dashboard?tab=students'),
             color: 'blue'
         },
         {
-            icon: '👨‍🏫',
+            icon: 'CAT',
             title: 'Programs & Subjects',
             description: 'Manage catalog',
             action: () => navigate('/admin/dashboard?tab=subjects'),
             color: 'green'
         },
         {
-            icon: '📊',
+            icon: 'GRADE',
             title: 'System Analytics',
             description: 'View reports',
             action: () => setActiveModal('report'),
             color: 'purple'
         },
         {
-            icon: '📄',
+            icon: 'RPT',
             title: 'Generate Reports',
             description: 'Export data',
             action: () => setActiveModal('report'),
@@ -106,7 +106,7 @@ const QuickActionsPanel = ({ userRole = 'student' }) => {
     return (
         <div className="quick-actions-panel">
             <div className="quick-actions-header">
-                <h3>⚡ Quick Actions</h3>
+                <h3>Quick Actions</h3>
                 <p>Shortcuts to common tasks</p>
             </div>
             <div className="quick-actions-grid">

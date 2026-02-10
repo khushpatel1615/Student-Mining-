@@ -99,7 +99,7 @@ const Analytics = () => {
 
     const gradeDelta = getDelta(grades);
     const attDelta = getDelta(atts);
-    const engagementDelta = "+2.4%"; // Simulated
+    const engagementDelta = "Stable";
 
     const gradeTrend = parseFloat(gradeDelta) >= 0 ? 'up' : 'down';
     const attTrend = parseFloat(attDelta) >= 0 ? 'up' : 'down';
@@ -146,6 +146,7 @@ const Analytics = () => {
                     trendValue={attDelta}
                     icon={Users}
                     color="blue"
+                    sparkData={atts.map((d) => ({ v: d.value }))}
                 />
                 <KPICard
                     title="Average Grade"
@@ -155,12 +156,13 @@ const Analytics = () => {
                     trendValue={gradeDelta}
                     icon={Award}
                     color="purple"
+                    sparkData={grades.map((d) => ({ v: d.value }))}
                 />
                 <KPICard
                     title="Engagement"
                     value={`${Number(safeData.engagement_percent || 0).toFixed(0)}%`}
                     subValue="Participation"
-                    trend="up"
+                    trend="neutral"
                     trendValue={engagementDelta}
                     icon={Zap}
                     color="orange"

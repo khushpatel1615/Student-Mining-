@@ -20,16 +20,22 @@ ChartJS.register(
 )
 
 const SubjectPerformanceRadar = ({ subjects = [] }) => {
-    // Mock data if none provided
-    const mockSubjects = [
-        { name: 'Mathematics', score: 85 },
-        { name: 'Chemistry', score: 78 },
-        { name: 'Web Dev', score: 92 },
-        { name: 'Programming', score: 88 },
-        { name: 'Electronics', score: 75 }
-    ]
+    const chartSubjects = Array.isArray(subjects) ? subjects : []
+    const hasData = chartSubjects.length > 0
 
-    const chartSubjects = subjects.length > 0 ? subjects : mockSubjects
+    if (!hasData) {
+        return (
+            <div className="chart-container">
+                <div className="chart-header">
+                <h3 className="chart-title">Subject Performance</h3>
+                    <span className="chart-subtitle">No subject data yet</span>
+                </div>
+                <div className="chart-body chart-empty" style={{ height: '350px' }}>
+                    <p className="chart-empty-text">No subject performance data available.</p>
+                </div>
+            </div>
+        )
+    }
 
     const options = {
         responsive: true,
@@ -99,7 +105,7 @@ const SubjectPerformanceRadar = ({ subjects = [] }) => {
     return (
         <div className="chart-container">
             <div className="chart-header">
-                <h3 className="chart-title">🎯 Subject Performance</h3>
+                <h3 className="chart-title">Subject Performance</h3>
                 <span className="chart-subtitle">Comparative analysis across subjects</span>
             </div>
             <div className="chart-body" style={{ height: '350px' }}>

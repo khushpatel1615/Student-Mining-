@@ -124,9 +124,9 @@ function SubjectDetailPage() {
 
     const getSubjectIcon = (subjectType) => {
         switch (subjectType) {
-            case 'Core': return '💻'
-            case 'Elective': return '📚'
-            default: return '📖'
+            case 'Core': return 'CORE'
+            case 'Elective': return 'ELECT'
+            default: return 'SUBJ'
         }
     }
 
@@ -180,11 +180,11 @@ function SubjectDetailPage() {
                         <h1>{subject.name}</h1>
                         <div className="subject-meta">
                             <span className="code">{subject.code}</span>
-                            <span className="divider">•</span>
+                            <span className="divider">|</span>
                             <span>Semester {subject.semester}</span>
-                            <span className="divider">•</span>
+                            <span className="divider">|</span>
                             <span>{subject.credits} Credits</span>
-                            <span className="divider">•</span>
+                            <span className="divider">|</span>
                             <span className={`type-badge ${subject.subject_type?.toLowerCase()}`}>
                                 {subject.subject_type}
                             </span>
@@ -209,7 +209,7 @@ function SubjectDetailPage() {
                         <div className="stat-content">
                             <span className="stat-label">Score</span>
                             <span className="stat-value">
-                                {grades?.summary?.overall_percentage ?? '-'}%
+                                {grades?.summary?.overall_percentage || '-'}%
                             </span>
                         </div>
                     </div>
@@ -217,8 +217,8 @@ function SubjectDetailPage() {
                         <CalendarIcon />
                         <div className="stat-content">
                             <span className="stat-label">Attendance</span>
-                            <span className={`stat-value ${attendance?.percentage >= 75 ? 'good' : 'warning'}`}>
-                                {attendance?.percentage ?? '-'}%
+                            <span className={`stat-value ${attendance?.percentage >= 75 | 'good' : 'warning'}`}>
+                                {attendance?.percentage || '-'}%
                             </span>
                         </div>
                     </div>
@@ -228,28 +228,28 @@ function SubjectDetailPage() {
             {/* Navigation Tabs */}
             <nav className="subject-nav">
                 <button
-                    className={`nav-tab ${activeTab === 'announcements' ? 'active' : ''}`}
+                    className={`nav-tab ${activeTab === 'announcements' | 'active' : ''}`}
                     onClick={() => setActiveTab('announcements')}
                 >
                     <MegaphoneIcon />
                     Announcements
                 </button>
                 <button
-                    className={`nav-tab ${activeTab === 'grades' ? 'active' : ''}`}
+                    className={`nav-tab ${activeTab === 'grades' | 'active' : ''}`}
                     onClick={() => setActiveTab('grades')}
                 >
                     <GradesIcon />
                     Grades
                 </button>
                 <button
-                    className={`nav-tab ${activeTab === 'attendance' ? 'active' : ''}`}
+                    className={`nav-tab ${activeTab === 'attendance' | 'active' : ''}`}
                     onClick={() => setActiveTab('attendance')}
                 >
                     <CalendarIcon />
                     Attendance
                 </button>
                 <button
-                    className={`nav-tab ${activeTab === 'info' ? 'active' : ''}`}
+                    className={`nav-tab ${activeTab === 'info' | 'active' : ''}`}
                     onClick={() => setActiveTab('info')}
                 >
                     <InfoIcon />
@@ -261,7 +261,7 @@ function SubjectDetailPage() {
             <main className="subject-content">
                 {activeTab === 'announcements' && (
                     <div className="announcements-section">
-                        {announcements.length === 0 ? (
+                        {announcements.length === 0 | (
                             <div className="empty-announcements">
                                 <MegaphoneIcon />
                                 <p>No announcements yet for this course.</p>
@@ -269,7 +269,7 @@ function SubjectDetailPage() {
                         ) : (
                             <div className="announcements-list">
                                 {announcements.map(announcement => (
-                                    <div key={announcement.id} className={`announcement-card ${announcement.is_pinned ? 'pinned' : ''}`}>
+                                    <div key={announcement.id} className={`announcement-card ${announcement.is_pinned | 'pinned' : ''}`}>
                                         <div className="announcement-header">
                                             <div className="megaphone-icon">
                                                 <MegaphoneIcon />
@@ -334,13 +334,13 @@ function SubjectDetailPage() {
                                 <div className="summary-item">
                                     <span className="label">Weight Achieved</span>
                                     <span className="value">
-                                        {grades?.summary?.weight_achieved ?? 0} / {grades?.summary?.total_weight ?? 100}
+                                        {grades?.summary?.weight_achieved || 0} / {grades?.summary?.total_weight || 100}
                                     </span>
                                 </div>
                                 <div className="summary-item highlight">
                                     <span className="label">Grade</span>
                                     <span className={`value large ${getGradeColor(grades?.summary?.overall_percentage)}`}>
-                                        {grades?.summary?.overall_percentage ?? 0}%
+                                        {grades?.summary?.overall_percentage || 0}%
                                     </span>
                                 </div>
                             </div>
@@ -372,21 +372,21 @@ function SubjectDetailPage() {
                                                 {item.max_marks}
                                             </td>
                                             <td className="points">
-                                                {item.marks_obtained !== null ? (
+                                                {item.marks_obtained !== null | (
                                                     <span className="font-medium">{item.marks_obtained}</span>
                                                 ) : (
                                                     <span className="text-muted">-</span>
                                                 )}
                                             </td>
                                             <td className="status">
-                                                {item.marks_obtained !== null ? (
+                                                {item.marks_obtained !== null | (
                                                     <span className="status-badge status-completed">Graded</span>
                                                 ) : (
                                                     <span className="status-badge status-pending">Pending</span>
                                                 )}
                                             </td>
                                             <td className="remarks-cell">
-                                                {item.remarks ? (
+                                                {item.remarks | (
                                                     <div className="feedback-content">
                                                         <p className="remark-text">{item.remarks}</p>
                                                     </div>
@@ -414,14 +414,14 @@ function SubjectDetailPage() {
                                             a 15.9155 15.9155 0 0 1 0 -31.831"
                                     />
                                     <path
-                                        className={`circle ${attendance?.percentage >= 75 ? 'good' : 'warning'}`}
+                                        className={`circle ${attendance?.percentage >= 75 | 'good' : 'warning'}`}
                                         strokeDasharray={`${attendance?.percentage || 0}, 100`}
                                         d="M18 2.0845
                                             a 15.9155 15.9155 0 0 1 0 31.831
                                             a 15.9155 15.9155 0 0 1 0 -31.831"
                                     />
                                     <text x="18" y="20.35" className="percentage-text">
-                                        {attendance?.percentage ?? 0}%
+                                        {attendance?.percentage || 0}%
                                     </text>
                                 </svg>
                                 <p className="attendance-label">Attendance Rate</p>
@@ -449,7 +449,7 @@ function SubjectDetailPage() {
 
                         {attendance?.percentage < 75 && (
                             <div className="warning-banner">
-                                ⚠️ Your attendance is below 75%. Please improve to avoid academic penalties.
+                                Warning: Your attendance is below 75%. Please improve to avoid academic penalties.
                             </div>
                         )}
                     </div>
@@ -494,7 +494,7 @@ function SubjectDetailPage() {
                                     <span className="label">Enrolled On</span>
                                     <span className="value">
                                         {enrollment?.enrolled_at
-                                            ? new Date(enrollment.enrolled_at).toLocaleDateString()
+                                            | new Date(enrollment.enrolled_at).toLocaleDateString()
                                             : 'N/A'}
                                     </span>
                                 </div>

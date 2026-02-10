@@ -36,6 +36,7 @@ const API_BASE_URL = API_BASE;
 // ============================================================================
 export function LearningBehaviorDashboard() {
     const { token } = useAuth();
+    const showDevTools = import.meta?.env?.DEV;
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -381,7 +382,7 @@ export function LearningBehaviorDashboard() {
 
                 <div className="lba-filter-group">
                     {[
-                        { key: 'risky', label: '⚠ Needs Attention' },
+                        { key: 'risky', label: 'Needs Attention' },
                         { key: 'all', label: 'All Students' },
                         { key: 'critical', label: 'Critical' },
                         { key: 'at_risk', label: 'At Risk' },
@@ -405,14 +406,14 @@ export function LearningBehaviorDashboard() {
                     <Database size={20} />
                     <div className="notice-content">
                         <span>{setupMessage.message}</span>
-                        {setupMessage.setupUrl && (
+                        {setupMessage.setupUrl && showDevTools && (
                             <a
                                 href={`http://localhost/StudentDataMining${setupMessage.setupUrl}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="notice-link"
                             >
-                                Run Setup Script →
+                                Run Setup Script ->
                             </a>
                         )}
                     </div>
@@ -444,7 +445,7 @@ export function LearningBehaviorDashboard() {
                     </div>
                     <h3>No Students Found</h3>
                     <p>{searchTerm ? 'Try adjusting your search criteria' : 'No at-risk students in the current period'}</p>
-                    {!searchTerm && (
+                    {!searchTerm && showDevTools && (
                         <a
                             href="http://localhost/StudentDataMining/backend/api/behavior/seed_mock_data.php"
                             target="_blank"
@@ -615,7 +616,7 @@ export function LearningBehaviorDashboard() {
                                 {selectedStudent.student_name}
                             </h2>
                             <p style={{ margin: 0, color: '#64748b', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <span style={{ opacity: 0.7 }}>✉</span> {selectedStudent.email}
+                                <span style={{ opacity: 0.7 }}>Email</span> {selectedStudent.email}
                             </p>
                         </div>
 

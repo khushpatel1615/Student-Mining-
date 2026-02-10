@@ -169,22 +169,19 @@ try {
         } catch (Exception $e) {
         }
 
-    // If empty trends, providing some defaults so chart isn't broken
-        if (empty($semesterTrends)) {
-            $semesterTrends = [
-            ['semester' => 1, 'average_gpa' => 3.0],
-            ['semester' => 2, 'average_gpa' => 3.1]
-            ];
-        }
+    // If empty trends, return empty array and let the client handle the empty state
 
     // 7. Program Analytics
         $programAnalytics = [];
         try {
             $sql = "
             SELECT 
+                p.id,
+                p.code,
                 p.name,
                 COUNT(DISTINCT v.student_id) as student_count,
                 AVG(v.final_percentage) as avg_score,
+                AVG(v.final_percentage) / 25 as average_gpa,
                 SUM(CASE WHEN v.final_percentage >= 40 THEN 1 ELSE 0 END) * 100.0 / COUNT(*) as pass_rate
             FROM programs p
             JOIN subjects s ON p.id = s.program_id

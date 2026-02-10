@@ -21,13 +21,10 @@ export const StatCard = ({
     color = "blue", // 'purple', 'blue', 'green', 'orange', 'red'
     data = [] // Optional sparkline data
 }) => {
-    // Generate dummy sparkline if no data provided
     const sparkData = useMemo(() => {
-        if (data.length > 0) return data;
-        return Array.from({ length: 15 }, (_, i) => ({
-            v: 50 + (trend === 'up' ? i * 2 : trend === 'down' ? -i * 2 : 0) + Math.random() * 20
-        }));
-    }, [data, trend]);
+        if (Array.isArray(data) && data.length > 0) return data;
+        return [];
+    }, [data]);
 
     const themeColors = {
         purple: '#7c3aed',
@@ -63,18 +60,22 @@ export const StatCard = ({
 
                 {/* Sparkline */}
                 <div className="stat-micro-chart">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={sparkData}>
-                            <Line
-                                type="monotone"
-                                dataKey="v"
-                                stroke={hexColor}
-                                strokeWidth={2}
-                                dot={false}
-                                isAnimationActive={false}
-                            />
-                        </LineChart>
-                    </ResponsiveContainer>
+                    {sparkData.length === 0 ? (
+                        <div className="stat-micro-empty" />
+                    ) : (
+                        <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={sparkData}>
+                                <Line
+                                    type="monotone"
+                                    dataKey="v"
+                                    stroke={hexColor}
+                                    strokeWidth={2}
+                                    dot={false}
+                                    isAnimationActive={false}
+                                />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    )}
                 </div>
             </div>
             {subValue && <div className="stat-sublabel">{subValue}</div>}

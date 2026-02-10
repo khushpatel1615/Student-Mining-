@@ -44,6 +44,20 @@
     padding-right: 0.5rem;
 }
 
+.feed-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+    padding: 1rem;
+    color: var(--text-tertiary);
+    font-size: 0.875rem;
+    text-align: center;
+    border: 1px dashed var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-primary);
+}
+
 /* Scrollbar styling */
 .feed-list::-webkit-scrollbar {
     width: 4px;

@@ -4,7 +4,6 @@
  * Student Live Analytics API
  * Returns real-time analytics data with trends for the student dashboard.
  * Supports polling.
- * Includes fallback trend simulation if history is sparse or tables missing.
  */
 
 require_once __DIR__ . '/../config/database.php';
@@ -97,65 +96,140 @@ try {
         $stmtGrades->execute([$requestUserId]);
         $gradeHistory = $stmtGrades->fetchAll(PDO::FETCH_ASSOC);
     } catch (Exception $ex) {
-// Fallback to simulation
+        // No grade history available
     }
 
-    // 4. Generate Trend Data (Last 30 Days)
-        $currentGrade = (float) ($stats['grade_avg'] ?? 75);
-    $currentAttendance = (float) ($stats['attendance_score'] ?? 80);
-    $currentRisk = (float) ($stats['risk_score'] ?? 20);
-// Helper: Generate smoothed random walk ending at target
-    function generateTrend($targetValue, $points = 30, $volatility = 5)
-    {
-        $trend = [];
-        $current = $targetValue; // Work backwards
-
-        for ($i = 0; $i < $points; $i++) {
-            $trend[] = [
-            't' => date('M d', strtotime("-" . $i . " days")), // Daily data
-            'value' => max(0, min(100, round($current + (rand(-$volatility, $volatility) / 2), 1)))
+    // 4. Build attendance history (last 30 days)
+    $attendanceTrend = [];
+    try {
+        $stmtAttendance = $pdo->prepare("
+            SELECT sa.attendance_date as date,
+                   SUM(CASE WHEN sa.status = 'present' THEN 1 ELSE 0 END) as present,
+                   COUNT(*) as total
+            FROM student_attendance sa
+            JOIN student_enrollments se ON se.id = sa.enrollment_id
+            WHERE se.user_id = ? AND sa.attendance_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+            GROUP BY sa.attendance_date
+            ORDER BY sa.attendance_date ASC
+        ");
+        $stmtAttendance->execute([$requestUserId]);
+        $attendanceRows = $stmtAttendance->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($attendanceRows as $row) {
+            $date = $row['date'];
+            $present = (int) $row['present'];
+            $total = (int) $row['total'];
+            $pct = $total > 0 ? round(($present / $total) * 100, 1) : 0;
+            $attendanceTrend[] = [
+                'date' => $date,
+                't' => date('M d', strtotime($date)),
+                'value' => $pct
             ];
-// Move 'current' slightly away from target
-            $current += (rand(-10, 10) / 10);
         }
-
-        return array_reverse($trend);
+    } catch (Exception $ex) {
+        // No attendance trend available
     }
 
-    // Grade Trend
-        $trends = [];
-    if (count($gradeHistory) >= 5) {
-        $trends['grades'] = array_map(function ($g) {
-
-                return [
-                't' => date('M d', strtotime($g['created_at'])),
-                'value' => (float) $g['grade_value']
-                ];
-        }, $gradeHistory);
-    } else {
-        $trends['grades'] = generateTrend($currentGrade, 30, 2);
+    // Overall attendance (all-time)
+    $currentAttendance = 0;
+    try {
+        $stmtOverall = $pdo->prepare("
+            SELECT SUM(CASE WHEN sa.status = 'present' THEN 1 ELSE 0 END) as present,
+                   COUNT(*) as total
+            FROM student_attendance sa
+            JOIN student_enrollments se ON se.id = sa.enrollment_id
+            WHERE se.user_id = ?
+        ");
+        $stmtOverall->execute([$requestUserId]);
+        $overallRow = $stmtOverall->fetch(PDO::FETCH_ASSOC);
+        if ($overallRow && (int) $overallRow['total'] > 0) {
+            $currentAttendance = round(((int) $overallRow['present'] / (int) $overallRow['total']) * 100, 1);
+        }
+    } catch (Exception $ex) {
+        $currentAttendance = 0;
     }
 
-    // Attendance Trend (Simulated based on current - usually stable)
-        $trends['attendance'] = generateTrend($currentAttendance, 30, 1);
-// Risk Trend (Simulated based on current - sensitivity 3)
-        $trends['risk'] = generateTrend($currentRisk, 30, 3);
-// 5. Response Construction
-        $response = [
+    // 5. Build grade trend (real history)
+    $gradeTrend = [];
+    foreach ($gradeHistory as $g) {
+        $date = substr($g['created_at'], 0, 10);
+        $gradeTrend[] = [
+            'date' => $date,
+            't' => date('M d', strtotime($date)),
+            'value' => (float) $g['grade_value']
+        ];
+    }
+
+    $currentGrade = !empty($gradeHistory)
+        ? (float) $gradeHistory[count($gradeHistory) - 1]['grade_value']
+        : 0;
+
+    // 6. Risk score and trend
+    function calculateRiskScore($attendanceRate, $gradePercent)
+    {
+        $attendanceRate = max(0, min(100, $attendanceRate));
+        $gradePercent = max(0, min(100, $gradePercent));
+        $score = 100 - (($attendanceRate * 0.6) + ($gradePercent * 0.4));
+        return round(max(0, min(100, $score)), 1);
+    }
+
+    function getRiskLabel($riskScore)
+    {
+        if ($riskScore >= 70) return 'High Risk';
+        if ($riskScore >= 40) return 'Moderate';
+        return 'Safe';
+    }
+
+    $currentRisk = calculateRiskScore($currentAttendance, $currentGrade);
+    $riskLabel = $stats['risk_level'] ?? getRiskLabel($currentRisk);
+
+    $attendanceMap = [];
+    foreach ($attendanceTrend as $row) {
+        $attendanceMap[$row['date']] = $row['value'];
+    }
+    $gradeMap = [];
+    foreach ($gradeTrend as $row) {
+        $gradeMap[$row['date']] = $row['value'];
+    }
+
+    $allDates = array_unique(array_merge(array_keys($attendanceMap), array_keys($gradeMap)));
+    sort($allDates);
+    $riskTrend = [];
+    $lastAttendance = $currentAttendance;
+    $lastGrade = $currentGrade;
+    foreach ($allDates as $date) {
+        if (isset($attendanceMap[$date])) {
+            $lastAttendance = $attendanceMap[$date];
+        }
+        if (isset($gradeMap[$date])) {
+            $lastGrade = $gradeMap[$date];
+        }
+        $riskTrend[] = [
+            't' => date('M d', strtotime($date)),
+            'value' => calculateRiskScore($lastAttendance, $lastGrade)
+        ];
+    }
+
+    $trends = [
+        'grades' => array_map(function ($row) { return ['t' => $row['t'], 'value' => $row['value']]; }, $gradeTrend),
+        'attendance' => array_map(function ($row) { return ['t' => $row['t'], 'value' => $row['value']]; }, $attendanceTrend),
+        'risk' => $riskTrend
+    ];
+// 7. Response Construction
+    $response = [
         'success' => true,
         'timestamp' => date('c'),
         'data' => [
             'risk_score' => $currentRisk,
-            'risk_level' => $stats['risk_level'] ?? 'Unknown',
-            'risk_label' => $stats['risk_level'] ?? 'Unknown',
+            'risk_level' => $riskLabel,
+            'risk_label' => $riskLabel,
             'attendance_percent' => $currentAttendance,
             'avg_grade' => $currentGrade,
             'gpa_4' => round(($currentGrade / 25), 2),
-            'engagement_percent' => (float) ($stats['engagement_score'] ?? 50),
+            'engagement_percent' => (float) ($stats['engagement_score'] ?? 0),
             'trends' => $trends
         ]
-        ];
-        echo json_encode($response);
+    ];
+    echo json_encode($response);
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => $e->getMessage()]);

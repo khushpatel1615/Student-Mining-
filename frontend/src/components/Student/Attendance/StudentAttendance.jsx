@@ -180,10 +180,14 @@ const StudentAttendance = () => {
                                                         <div key={idx} className="history-item">
                                                             <span className="history-date">{rec.date}</span>
                                                             <span className={`status-badge ${rec.status === 'P' ? 'present' :
-                                                                    rec.status === 'A' ? 'absent' : 'exception'
+                                                                    rec.status === 'A' ? 'absent' :
+                                                                        rec.status === 'L' ? 'late' :
+                                                                            rec.status === 'E' ? 'exception' : 'unmarked'
                                                                 }`}>
                                                                 {rec.status === 'P' ? 'Present' :
-                                                                    rec.status === 'A' ? 'Absent' : 'Excused'}
+                                                                    rec.status === 'A' ? 'Absent' :
+                                                                        rec.status === 'L' ? 'Late' :
+                                                                            rec.status === 'E' ? 'Excused' : 'Unmarked'}
                                                             </span>
                                                         </div>
                                                     ))}

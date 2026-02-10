@@ -33,6 +33,7 @@ function StudentExams() {
     }
 
     const formatDate = (dateStr) => {
+        if (!dateStr) return 'TBA'
         const date = new Date(dateStr)
         return date.toLocaleDateString('en-US', {
             month: 'short',
@@ -44,10 +45,12 @@ function StudentExams() {
     }
 
     const isPast = (examDate) => {
+        if (!examDate) return false
         return new Date(examDate) < new Date()
     }
 
     const getDaysUntil = (examDate) => {
+        if (!examDate) return 'Scheduled'
         const now = new Date()
         const exam = new Date(examDate)
         const diffTime = exam - now
@@ -70,6 +73,7 @@ function StudentExams() {
     }
 
     const getGradePercentage = (obtained, total) => {
+        if (!total || total <= 0) return '0.0'
         return ((obtained / total) * 100).toFixed(1)
     }
 
@@ -126,20 +130,20 @@ function StudentExams() {
 
                             <div className="exam-details">
                                 <div className="detail-row">
-                                    <span className="detail-label">📅 Date:</span>
-                                    <span className="detail-value">{formatDate(exam.start_datetime)}</span>
+                                    <span className="detail-label">Date:</span>
+                                    <span className="detail-value">{formatDate(exam.start_datetime || exam.exam_date)}</span>
                                 </div>
                                 <div className="detail-row">
-                                    <span className="detail-label">⏱️ Duration:</span>
+                                    <span className="detail-label">Duration:</span>
                                     <span className="detail-value">{exam.duration_minutes} minutes</span>
                                 </div>
                                 <div className="detail-row">
-                                    <span className="detail-label">📊 Total Marks:</span>
-                                    <span className="detail-value">{exam.total_marks}</span>
+                                    <span className="detail-label">Total Marks:</span>
+                                    <span className="detail-value">{exam.total_marks ?? exam.max_marks ?? 0}</span>
                                 </div>
                                 <div className="detail-row">
-                                    <span className="detail-label">⏳ Status:</span>
-                                    <span className="detail-value">{getDaysUntil(exam.start_datetime)}</span>
+                                    <span className="detail-label">Status:</span>
+                                    <span className="detail-value">{getDaysUntil(exam.start_datetime || exam.exam_date)}</span>
                                 </div>
                             </div>
 
@@ -148,10 +152,10 @@ function StudentExams() {
                                     <div className="result-score">
                                         <span className="score-label">Your Score:</span>
                                         <span className="score-value">
-                                            {exam.my_result.marks_obtained}/{exam.total_marks}
+                                            {exam.my_result.marks_obtained}/{exam.total_marks ?? exam.max_marks ?? 0}
                                         </span>
                                         <span className="score-percentage">
-                                            ({getGradePercentage(exam.my_result.marks_obtained, exam.total_marks)}%)
+                                            ({getGradePercentage(exam.my_result.marks_obtained, exam.total_marks ?? exam.max_marks ?? 0)}%)
                                         </span>
                                     </div>
                                     {exam.my_result.remarks && (

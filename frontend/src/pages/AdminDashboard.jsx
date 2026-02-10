@@ -17,7 +17,6 @@ import AssignmentManagement from '../components/AssignmentManagement/AssignmentM
 import ExamManagement from '../components/ExamManagement/ExamManagement'
 import AdminAnnouncements from '../components/Discussions/AdminAnnouncements'
 import VideoLectures from '../components/VideoLectures/VideoLectures'
-import ActivityFeed from '../components/ActivityFeed/ActivityFeed'
 import MainLayout from '../components/Layout/MainLayout'
 import RiskCenter from '../components/Analytics/RiskCenter'
 import LearningBehaviorDashboard from '../components/Analytics/LearningBehaviorDashboard'
@@ -60,37 +59,6 @@ function AdminDashboard() {
     const [notifications, setNotifications] = useState([])
     const [unreadCount, setUnreadCount] = useState(0)
     const [showNotifications, setShowNotifications] = useState(false)
-
-    // Mock Admin Activities
-    const adminActivities = [
-        {
-            id: 1,
-            type: 'system',
-            title: 'System Backup',
-            description: 'Daily database backup completion',
-            timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5),
-            icon: '💾',
-            isUnread: false
-        },
-        {
-            id: 2,
-            type: 'alert',
-            title: 'Security Alert',
-            description: 'Multiple failed login attempts detected',
-            timestamp: new Date(Date.now() - 1000 * 60 * 60 * 12),
-            icon: '🛡️',
-            isUnread: true
-        },
-        {
-            id: 3,
-            type: 'submission',
-            title: 'New User Registration',
-            description: 'Teacher "Sarah Jones" added to system',
-            timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24),
-            icon: '👤',
-            isUnread: false
-        }
-    ]
 
     // Fetch Notifications
     const fetchNotifications = useCallback(async () => {

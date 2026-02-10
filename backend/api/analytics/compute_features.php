@@ -139,108 +139,60 @@ function computeStudentFeatures($pdo, $student)
 
 function computeAttendanceFeatures($pdo, $userId, $studentIdKey)
 {
-    // 1. Get Enrolled Subjects
-    $stmt = $pdo->prepare("SELECT subject_id FROM student_enrollments WHERE user_id = ? AND status = 'active'");
-    $stmt->execute([$userId]);
-    $subjects = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    // DB-based attendance stats (student_attendance)
     $totalSessions = 0;
     $totalPresent = 0;
     $consecutiveAbsences = 0;
-    // Global max or current streak? "streak detection". Usually current streak.
-    $history = [];
-    // Date => Status (P, A, L, etc) aggregated? No, complicated.
-    // Let's just track counts and recent dates.
 
     $recent2Weeks = 0;
     $recent2WeeksPresent = 0;
     $prev2Weeks = 0;
     $prev2WeeksPresent = 0;
-    $now = time();
     $twoWeeksAgo = strtotime('-2 weeks');
     $fourWeeksAgo = strtotime('-4 weeks');
-    // Attendance Data Directory
-    $dataDir = __DIR__ . '/../../data/attendance';
-    foreach ($subjects as $sid) {
-        $file = "$dataDir/attendance_subject_{$sid}.csv";
-        if (!file_exists($file)) {
-            continue;
+
+    $stmt = $pdo->prepare("
+        SELECT sa.attendance_date, sa.status
+        FROM student_attendance sa
+        JOIN student_enrollments se ON se.id = sa.enrollment_id
+        WHERE se.user_id = ? AND se.status = 'active'
+        ORDER BY sa.attendance_date ASC
+    ");
+    $stmt->execute([$userId]);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $streak = 0;
+    foreach ($rows as $row) {
+        $totalSessions++;
+        $status = $row['status'];
+        $isPresent = ($status === 'present' || $status === 'late');
+        $isAbsent = ($status === 'absent');
+        if ($isPresent) {
+            $totalPresent++;
         }
 
-        if (($handle = fopen($file, "r")) !== false) {
-            $header = fgetcsv($handle);
-            $dates = array_slice($header, 2);
-            // Find student row
-            while (($row = fgetcsv($handle)) !== false) {
-                if ($row[0] == $studentIdKey) {
-                    // Found student
-                    $statuses = array_slice($row, 2);
-                    // We need to process dates chronologically for streak
-                    // Combine dates and statuses
-                    $attendanceMap = [];
-                    foreach ($dates as $i => $d) {
-                        $attendanceMap[$d] = $statuses[$i] ?? '-';
-                    }
-
-                    // Sort dates just in case CSV headers aren't sorted (User script sorts them though)
-                    uksort($attendanceMap, function ($a, $b) {
-
-                        return strtotime($a) - strtotime($b);
-                    });
-                    // Calc stats
-                    $streak = 0;
-                    foreach ($attendanceMap as $d => $s) {
-                        $ts = strtotime($d);
-                        $isPresent = (strtoupper($s) == 'P' || strtoupper($s) == 'L');
-                        // Present or Late
-                        $isAbsent = (strtoupper($s) == 'A');
-                        if ($s != '-') {
-                            // Ignore empty
-                            $totalSessions++;
-                            if ($isPresent) {
-                                $totalPresent++;
-                            }
-
-                            // Trend buckets
-                            if ($ts >= $twoWeeksAgo) {
-                                $recent2Weeks++;
-                                if ($isPresent) {
-                                    $recent2WeeksPresent++;
-                                }
-                            } elseif ($ts >= $fourWeeksAgo) {
-                                $prev2Weeks++;
-                                if ($isPresent) {
-                                    $prev2WeeksPresent++;
-                                }
-                            }
-
-                            // Streak (Current Streak of Absences at the VERY END)
-                            // We need robustness. Iterate through map.
-                            // If Absent -> streak++, if Present -> streak=0.
-                            // Since we want CURRENT streak, the loop naturally leaves `streak` at the value of the last run of absences.
-                            if ($isAbsent) {
-                                $streak++;
-                            } elseif ($isPresent) {
-                                $streak = 0;
-                            }
-                        }
-                    }
-                    // Accumulate streak?
-                    // No, streak is specific to "Current status".
-                    // If a student is absent in Subject A but present in Subject B today...
-                    // "Consecutive absences" usually implies totally missing school.
-                    // For now, let's take the MAX streak across subjects or sum?
-                    // Let's average the streak? No, max risk.
-                    $consecutiveAbsences = max($consecutiveAbsences, $streak);
-                }
+        $ts = strtotime($row['attendance_date']);
+        if ($ts >= $twoWeeksAgo) {
+            $recent2Weeks++;
+            if ($isPresent) {
+                $recent2WeeksPresent++;
             }
-            fclose($handle);
+        } elseif ($ts >= $fourWeeksAgo) {
+            $prev2Weeks++;
+            if ($isPresent) {
+                $prev2WeeksPresent++;
+            }
         }
+
+        if ($isAbsent) {
+            $streak++;
+        } elseif ($isPresent) {
+            $streak = 0;
+        }
+        $consecutiveAbsences = max($consecutiveAbsences, $streak);
     }
 
     $pct = ($totalSessions > 0) ? round(($totalPresent / $totalSessions) * 100, 1) : 100;
-    // Default 100 if no sessions
-
-    // Trend Calculation
     $recentPct = ($recent2Weeks > 0) ? ($recent2WeeksPresent / $recent2Weeks) * 100 : $pct;
     $prevPct = ($prev2Weeks > 0) ? ($prev2WeeksPresent / $prev2Weeks) * 100 : $pct;
     $trend = 'stable';
@@ -255,9 +207,9 @@ function computeAttendanceFeatures($pdo, $userId, $studentIdKey)
         'percentage' => $pct,
         'sessions_total' => $totalSessions,
         'sessions_present' => $totalPresent,
-        'trend' => $trend, // 'improving', 'declining', 'stable'
+        'trend' => $trend,
         'consecutive_absences' => $consecutiveAbsences,
-        'recent_pct' => $recentPct
+        'recent_pct' => round($recentPct, 1)
     ];
 }
 

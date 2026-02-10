@@ -460,7 +460,7 @@ const RiskCenter = () => {
             {/* Footer */}
             <div className="table-footer">
                 <span>Showing {filteredStudents.length} of {totalStudents} students</span>
-                <span className="last-updated">Live • Last analyzed: {new Date().toLocaleTimeString()}</span>
+                <span className="last-updated">Live - Last analyzed: {new Date().toLocaleTimeString()}</span>
             </div>
         </div>
     );

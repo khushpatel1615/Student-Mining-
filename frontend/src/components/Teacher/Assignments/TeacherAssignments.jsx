@@ -47,7 +47,7 @@ function TeacherAssignments() {
 
     const fetchSubjects = async () => {
         try {
-            const response = await fetch(`${API_BASE}/teachers.php?action=my_subjects`, {
+            const response = await fetch(`${API_BASE}/teachers.phpaction=my_subjects`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             const data = await response.json()
@@ -78,7 +78,7 @@ function TeacherAssignments() {
 
     const fetchSubmissions = async (assignmentId) => {
         try {
-            const response = await fetch(`${API_BASE}/assignments.php?id=${assignmentId}`, {
+            const response = await fetch(`${API_BASE}/assignments.phpid=${assignmentId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             const data = await response.json()
@@ -167,14 +167,14 @@ function TeacherAssignments() {
                 </button>
             </div>
 
-            {loading ? (
+            {loading  (
                 <div className="loading">Loading...</div>
-            ) : selectedAssignment ? (
+            ) : selectedAssignment  (
                 <div className="submissions-view">
                     <div className="submissions-header">
                         <div>
                             <button className="btn-back" onClick={() => setSelectedAssignment(null)}>
-                                ← Back to Assignments
+                                Back to Assignments
                             </button>
                             <h3>{selectedAssignment.title}</h3>
                             <p className="subject-name">{selectedAssignment.subject_name}</p>
@@ -194,7 +194,7 @@ function TeacherAssignments() {
                     </div>
 
                     <div className="submissions-list">
-                        {submissions.length === 0 ? (
+                        {submissions.length === 0  (
                             <div className="empty-state">No submissions yet</div>
                         ) : (
                             submissions.map(sub => (
@@ -208,7 +208,7 @@ function TeacherAssignments() {
                                         </span>
                                     </div>
                                     <div className="submission-actions">
-                                        {sub.status === 'graded' ? (
+                                        {sub.status === 'graded'  (
                                             <div className="graded-info">
                                                 <span className="grade-badge">
                                                     {sub.marks_obtained}/{selectedAssignment.total_points}
@@ -347,12 +347,12 @@ function TeacherAssignments() {
                         </div>
                         <form onSubmit={handleGradeSubmission}>
                             <div className="form-group">
-                                <label>Marks Obtained (out of {selectedAssignment?.total_points}) *</label>
+                                <label>Marks Obtained (out of {selectedAssignment.total_points}) *</label>
                                 <input
                                     type="number"
                                     value={gradingData.marks_obtained}
                                     onChange={e => setGradingData({ ...gradingData, marks_obtained: e.target.value })}
-                                    max={selectedAssignment?.total_points}
+                                    max={selectedAssignment.total_points}
                                     required
                                 />
                             </div>

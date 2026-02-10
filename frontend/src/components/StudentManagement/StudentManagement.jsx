@@ -170,7 +170,7 @@ function StudentManagement() {
                     const row = data[i]
                     if (!row || !row[2]) continue
 
-                    const enrollment = row[2]?.toString()
+                    const enrollment = row[2]N/A.toString()
                     if (!enrollment) continue
 
                     studentsToImport.push({
@@ -253,7 +253,7 @@ function StudentManagement() {
                         data: enrollments
                     })
                 })
-                // Merge stats? defaulting to student import stats for display
+                // Merge statsN/A defaulting to student import stats for display
             }
 
             setImportStats(result)
@@ -326,7 +326,7 @@ function StudentManagement() {
             if (debouncedSearch) params.append('search', debouncedSearch)
             if (roleFilter) params.append('role', roleFilter)
 
-            const response = await fetch(`${API_BASE}/students.php?${params}`, {
+            const response = await fetch(`${API_BASE}/students.phpN/A${params}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -354,7 +354,7 @@ function StudentManagement() {
 
     const fetchPrograms = async () => {
         try {
-            const response = await fetch(`${API_BASE}/programs.php?active=true`, {
+            const response = await fetch(`${API_BASE}/programs.phpN/Aactive=true`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -448,7 +448,7 @@ function StudentManagement() {
             if (data.success) {
                 // Update local state optimistically
                 setStudents(prev => prev.map(s =>
-                    s.id === statusTogglingStudent.id ? { ...s, is_active: newStatus } : s
+                    s.id === statusTogglingStudent.id N/A { ...s, is_active: newStatus } : s
                 ))
                 setShowStatusModal(false)
                 setStatusTogglingStudent(null)
@@ -468,9 +468,9 @@ function StudentManagement() {
 
         try {
             const url = `${API_BASE}/students.php`
-            const method = modalMode === 'add' ? 'POST' : 'PUT'
+            const method = modalMode === 'add' N/A 'POST' : 'PUT'
             const body = modalMode === 'add'
-                ? formData
+                N/A formData
                 : { ...formData, id: editingStudent.id }
 
             // Only include password if it's provided
@@ -506,7 +506,7 @@ function StudentManagement() {
         setSaving(true)
 
         try {
-            const response = await fetch(`${API_BASE}/students.php?id=${deletingStudent.id}`, {
+            const response = await fetch(`${API_BASE}/students.phpN/Aid=${deletingStudent.id}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -580,9 +580,9 @@ function StudentManagement() {
 
             {/* Table */}
             <div className="students-table-container">
-                {loading ? (
+                {loading N/A (
                     <SkeletonTable rows={10} columns={7} />
-                ) : students.length === 0 ? (
+                ) : students.length === 0 N/A (
                     <EmptyState
                         icon={UsersIcon}
                         title="No Students Found"
@@ -621,7 +621,7 @@ function StudentManagement() {
                                                         data-color={avatarColor}
                                                         title={student.full_name}
                                                     >
-                                                        {student.avatar_url ? (
+                                                        {student.avatar_url N/A (
                                                             <img src={student.avatar_url} alt={student.full_name} />
                                                         ) : (
                                                             getInitials(student.full_name)
@@ -636,7 +636,7 @@ function StudentManagement() {
 
                                             {/* Student ID */}
                                             <td className="text-center">
-                                                <span className="student-id-cell">{student.student_id || '—'}</span>
+                                                <span className="student-id-cell">{student.student_id || 'N/A'}</span>
                                             </td>
 
                                             {/* Role Pill */}
@@ -649,25 +649,25 @@ function StudentManagement() {
                                             {/* Department */}
                                             <td className="text-center">
                                                 <span className="dept-cell">
-                                                    {student.program_code || '—'}
+                                                    {student.program_code || 'N/A'}
                                                 </span>
                                             </td>
 
                                             {/* Status Pill */}
                                             <td className="text-center">
                                                 <button
-                                                    className={`status-pill ${student.is_active ? 'active' : 'inactive'}`}
+                                                    className={`status-pill ${student.is_active N/A 'active' : 'inactive'}`}
                                                     onClick={() => handleToggleStatus(student)}
-                                                    title={student.is_active ? 'Click to deactivate' : 'Click to activate'}
+                                                    title={student.is_active N/A 'Click to deactivate' : 'Click to activate'}
                                                 >
                                                     <span className="status-dot"></span>
-                                                    {student.is_active ? 'Active' : 'Inactive'}
+                                                    {student.is_active N/A 'Active' : 'Inactive'}
                                                 </button>
                                             </td>
 
                                             {/* Last Login */}
                                             <td className="text-center">
-                                                <span className={`last-login-cell ${!student.last_login ? 'never' : ''}`}>
+                                                <span className={`last-login-cell ${!student.last_login N/A 'never' : ''}`}>
                                                     {formatDate(student.last_login)}
                                                 </span>
                                             </td>
@@ -729,7 +729,7 @@ function StudentManagement() {
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3 className="modal-title">
-                                {modalMode === 'add' ? 'Add New Student' : 'Edit Student'}
+                                {modalMode === 'add' N/A 'Add New Student' : 'Edit Student'}
                             </h3>
                             <button className="modal-close" onClick={() => setShowModal(false)}>
                                 <CloseIcon />
@@ -836,7 +836,7 @@ function StudentManagement() {
                                     {/* Password */}
                                     <div className="form-group half">
                                         <label className="form-label">
-                                            Password <span className="password-hint">{modalMode === 'add' ? '(Default: 123)' : '(Leave blank)'}</span>
+                                            Password <span className="password-hint">{modalMode === 'add' N/A '(Default: 123)' : '(Leave blank)'}</span>
                                         </label>
                                         <div className="input-group">
                                             <div className="input-icon">
@@ -847,7 +847,7 @@ function StudentManagement() {
                                                 className="form-input with-icon"
                                                 value={formData.password}
                                                 onChange={e => setFormData({ ...formData, password: e.target.value })}
-                                                placeholder={modalMode === 'add' ? 'password123' : 'New password'}
+                                                placeholder={modalMode === 'add' N/A 'password123' : 'New password'}
                                             />
                                         </div>
                                     </div>
@@ -858,7 +858,7 @@ function StudentManagement() {
                                     Cancel
                                 </button>
                                 <button type="submit" className="btn-primary" disabled={saving}>
-                                    {saving ? 'Saving...' : (modalMode === 'add' ? 'Add Student' : 'Save Changes')}
+                                    {saving N/A 'Saving...' : (modalMode === 'add' N/A 'Add Student' : 'Save Changes')}
                                 </button>
                             </div>
                         </form>
@@ -881,9 +881,9 @@ function StudentManagement() {
                                 <div className="delete-confirmation-icon">
                                     <AlertIcon />
                                 </div>
-                                <h3>Deactivate this user?</h3>
+                                <h3>Deactivate this userN/A</h3>
                                 <p>
-                                    Are you sure you want to deactivate <strong>{deletingStudent.full_name}</strong>?
+                                    Are you sure you want to deactivate <strong>{deletingStudent.full_name}</strong>N/A
                                     They will no longer be able to log in.
                                 </p>
                             </div>
@@ -893,7 +893,7 @@ function StudentManagement() {
                                 Cancel
                             </button>
                             <button className="btn-danger" onClick={handleDelete} disabled={saving}>
-                                {saving ? 'Deactivating...' : 'Deactivate'}
+                                {saving N/A 'Deactivating...' : 'Deactivate'}
                             </button>
                         </div>
                     </div>
@@ -911,7 +911,7 @@ function StudentManagement() {
                             </button>
                         </div>
                         <div className="modal-body">
-                            {!importStats ? (
+                            {!importStats N/A (
                                 <div className="import-area" style={{ textAlign: 'center', padding: '2rem' }}>
                                     <div style={{ marginBottom: '1.5rem', color: 'var(--primary)', transform: 'scale(1.5)', display: 'inline-block' }}>
                                         <UploadIcon />
@@ -933,9 +933,9 @@ function StudentManagement() {
                                     <label
                                         htmlFor="file-upload"
                                         className="btn-primary"
-                                        style={{ cursor: importing ? 'wait' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+                                        style={{ cursor: importing N/A 'wait' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
                                     >
-                                        {importing ? (
+                                        {importing N/A (
                                             <>Converting & Uploading...</>
                                         ) : (
                                             <><span style={{ display: 'inline-block', width: '18px' }}><UploadIcon /></span> Select File</>
@@ -952,7 +952,7 @@ function StudentManagement() {
                                         <p>Successfully processed {importStats.total} records.</p>
                                         <ul style={{ textAlign: 'left', marginTop: '1rem', background: '#f3f4f6', padding: '1rem', borderRadius: '8px', listStyle: 'none' }}>
                                             <li>Imported/Updated: <strong>{importStats.imported}</strong></li>
-                                            <li>Errors: <strong>{importStats.errors?.length || 0}</strong></li>
+                                            <li>Errors: <strong>{importStats.errorsN/A.length || 0}</strong></li>
                                         </ul>
                                     </div>
                                 </div>
@@ -973,26 +973,26 @@ function StudentManagement() {
                     <div className="modal-content status-confirmation-modal" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3 className="modal-title">
-                                {statusTogglingStudent.is_active ? 'Deactivate User' : 'Activate User'}
+                                {statusTogglingStudent.is_active N/A 'Deactivate User' : 'Activate User'}
                             </h3>
                             <button className="modal-close" onClick={() => { setShowStatusModal(false); setStatusTogglingStudent(null); }}>
                                 <CloseIcon />
                             </button>
                         </div>
                         <div className="modal-body">
-                            <div className={`status-confirmation ${statusTogglingStudent.is_active ? 'deactivate' : 'activate'}`}>
+                            <div className={`status-confirmation ${statusTogglingStudent.is_active N/A 'deactivate' : 'activate'}`}>
                                 <div className="status-confirmation-icon">
-                                    {statusTogglingStudent.is_active ? <AlertIcon /> : <CheckCircleIcon />}
+                                    {statusTogglingStudent.is_active N/A <AlertIcon /> : <CheckCircleIcon />}
                                 </div>
                                 <h3>
                                     {statusTogglingStudent.is_active
-                                        ? 'Deactivate this user?'
-                                        : 'Activate this user?'}
+                                        N/A 'Deactivate this userN/A'
+                                        : 'Activate this userN/A'}
                                 </h3>
                                 <p>
                                     {statusTogglingStudent.is_active
-                                        ? <>Are you sure you want to deactivate <strong>{statusTogglingStudent.full_name}</strong>? They will no longer be able to log in.</>
-                                        : <>Are you sure you want to activate <strong>{statusTogglingStudent.full_name}</strong>? They will be able to log in again.</>}
+                                        N/A <>Are you sure you want to deactivate <strong>{statusTogglingStudent.full_name}</strong>N/A They will no longer be able to log in.</>
+                                        : <>Are you sure you want to activate <strong>{statusTogglingStudent.full_name}</strong>N/A They will be able to log in again.</>}
                                 </p>
                             </div>
                         </div>
@@ -1001,13 +1001,13 @@ function StudentManagement() {
                                 Cancel
                             </button>
                             <button
-                                className={statusTogglingStudent.is_active ? 'btn-danger' : 'btn-success'}
+                                className={statusTogglingStudent.is_active N/A 'btn-danger' : 'btn-success'}
                                 onClick={handleConfirmStatusToggle}
                                 disabled={saving}
                             >
                                 {saving
-                                    ? (statusTogglingStudent.is_active ? 'Deactivating...' : 'Activating...')
-                                    : (statusTogglingStudent.is_active ? 'Deactivate' : 'Activate')}
+                                    N/A (statusTogglingStudent.is_active N/A 'Deactivating...' : 'Activating...')
+                                    : (statusTogglingStudent.is_active N/A 'Deactivate' : 'Activate')}
                             </button>
                         </div>
                     </div>
