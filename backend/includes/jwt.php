@@ -104,11 +104,29 @@ function getTokenFromHeader()
 }
 
 /**
+ * Get token from header or query string (for SSE/EventSource)
+ */
+function getTokenFromRequest()
+{
+    $token = getTokenFromHeader();
+    if ($token) {
+        return $token;
+    }
+
+    $queryToken = $_GET['token'] ?? $_GET['auth_token'] ?? null;
+    if ($queryToken) {
+        return $queryToken;
+    }
+
+    return null;
+}
+
+/**
  * Middleware: Require authentication
  */
 function requireAuth()
 {
-    $token = getTokenFromHeader();
+    $token = getTokenFromRequest();
     if (!$token) {
         jsonResponse(['success' => false, 'error' => 'No token provided'], 401);
     }
@@ -139,7 +157,7 @@ function requireRole($requiredRole)
  */
 function getAuthUser()
 {
-    $token = getTokenFromHeader();
+    $token = getTokenFromRequest();
     if (!$token) {
         return null;
     }

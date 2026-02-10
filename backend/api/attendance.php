@@ -213,13 +213,20 @@ function handleSaveDaily($pdo, $dataDir, $input)
     // Update/Add records from input
     // We also need to fetch ALL valid students from DB to ensure the CSV includes everyone, even if they have no past data
     $stmt = $pdo->prepare("
-        SELECT u.student_id, u.full_name, u.email
+        SELECT u.id as user_id, u.student_id, u.full_name, u.email, se.id as enrollment_id
         FROM student_enrollments se
         JOIN users u ON se.user_id = u.id
         WHERE se.subject_id = ? AND se.status IN ('active', 'completed')
     ");
     $stmt->execute([$subjectId]);
     $dbStudents = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Build enrollment map for DB writes
+    $enrollmentMap = []; // student_id/email -> enrollment_id
+    foreach ($dbStudents as $s) {
+        $sid = $s['student_id'] ?: $s['email'];
+        $enrollmentMap[$sid] = $s['enrollment_id'];
+    }
 
     foreach ($dbStudents as $s) {
         $sid = $s['student_id'] ?: $s['email'];
@@ -238,6 +245,31 @@ function handleSaveDaily($pdo, $dataDir, $input)
         }
     }
 
+    // Write to DB (primary) first
+    $pdo->beginTransaction();
+    try {
+        $stmtUpsert = $pdo->prepare("
+            INSERT INTO student_attendance (enrollment_id, attendance_date, status)
+            VALUES (?, ?, ?)
+            ON DUPLICATE KEY UPDATE status = VALUES(status)
+        ");
+
+        foreach ($newRecords as $sid => $statusCode) {
+            if (!isset($enrollmentMap[$sid])) {
+                continue;
+            }
+            $status = mapAttendanceStatus($statusCode);
+            if (!$status) {
+                continue;
+            }
+            $stmtUpsert->execute([$enrollmentMap[$sid], $date, $status]);
+        }
+        $pdo->commit();
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
+
     // Write back to CSV
     if (($fp = fopen($file, 'w')) !== false) {
         // Write Header
@@ -254,10 +286,24 @@ function handleSaveDaily($pdo, $dataDir, $input)
         }
         fclose($fp);
     } else {
-        throw new Exception("Failed to write to CSV file");
+        echo json_encode([
+            'success' => false,
+            'error' => 'Attendance saved to DB, but failed to write CSV backup.'
+        ]);
+        return;
     }
 
     echo json_encode(['success' => true, 'message' => 'Attendance saved successfully']);
+}
+
+function mapAttendanceStatus($status)
+{
+    $status = is_string($status) ? trim($status) : $status;
+    if ($status === 'P' || $status === 'present') return 'present';
+    if ($status === 'A' || $status === 'absent') return 'absent';
+    if ($status === 'E' || $status === 'excused') return 'excused';
+    if ($status === 'L' || $status === 'late') return 'late';
+    return null;
 }
 
 function handleStudentView($pdo, $dataDir)

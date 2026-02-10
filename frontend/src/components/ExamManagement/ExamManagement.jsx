@@ -1,5 +1,5 @@
 import { API_BASE } from '../../config';
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import './ExamManagement.css'
 
@@ -32,8 +32,12 @@ function ExamManagement() {
     const [deleteConfirmation, setDeleteConfirmation] = useState(null)
     const [editingId, setEditingId] = useState(null)
     const [selectedSubject, setSelectedSubject] = useState('')
+    const [selectedSemester, setSelectedSemester] = useState('')
+    const [searchQuery, setSearchQuery] = useState('')
+    const [sortBy, setSortBy] = useState('date_desc')
     const [formData, setFormData] = useState({
         subject_id: '',
+        semester: '',
         title: '',
         exam_type: 'midterm',
         exam_date: '',
@@ -63,8 +67,11 @@ function ExamManagement() {
     const fetchExams = async () => {
         try {
             setLoading(true)
-            const url = selectedSubject
-                ? `${API_BASE}/exams.php?subject_id=${selectedSubject}`
+            const params = new URLSearchParams()
+            if (selectedSubject) params.append('subject_id', selectedSubject)
+            if (selectedSemester) params.append('semester', selectedSemester)
+            const url = params.toString()
+                ? `${API_BASE}/exams.php?${params.toString()}`
                 : `${API_BASE}/exams.php`
 
             const response = await fetch(url, {
@@ -83,7 +90,21 @@ function ExamManagement() {
 
     useEffect(() => {
         fetchExams()
-    }, [selectedSubject])
+    }, [selectedSubject, selectedSemester])
+
+    useEffect(() => {
+        // Reset subject when semester changes to avoid mismatch
+        setSelectedSubject('')
+    }, [selectedSemester])
+
+    useEffect(() => {
+        // Keep subject in sync when semester changes in form
+        if (!formData.semester) return
+        const subject = subjects.find(s => String(s.id) === String(formData.subject_id))
+        if (subject && String(subject.semester) !== String(formData.semester)) {
+            setFormData(prev => ({ ...prev, subject_id: '' }))
+        }
+    }, [formData.semester, formData.subject_id, subjects])
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -107,6 +128,7 @@ function ExamManagement() {
                 setEditingId(null)
                 setFormData({
                     subject_id: '',
+                    semester: '',
                     title: '',
                     exam_type: 'midterm',
                     exam_date: '',
@@ -123,13 +145,16 @@ function ExamManagement() {
     }
 
     const handleEdit = (exam) => {
+        const subject = subjects.find(s => String(s.id) === String(exam.subject_id))
+        const examSemester = subject?.semester ? String(subject.semester) : ''
         setFormData({
             subject_id: exam.subject_id,
+            semester: examSemester,
             title: exam.title,
             exam_type: exam.exam_type,
-            exam_date: exam.exam_date.slice(0, 16),
+            exam_date: (exam.start_datetime || '').slice(0, 16),
             duration_minutes: exam.duration_minutes,
-            max_marks: exam.max_marks
+            max_marks: exam.total_marks ?? exam.max_marks
         })
         setEditingId(exam.id)
         setShowModal(true)
@@ -170,6 +195,36 @@ function ExamManagement() {
         })
     }
 
+    const filteredExams = useMemo(() => {
+        const q = searchQuery.trim().toLowerCase()
+        let list = [...exams]
+        if (q) {
+            list = list.filter(e => {
+                const title = (e.title || '').toLowerCase()
+                const subject = (e.subject_name || '').toLowerCase()
+                const code = (e.subject_code || '').toLowerCase()
+                return title.includes(q) || subject.includes(q) || code.includes(q)
+            })
+        }
+        switch (sortBy) {
+            case 'date_asc':
+                list.sort((a, b) => new Date(a.start_datetime) - new Date(b.start_datetime))
+                break
+            case 'title_asc':
+                list.sort((a, b) => (a.title || '').localeCompare(b.title || ''))
+                break
+            case 'title_desc':
+                list.sort((a, b) => (b.title || '').localeCompare(a.title || ''))
+                break
+            case 'marks_desc':
+                list.sort((a, b) => (b.total_marks || b.max_marks || 0) - (a.total_marks || a.max_marks || 0))
+                break
+            default:
+                list.sort((a, b) => new Date(b.start_datetime) - new Date(a.start_datetime))
+        }
+        return list
+    }, [exams, searchQuery, sortBy])
+
     const getExamTypeColor = (type) => {
         const colors = {
             quiz: '#3b82f6',
@@ -188,13 +243,42 @@ function ExamManagement() {
                 <div className="header-actions">
                     <select
                         className="filter-select"
+                        value={selectedSemester}
+                        onChange={(e) => setSelectedSemester(e.target.value)}
+                    >
+                        <option value="">All Semesters</option>
+                        {[...new Set(subjects.map(s => s.semester))].sort((a, b) => a - b).map(sem => (
+                            <option key={sem} value={sem}>Semester {sem}</option>
+                        ))}
+                    </select>
+                    <select
+                        className="filter-select"
                         value={selectedSubject}
                         onChange={(e) => setSelectedSubject(e.target.value)}
                     >
                         <option value="">All Subjects</option>
-                        {subjects.map(s => (
+                        {subjects
+                            .filter(s => !selectedSemester || String(s.semester) === String(selectedSemester))
+                            .map(s => (
                             <option key={s.id} value={s.id}>{s.name} ({s.code})</option>
                         ))}
+                    </select>
+                    <input
+                        className="search-input"
+                        placeholder="Search exams, subjects, codes"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    <select
+                        className="filter-select"
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                    >
+                        <option value="date_desc">Newest First</option>
+                        <option value="date_asc">Oldest First</option>
+                        <option value="title_asc">Title A–Z</option>
+                        <option value="title_desc">Title Z–A</option>
+                        <option value="marks_desc">Max Marks (High)</option>
                     </select>
                     <button className="btn-add" onClick={() => setShowModal(true)}>
                         <PlusIcon />
@@ -207,25 +291,36 @@ function ExamManagement() {
 
             {loading ? (
                 <div className="loading">Loading exams...</div>
-            ) : exams.length === 0 ? (
+            ) : filteredExams.length === 0 ? (
                 <div className="empty-state">
-                    <p>No exams found. Create your first exam!</p>
+                    <p>No exams found for the current filters.</p>
                 </div>
             ) : (
-                <div className="exams-grid">
-                    {exams.map(exam => (
+                <>
+                    <div className="exam-stats">
+                        <div><strong>{filteredExams.length}</strong> exams</div>
+                        <div>Showing {selectedSemester ? `Semester ${selectedSemester}` : 'All Semesters'}</div>
+                        <div>{selectedSubject ? 'Filtered by subject' : 'All subjects'}</div>
+                    </div>
+                    <div className="exams-grid">
+                        {filteredExams.map(exam => (
                         <div key={exam.id} className="exam-card">
                             <div className="exam-card-header">
                                 <div>
                                     <h3>{exam.title}</h3>
                                     <div className="exam-badges">
                                         <span className="subject-badge">{exam.subject_code}</span>
-                                        <span
-                                            className="exam-type-badge"
-                                            style={{ backgroundColor: getExamTypeColor(exam.exam_type) }}
-                                        >
-                                            {exam.exam_type}
-                                        </span>
+                                        {exam.subject_semester && (
+                                            <span className="semester-badge">{exam.subject_semester}</span>
+                                        )}
+                                        {exam.exam_type && (
+                                            <span
+                                                className="exam-type-badge"
+                                                style={{ backgroundColor: getExamTypeColor(exam.exam_type) }}
+                                            >
+                                                {exam.exam_type}
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="card-actions">
@@ -240,7 +335,7 @@ function ExamManagement() {
                             <div className="exam-meta">
                                 <div className="meta-item">
                                     <span className="meta-label">Date:</span>
-                                    <span className="meta-value">{formatDate(exam.exam_date)}</span>
+                                    <span className="meta-value">{formatDate(exam.start_datetime)}</span>
                                 </div>
                                 <div className="meta-item">
                                     <span className="meta-label">Duration:</span>
@@ -248,10 +343,10 @@ function ExamManagement() {
                                 </div>
                                 <div className="meta-item">
                                     <span className="meta-label">Max Marks:</span>
-                                    <span className="meta-value">{exam.max_marks}</span>
+                                    <span className="meta-value">{exam.total_marks ?? exam.max_marks}</span>
                                 </div>
                                 <div className="meta-item">
-                                    <span className="meta-label">Results:</span>
+                                    <span className="meta-label">Submitted Results:</span>
                                     <span className="meta-value">{exam.result_count || 0}</span>
                                 </div>
                                 {exam.average_marks && (
@@ -262,8 +357,9 @@ function ExamManagement() {
                                 )}
                             </div>
                         </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                </>
             )}
 
             {/* Delete Confirmation Modal */}
@@ -304,6 +400,19 @@ function ExamManagement() {
                         </div>
                         <form onSubmit={handleSubmit} className="modal-body">
                             <div className="form-group">
+                                <label>Semester *</label>
+                                <select
+                                    value={formData.semester}
+                                    onChange={e => setFormData({ ...formData, semester: e.target.value, subject_id: '' })}
+                                    required
+                                >
+                                    <option value="">Select Semester</option>
+                                    {[...new Set(subjects.map(s => s.semester))].sort((a, b) => a - b).map(sem => (
+                                        <option key={sem} value={sem}>Semester {sem}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="form-group">
                                 <label>Subject *</label>
                                 <select
                                     value={formData.subject_id}
@@ -311,7 +420,9 @@ function ExamManagement() {
                                     required
                                 >
                                     <option value="">Select Subject</option>
-                                    {subjects.map(s => (
+                                    {subjects
+                                        .filter(s => !formData.semester || String(s.semester) === String(formData.semester))
+                                        .map(s => (
                                         <option key={s.id} value={s.id}>{s.name} ({s.code})</option>
                                     ))}
                                 </select>

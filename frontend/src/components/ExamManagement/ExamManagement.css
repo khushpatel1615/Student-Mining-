@@ -12,6 +12,32 @@
     gap: 1rem;
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.header-actions .btn-add {
+    margin-left: auto;
+}
+
+.filter-select,
+.search-input {
+    min-width: 180px;
+    flex: 1 1 180px;
+}
+
+.search-input {
+    min-width: 220px;
+}
+
+.header-actions .btn-add {
+    white-space: nowrap;
+}
+
 .exam-header h2 {
     font-size: 1.5rem;
     font-weight: 700;
@@ -22,6 +48,24 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 1.5rem;
+}
+
+.search-input {
+    min-width: 220px;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.exam-stats {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
 }
 
 .exam-card {
@@ -55,6 +99,46 @@
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
+    align-items: center;
+}
+
+.subject-badge {
+    background: #eef2ff;
+    color: #4f46e5;
+    padding: 0.4rem 0.7rem;
+    border-radius: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+}
+
+.semester-badge {
+    background: #ecfeff;
+    color: #0f766e;
+    padding: 0.35rem 0.6rem;
+    border-radius: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border: 1px solid #99f6e4;
+    letter-spacing: 0.02em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 48px;
+    min-height: 32px;
+    text-align: center;
+}
+
+.semester-badge::before {
+    content: "Sem";
+    font-weight: 700;
+    font-size: 0.7rem;
+    color: #0f766e;
+    opacity: 0.8;
+    margin-right: 0.25rem;
 }
 
 .exam-type-badge {
@@ -83,6 +167,16 @@
     .exam-header {
         flex-direction: column;
         align-items: stretch;
+    }
+
+    .header-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .header-actions .btn-add {
+        margin-left: 0;
+        width: 100%;
     }
 }
 

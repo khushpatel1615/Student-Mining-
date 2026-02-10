@@ -178,12 +178,13 @@ export const GaugeWidget = ({
     max = 100,
     color = "#3b82f6",
     label = "Score",
-    height = 160
+    height = 160,
+    className = ""
 }) => {
     const data = [{ name: 'Score', value: score, fill: color }];
 
     return (
-        <div style={{ width: '100%', height: `${height}px`, position: 'relative' }}>
+        <div className={className} style={{ width: '100%', height: `${height}px`, position: 'relative' }}>
             <ResponsiveContainer width="100%" height="100%">
                 <RadialBarChart
                     cx="50%"

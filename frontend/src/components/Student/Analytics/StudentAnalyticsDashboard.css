@@ -120,6 +120,43 @@
     gap: 1.5rem;
 }
 
+.analytics-risk-insights-row {
+    margin-top: 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 1.5rem;
+}
+
+.risk-meter-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0 1rem;
+}
+
+.risk-meter-gauge {
+    max-width: 320px;
+}
+
+.risk-meter-caption {
+    text-align: center;
+    margin-top: -0.5rem;
+    color: #64748b;
+    font-size: 0.875rem;
+}
+
+.risk-meter-empty {
+    height: 220px;
+    width: 100%;
+    background: #f8fafc;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+}
+
 /* Responsive Breakpoints */
 @media (max-width: 1280px) {
     .analytics-kpi-grid {
@@ -127,6 +164,10 @@
     }
 
     .analytics-charts-row {
+        grid-template-columns: 1fr;
+    }
+
+    .analytics-risk-insights-row {
         grid-template-columns: 1fr;
     }
 }
@@ -145,6 +186,10 @@
 
     .analytics-kpi-grid {
         grid-template-columns: 1fr;
+    }
+
+    .risk-meter-gauge {
+        max-width: 260px;
     }
 }
 
