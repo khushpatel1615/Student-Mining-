@@ -6,11 +6,11 @@
  */
 
 if (php_sapi_name() !== 'cli') {
-// If accessed via HTTP, ensure Admin
+    // If accessed via HTTP, ensure Admin
     require_once __DIR__ . '/../../includes/jwt.php';
     require_once __DIR__ . '/../../config/database.php';
     setCORSHeaders();
-// Check Admin Token
+    // Check Admin Token
     $headers = getallheaders();
     $token = null;
     $authHeader = isset($headers['Authorization']) ? $headers['Authorization'] : '';
@@ -28,10 +28,10 @@ if (php_sapi_name() !== 'cli') {
     require_once __DIR__ . '/../../config/database.php';
 }
 
-    $pdo = getDBConnection();
+$pdo = getDBConnection();
 echo "Starting Feature Computation...\n";
 // 1. Fetch all students
-    $stmt = $pdo->query("SELECT id, student_id, email, full_name FROM users WHERE role = 'student' AND is_active = 1");
+$stmt = $pdo->query("SELECT id, student_id, email, full_name FROM users WHERE role = 'student' AND is_active = 1");
 $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $count = 0;
 foreach ($students as $student) {
@@ -41,7 +41,7 @@ foreach ($students as $student) {
     $count++;
 }
 
-    echo "Computed features for $count students.\n";
+echo "Computed features for $count students.\n";
 if (php_sapi_name() !== 'cli') {
     echo json_encode(['success' => true, 'count' => $count]);
 }
@@ -55,15 +55,15 @@ function computeStudentFeatures($pdo, $student)
 {
     $userId = $student['id'];
     $studentIdFormatted = $student['student_id'] ?: $student['email'];
-// --- A. Attendance Features ---
+    // --- A. Attendance Features ---
     $att = computeAttendanceFeatures($pdo, $userId, $studentIdFormatted);
-// --- B. Performance Features ---
+    // --- B. Performance Features ---
     $perf = computePerformanceFeatures($pdo, $userId);
-// --- C. Engagement Features ---
+    // --- C. Engagement Features ---
     $eng = computeEngagementFeatures($pdo, $userId);
-// --- D. Completion Features ---
+    // --- D. Completion Features ---
     $comp = computeCompletionFeatures($pdo, $userId);
-// --- Risk Score Calculation (Phase C Logic) ---
+    // --- Risk Score Calculation (Phase C Logic) ---
     // Weights: Attendance 40%, Grades 40%, Submission 10%, Engagement 10%
 
     // Normalize Grades (0-100)
@@ -73,21 +73,20 @@ function computeStudentFeatures($pdo, $student)
 
     $scoreAtt = $att['percentage'] ?? 0;
     $scoreGrade = $perf['avg_grade_current'] ?? 0;
-// 0-100 scale usually
+    // 0-100 scale usually
     $scoreSub = $comp['submission_rate'] ?? 0;
-    $scoreEng = ($eng['logins_last_7d'] > 0) ? 100 : 0;
-// Simple binary for now, or scale
+    // Simple binary removed in favor of scale below
     // Or scale engagement: 1 login = 20, 5+ = 100
     $scoreEng = min(($eng['logins_last_7d'] * 20), 100);
-// Weighted Sum
+    // Weighted Sum
     $riskScoreVal = ($scoreAtt * 0.40) + ($scoreGrade * 0.40) + ($scoreSub * 0.10) + ($scoreEng * 0.10);
-// Risk is usually INVERSE of success.
+    // Risk is usually INVERSE of success.
     // The prompt says: "Risk Score / Success Probability ... Star Performers score >= 75".
     // So this is a SUCCESS SCORE. Low score = High Risk.
     // "At-Risk: < 45".
 
     $finalScore = round($riskScoreVal, 2);
-// Determine Risk Level
+    // Determine Risk Level
     $riskLevel = 'Safe';
     if ($finalScore >= 75) {
         $riskLevel = 'Star';
@@ -123,18 +122,18 @@ function computeStudentFeatures($pdo, $student)
     }
 
     return [
-    'risk_score' => $finalScore,
-    'risk_level' => $riskLevel,
-    'attendance_score' => $scoreAtt,
-    'grade_avg' => $scoreGrade,
-    'engagement_score' => $scoreEng,
-    'features' => [
-        'attendance' => $att,
-        'performance' => $perf,
-        'engagement' => $eng,
-        'completion' => $comp
-    ],
-    'risk_factors' => $reasons
+        'risk_score' => $finalScore,
+        'risk_level' => $riskLevel,
+        'attendance_score' => $scoreAtt,
+        'grade_avg' => $scoreGrade,
+        'engagement_score' => $scoreEng,
+        'features' => [
+            'attendance' => $att,
+            'performance' => $perf,
+            'engagement' => $eng,
+            'completion' => $comp
+        ],
+        'risk_factors' => $reasons
     ];
 }
 
@@ -147,9 +146,9 @@ function computeAttendanceFeatures($pdo, $userId, $studentIdKey)
     $totalSessions = 0;
     $totalPresent = 0;
     $consecutiveAbsences = 0;
-// Global max or current streak? "streak detection". Usually current streak.
+    // Global max or current streak? "streak detection". Usually current streak.
     $history = [];
-// Date => Status (P, A, L, etc) aggregated? No, complicated.
+    // Date => Status (P, A, L, etc) aggregated? No, complicated.
     // Let's just track counts and recent dates.
 
     $recent2Weeks = 0;
@@ -159,7 +158,7 @@ function computeAttendanceFeatures($pdo, $userId, $studentIdKey)
     $now = time();
     $twoWeeksAgo = strtotime('-2 weeks');
     $fourWeeksAgo = strtotime('-4 weeks');
-// Attendance Data Directory
+    // Attendance Data Directory
     $dataDir = __DIR__ . '/../../data/attendance';
     foreach ($subjects as $sid) {
         $file = "$dataDir/attendance_subject_{$sid}.csv";
@@ -170,38 +169,38 @@ function computeAttendanceFeatures($pdo, $userId, $studentIdKey)
         if (($handle = fopen($file, "r")) !== false) {
             $header = fgetcsv($handle);
             $dates = array_slice($header, 2);
-    // Find student row
+            // Find student row
             while (($row = fgetcsv($handle)) !== false) {
                 if ($row[0] == $studentIdKey) {
-                // Found student
-                        $statuses = array_slice($row, 2);
-                // We need to process dates chronologically for streak
-                        // Combine dates and statuses
-                        $attendanceMap = [];
+                    // Found student
+                    $statuses = array_slice($row, 2);
+                    // We need to process dates chronologically for streak
+                    // Combine dates and statuses
+                    $attendanceMap = [];
                     foreach ($dates as $i => $d) {
                         $attendanceMap[$d] = $statuses[$i] ?? '-';
                     }
 
-                        // Sort dates just in case CSV headers aren't sorted (User script sorts them though)
-                        uksort($attendanceMap, function ($a, $b) {
+                    // Sort dates just in case CSV headers aren't sorted (User script sorts them though)
+                    uksort($attendanceMap, function ($a, $b) {
 
-                            return strtotime($a) - strtotime($b);
-                        });
-                // Calc stats
-                                    $streak = 0;
+                        return strtotime($a) - strtotime($b);
+                    });
+                    // Calc stats
+                    $streak = 0;
                     foreach ($attendanceMap as $d => $s) {
                         $ts = strtotime($d);
                         $isPresent = (strtoupper($s) == 'P' || strtoupper($s) == 'L');
                         // Present or Late
-                                            $isAbsent = (strtoupper($s) == 'A');
+                        $isAbsent = (strtoupper($s) == 'A');
                         if ($s != '-') {
-                    // Ignore empty
-                                                $totalSessions++;
+                            // Ignore empty
+                            $totalSessions++;
                             if ($isPresent) {
                                 $totalPresent++;
                             }
 
-                                // Trend buckets
+                            // Trend buckets
                             if ($ts >= $twoWeeksAgo) {
                                 $recent2Weeks++;
                                 if ($isPresent) {
@@ -210,28 +209,28 @@ function computeAttendanceFeatures($pdo, $userId, $studentIdKey)
                             } elseif ($ts >= $fourWeeksAgo) {
                                 $prev2Weeks++;
                                 if ($isPresent) {
-                                        $prev2WeeksPresent++;
+                                    $prev2WeeksPresent++;
                                 }
                             }
 
-                                // Streak (Current Streak of Absences at the VERY END)
-                                // We need robustness. Iterate through map.
-                                // If Absent -> streak++, if Present -> streak=0.
-                                // Since we want CURRENT streak, the loop naturally leaves `streak` at the value of the last run of absences.
+                            // Streak (Current Streak of Absences at the VERY END)
+                            // We need robustness. Iterate through map.
+                            // If Absent -> streak++, if Present -> streak=0.
+                            // Since we want CURRENT streak, the loop naturally leaves `streak` at the value of the last run of absences.
                             if ($isAbsent) {
-                                        $streak++;
+                                $streak++;
                             } elseif ($isPresent) {
                                 $streak = 0;
                             }
                         }
                     }
-                        // Accumulate streak?
-                        // No, streak is specific to "Current status".
-                        // If a student is absent in Subject A but present in Subject B today...
-                        // "Consecutive absences" usually implies totally missing school.
-                        // For now, let's take the MAX streak across subjects or sum?
-                        // Let's average the streak? No, max risk.
-                        $consecutiveAbsences = max($consecutiveAbsences, $streak);
+                    // Accumulate streak?
+                    // No, streak is specific to "Current status".
+                    // If a student is absent in Subject A but present in Subject B today...
+                    // "Consecutive absences" usually implies totally missing school.
+                    // For now, let's take the MAX streak across subjects or sum?
+                    // Let's average the streak? No, max risk.
+                    $consecutiveAbsences = max($consecutiveAbsences, $streak);
                 }
             }
             fclose($handle);
@@ -239,7 +238,7 @@ function computeAttendanceFeatures($pdo, $userId, $studentIdKey)
     }
 
     $pct = ($totalSessions > 0) ? round(($totalPresent / $totalSessions) * 100, 1) : 100;
-// Default 100 if no sessions
+    // Default 100 if no sessions
 
     // Trend Calculation
     $recentPct = ($recent2Weeks > 0) ? ($recent2WeeksPresent / $recent2Weeks) * 100 : $pct;
@@ -253,12 +252,12 @@ function computeAttendanceFeatures($pdo, $userId, $studentIdKey)
     }
 
     return [
-    'percentage' => $pct,
-    'sessions_total' => $totalSessions,
-    'sessions_present' => $totalPresent,
-    'trend' => $trend, // 'improving', 'declining', 'stable'
-    'consecutive_absences' => $consecutiveAbsences,
-    'recent_pct' => $recentPct
+        'percentage' => $pct,
+        'sessions_total' => $totalSessions,
+        'sessions_present' => $totalPresent,
+        'trend' => $trend, // 'improving', 'declining', 'stable'
+        'consecutive_absences' => $consecutiveAbsences,
+        'recent_pct' => $recentPct
     ];
 }
 
@@ -275,10 +274,10 @@ function computePerformanceFeatures($pdo, $userId)
         ORDER BY sg.graded_at DESC, sg.created_at DESC
         LIMIT 10
     ");
-// Limit 10 to analyze trend, but we only avg last 3
+    // Limit 10 to analyze trend, but we only avg last 3
     $stmt->execute([$userId]);
     $grades = $stmt->fetchAll(PDO::FETCH_ASSOC);
-// ordered newest first
+    // ordered newest first
 
     if (empty($grades)) {
         return [
@@ -300,7 +299,7 @@ function computePerformanceFeatures($pdo, $userId)
     // Last 3 Avg
     $last3 = array_slice($gradePcts, 0, 3);
     $last3Avg = !empty($last3) ? array_sum($last3) / count($last3) : 0;
-// Trend: Compare first 3 (Newest) vs next 3 (Older)
+    // Trend: Compare first 3 (Newest) vs next 3 (Older)
     $next3 = array_slice($gradePcts, 3, 3);
     $next3Avg = !empty($next3) ? array_sum($next3) / count($next3) : $last3Avg;
     $trend = 'stable';
@@ -320,11 +319,11 @@ function computePerformanceFeatures($pdo, $userId)
     $stdDev = sqrt($variance / count($gradePcts));
     $volatility = ($stdDev > 15) ? 'inconsistent' : 'stable';
     return [
-    'avg_grade_current' => round($avgFull, 1),
-    'last_3_avg' => round($last3Avg, 1),
-    'grade_trend' => $trend,
-    'volatility' => $volatility,
-    'std_dev' => round($stdDev, 1)
+        'avg_grade_current' => round($avgFull, 1),
+        'last_3_avg' => round($last3Avg, 1),
+        'grade_trend' => $trend,
+        'volatility' => $volatility,
+        'std_dev' => round($stdDev, 1)
     ];
 }
 
@@ -332,15 +331,15 @@ function computeEngagementFeatures($pdo, $userId)
 {
     // Check if table exists (it should, we made it)
     try {
-// Last Login Time
+        // Last Login Time
         $stmt = $pdo->prepare("SELECT MAX(created_at) FROM activity_logs WHERE user_id = ? AND action = 'login'");
         $stmt->execute([$userId]);
         $lastLoginDate = $stmt->fetchColumn();
-// Count logins last 7 days
+        // Count logins last 7 days
         $stmt2 = $pdo->prepare("SELECT COUNT(*) FROM activity_logs WHERE user_id = ? AND action = 'login' AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
         $stmt2->execute([$userId]);
         $logins7d = $stmt2->fetchColumn();
-// Count logins last 14 days
+        // Count logins last 14 days
         $stmt3 = $pdo->prepare("SELECT COUNT(*) FROM activity_logs WHERE user_id = ? AND action = 'login' AND created_at >= DATE_SUB(NOW(), INTERVAL 14 DAY)");
         $stmt3->execute([$userId]);
         $logins14d = $stmt3->fetchColumn();
@@ -349,14 +348,14 @@ function computeEngagementFeatures($pdo, $userId)
             $diff = time() - strtotime($lastLoginDate);
             $daysSinceLogin = floor($diff / (60 * 60 * 24));
         } elseif (empty($lastLoginDate)) {
-        // Fallback to user table last_login
-                $uStmt = $pdo->prepare("SELECT last_login FROM users WHERE id = ?");
+            // Fallback to user table last_login
+            $uStmt = $pdo->prepare("SELECT last_login FROM users WHERE id = ?");
             $uStmt->execute([$userId]);
             $ll = $uStmt->fetchColumn();
             if ($ll) {
                 $diff = time() - strtotime($ll);
                 $daysSinceLogin = floor($diff / (60 * 60 * 24));
-        // rough estimate for counts
+                // rough estimate for counts
                 if ($daysSinceLogin <= 7) {
                     $logins7d = ($logins7d == 0) ? 1 : $logins7d;
                 }
@@ -364,17 +363,17 @@ function computeEngagementFeatures($pdo, $userId)
         }
 
         return [
-        'last_login' => $lastLoginDate,
-        'days_since_login' => $daysSinceLogin,
-        'logins_last_7d' => $logins7d,
-        'logins_last_14d' => $logins14d
+            'last_login' => $lastLoginDate,
+            'days_since_login' => $daysSinceLogin,
+            'logins_last_7d' => $logins7d,
+            'logins_last_14d' => $logins14d
         ];
     } catch (Exception $e) {
         return [
             'days_since_login' => 99,
             'logins_last_7d' => 0,
             'logins_last_14d' => 0
-            ];
+        ];
     }
 }
 
@@ -391,7 +390,7 @@ function computeCompletionFeatures($pdo, $userId)
     ");
     $stmtCtx->execute([$userId]);
     $expectedCount = $stmtCtx->fetchColumn();
-// 2. Get actual grades count
+    // 2. Get actual grades count
     $stmtGrades = $pdo->prepare("
         SELECT COUNT(sg.id)
         FROM student_grades sg
@@ -402,7 +401,7 @@ function computeCompletionFeatures($pdo, $userId)
     $stmtGrades->execute([$userId]);
     $submittedCount = $stmtGrades->fetchColumn();
     $submissionRate = ($expectedCount > 0) ? ($submittedCount / $expectedCount) * 100 : 100;
-// 3. Assignment Submission Behavior (On Time vs Late)
+    // 3. Assignment Submission Behavior (On Time vs Late)
     $lateCount = 0;
     try {
         $stmtAss = $pdo->prepare("
@@ -416,13 +415,13 @@ function computeCompletionFeatures($pdo, $userId)
         $assStats = $stmtAss->fetch(PDO::FETCH_ASSOC);
         $lateCount = $assStats['late_subs'] ?? 0;
     } catch (Exception $e) {
-    // Table might not exist or other error, ignore
+        // Table might not exist or other error, ignore
     }
 
     return [
-    'submission_rate' => round($submissionRate, 1),
-    'missing_assessments' => max(0, $expectedCount - $submittedCount),
-    'late_submissions' => (int) $lateCount
+        'submission_rate' => round($submissionRate, 1),
+        'missing_assessments' => max(0, $expectedCount - $submittedCount),
+        'late_submissions' => (int) $lateCount
     ];
 }
 
@@ -446,13 +445,13 @@ function saveRiskScore($pdo, $userId, $data)
     ";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
-    'uid' => $userId,
-    'score' => $data['risk_score'],
-    'level' => $data['risk_level'],
-    'att' => $data['attendance_score'],
-    'grade' => $data['grade_avg'],
-    'eng' => $data['engagement_score'],
-    'json' => json_encode($data['features']),
-    'reasons' => json_encode($data['risk_factors'])
+        'uid' => $userId,
+        'score' => $data['risk_score'],
+        'level' => $data['risk_level'],
+        'att' => $data['attendance_score'],
+        'grade' => $data['grade_avg'],
+        'eng' => $data['engagement_score'],
+        'json' => json_encode($data['features']),
+        'reasons' => json_encode($data['risk_factors'])
     ]);
 }

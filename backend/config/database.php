@@ -39,9 +39,8 @@ define('GOOGLE_CLIENT_ID', getenv('GOOGLE_CLIENT_ID'));
 define('GOOGLE_CLIENT_SECRET', getenv('GOOGLE_CLIENT_SECRET'));
 
 // CORS Configuration
-// CORS Configuration
-// CORS Configuration
-define('ALLOWED_ORIGIN', getenv('ALLOWED_ORIGIN') ?: 'http://localhost:5173');
+$allowedOrigins = getenv('ALLOWED_ORIGINS') ? explode(',', getenv('ALLOWED_ORIGINS')) : ['http://localhost:5173', 'http://localhost:3000'];
+define('ALLOWED_ORIGINS', $allowedOrigins);
 
 // Load and Validate CORS
 require_once __DIR__ . '/cors.php';

@@ -588,7 +588,7 @@ function StudentManagement() {
                         title="No Students Found"
                         description="We couldn't find any students matching your current search or filters. Try adjusting your criteria or adding a new student."
                         actionText="Add New Student"
-                        onAction={() => setShowAddModal(true)}
+                        onAction={openAddModal}
                     />
                 ) : (
                     <>

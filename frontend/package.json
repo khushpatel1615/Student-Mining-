@@ -39,7 +39,7 @@
     "react-hot-toast": "^2.6.0",
     "react-image-crop": "^11.0.10",
     "react-markdown": "^10.1.0",
-    "react-router-dom": "^6.21.0",
+    "react-router-dom": "^7.13.0",
     "recharts": "^3.7.0",
     "tailwind-merge": "^3.4.0",
     "xlsx": "^0.18.5"

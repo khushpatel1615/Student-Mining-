@@ -270,71 +270,71 @@ function TeacherManagement() {
                 <EmptyState
                     icon={UserIcon}
                     title="No Teachers Found"
-                    description="No teachers have been registered yet. Click \" Add New Teacher\" to get started."
-            actionText="Add New Teacher"
-            onAction={() => setShowAddTeacherModal(true)}
+                    description="No teachers have been registered yet. Click 'Add New Teacher' to get started."
+                    actionText="Add New Teacher"
+                    onAction={() => setShowAddTeacherModal(true)}
                 />
             ) : (
-            <div className="teachers-grid">
-                {teachers.map(teacher => (
-                    <div key={teacher.id} className="teacher-card">
-                        <div className="teacher-header">
-                            <div className="teacher-avatar">
-                                {teacher.avatar_url ? (
-                                    <img src={teacher.avatar_url} alt={teacher.full_name} />
+                <div className="teachers-grid">
+                    {teachers.map(teacher => (
+                        <div key={teacher.id} className="teacher-card">
+                            <div className="teacher-header">
+                                <div className="teacher-avatar">
+                                    {teacher.avatar_url ? (
+                                        <img src={teacher.avatar_url} alt={teacher.full_name} />
+                                    ) : (
+                                        getInitials(teacher.full_name)
+                                    )}
+                                </div>
+                                <div className="teacher-info">
+                                    <h3>{toSentenceCase(teacher.full_name)}</h3>
+                                    <p>{teacher.email}</p>
+                                </div>
+                            </div>
+
+                            <span className="subject-count">
+                                {teacher.assigned_subjects?.length || 0} subjects assigned
+                            </span>
+
+                            <div className="assigned-subjects">
+                                <h4>Assigned Subjects</h4>
+                                {teacher.assigned_subjects?.length > 0 ? (
+                                    teacher.assigned_subjects.map(subject => (
+                                        <span key={subject.id} className="subject-tag">
+                                            <span className="semester-badge">S{subject.semester}</span>
+                                            {subject.code} - {subject.name}
+                                            <button
+                                                className="remove-btn"
+                                                onClick={() => handleRemoveAssignment(teacher.id, subject.id)}
+                                                title="Remove assignment"
+                                            >
+                                                <XIcon />
+                                            </button>
+                                        </span>
+                                    ))
                                 ) : (
-                                    getInitials(teacher.full_name)
+                                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                        No subjects assigned yet
+                                    </p>
                                 )}
                             </div>
-                            <div className="teacher-info">
-                                <h3>{toSentenceCase(teacher.full_name)}</h3>
-                                <p>{teacher.email}</p>
+
+                            <div className="teacher-actions">
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={() => {
+                                        setSelectedTeacher(teacher)
+                                        setSelectedSemester('')
+                                        setSelectedSubject('')
+                                        setShowAssignModal(true)
+                                    }}
+                                >
+                                    <PlusIcon /> Assign Subject
+                                </button>
                             </div>
                         </div>
-
-                        <span className="subject-count">
-                            {teacher.assigned_subjects?.length || 0} subjects assigned
-                        </span>
-
-                        <div className="assigned-subjects">
-                            <h4>Assigned Subjects</h4>
-                            {teacher.assigned_subjects?.length > 0 ? (
-                                teacher.assigned_subjects.map(subject => (
-                                    <span key={subject.id} className="subject-tag">
-                                        <span className="semester-badge">S{subject.semester}</span>
-                                        {subject.code} - {subject.name}
-                                        <button
-                                            className="remove-btn"
-                                            onClick={() => handleRemoveAssignment(teacher.id, subject.id)}
-                                            title="Remove assignment"
-                                        >
-                                            <XIcon />
-                                        </button>
-                                    </span>
-                                ))
-                            ) : (
-                                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                                    No subjects assigned yet
-                                </p>
-                            )}
-                        </div>
-
-                        <div className="teacher-actions">
-                            <button
-                                className="btn btn-primary"
-                                onClick={() => {
-                                    setSelectedTeacher(teacher)
-                                    setSelectedSemester('')
-                                    setSelectedSubject('')
-                                    setShowAssignModal(true)
-                                }}
-                            >
-                                <PlusIcon /> Assign Subject
-                            </button>
-                        </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
             )}
 
             {/* Add Teacher Modal */}

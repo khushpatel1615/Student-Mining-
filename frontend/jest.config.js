@@ -1,7 +1,7 @@
 export default {
     testEnvironment: 'jsdom',
     roots: ['<rootDir>/src'],
-    testMatch: ['**/*.test.js', '**/*.spec.js'],
+    testMatch: ['**/*.test.js', '**/*.test.jsx', '**/*.spec.js', '**/*.spec.jsx'],
     testPathIgnorePatterns: ['/node_modules/', 'setup.js', '__mocks__'],
     moduleNameMapper: {
         '\\.(css|less|scss|sass)$': 'identity-obj-proxy',

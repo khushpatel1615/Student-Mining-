@@ -1,0 +1,196 @@
+﻿
+> student-data-mining-frontend@0.0.1 test
+> jest src/__tests__/TeacherManagement.test.js --watchAll=false
+
+node.exe : FAIL src/__tests__/TeacherManagement.test.js
+At line:1 char:1
++ & "E:\Node Js/node.exe" "E:\Node Js/node_modules/npm/bin/npm-cli.js"  
+...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (FAIL src/__test...agement.te 
+   st.js:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Teacher Management Feature
+    √ READ: Loads teachers list (42 ms)
+    × CREATE: Adds new teacher (66 ms)
+
+  ● Teacher Management Feature › CREATE: Adds new teacher
+
+    TestingLibraryElementError: Found multiple elements with the role 
+"button" and name `/add new teacher/i`
+
+    Here are the matching elements:
+
+    Ignored nodes: comments, script, style
+    [36m<button[39m
+      [33mclass[39m=[32m"btn btn-primary add-teacher-btn"[39m
+    [36m>[39m
+      [36m<svg[39m
+        [33mfill[39m=[32m"none"[39m
+        [33mheight[39m=[32m"18"[39m
+        [33mstroke[39m=[32m"currentColor"[39m
+        [33mstroke-linecap[39m=[32m"round"[39m
+        [33mstroke-linejoin[39m=[32m"round"[39m
+        [33mstroke-width[39m=[32m"2"[39m
+        [33mviewBox[39m=[32m"0 0 24 24"[39m
+        [33mwidth[39m=[32m"18"[39m
+      [36m>[39m
+        [36m<path[39m
+          [33md[39m=[32m"M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 
+4v2"[39m
+        [36m/>[39m
+        [36m<circle[39m
+          [33mcx[39m=[32m"8.5"[39m
+          [33mcy[39m=[32m"7"[39m
+          [33mr[39m=[32m"4"[39m
+        [36m/>[39m
+        [36m<line[39m
+          [33mx1[39m=[32m"20"[39m
+          [33mx2[39m=[32m"20"[39m
+          [33my1[39m=[32m"8"[39m
+          [33my2[39m=[32m"14"[39m
+        [36m/>[39m
+        [36m<line[39m
+          [33mx1[39m=[32m"23"[39m
+          [33mx2[39m=[32m"17"[39m
+          [33my1[39m=[32m"11"[39m
+          [33my2[39m=[32m"11"[39m
+        [36m/>[39m
+      [36m</svg>[39m
+      [0m Add New Teacher[0m
+    [36m</button>[39m
+
+    Ignored nodes: comments, script, style
+    [36m<button[39m
+      [33mclass[39m=[32m"btn-add"[39m
+    [36m>[39m
+      [0mAdd New Teacher[0m
+    [36m</button>[39m
+
+    (If this is intentional, then use the `*AllBy*` variant of the query 
+(like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+    Ignored nodes: comments, script, style
+    [36m<body>[39m
+      [36m<div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"teacher-management"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"teacher-header-row"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [0mTeacher Management[0m
+            [36m</h2>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"btn btn-primary add-teacher-btn"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"18"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"18"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 
+4v2"[39m
+                [36m/>[39m
+                [36m<circle[39m
+                  [33mcx[39m=[32m"8.5"[39m
+                  [33mcy[39m=[32m"7"[39m
+                  [33mr[39m=[32m"4"[39m
+                [36m/>[39m
+                [36m<line[39m
+                  [33mx1[39m=[32m"20"[39m
+                  [33mx2[39m=[32m"20"[39m
+                  [33my1[39m=[32m"8"[39m
+                  [33my2[39m=[32m"14"[39m
+                [36m/>[39m
+                [36m<line[39m
+                  [33mx1[39m=[32m"23"[39m
+                  [33mx2[39m=[32m"17"[39m
+                  [33my1[39m=[32m"11"[39m
+                  [33my2[39m=[32m"11"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [0m Add New Teacher[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"empty-state-professional"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"empty-icon-container"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"20"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"20"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 
+4v2"[39m
+                [36m/>[39m
+                [36m<circle[39m
+                  [33mcx[39m=[32m"12"[39m
+                  [33mcy[39m=[32m"7"[39m
+                  [33mr[39m=[32m"4"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</div>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"empty-title"[39m
+            [36m>[39m
+              [0mNo Teachers Found[0m
+            [36m</h3>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"empty-description"[39m
+            [36m>[39m
+              [0mNo teachers have been registered yet. Click 'Add New 
+Teacher' to get started.[0m
+            [36m</p>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"btn-add"[39m
+            [36m>[39m
+              [0mAdd New Teacher[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</body>[39m
+
+    [0m [90m 61 |[39m         [90m// Open Modal[39m
+     [90m 62 |[39m         [90m// Use robust selector as requested[39m
+    [31m[1m>[22m[39m[90m 63 |[39m         [36mconst[39m addBtn 
+[33m=[39m screen[33m.[39mgetByRole([32m'button'[39m[33m,[39m { 
+name[33m:[39m [35m/add new teacher/i[39m })[33m;[39m
+     [90m    |[39m                               [31m[1m^[22m[39m
+     [90m 64 |[39m         fireEvent[33m.[39mclick(addBtn)[33m;[39m
+     [90m 65 |[39m
+     [90m 66 |[39m         [90m// Fill form[39m[0m
+
+      at Object.getElementError 
+(node_modules/@testing-library/dom/dist/config.js:37:19)
+      at getElementError 
+(node_modules/@testing-library/dom/dist/query-helpers.js:20:35)
+      at getMultipleElementsFoundError 
+(node_modules/@testing-library/dom/dist/query-helpers.js:23:10)
+      at node_modules/@testing-library/dom/dist/query-helpers.js:55:13
+      at node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+      at Object.getByRole (src/__tests__/TeacherManagement.test.js:63:31)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 1 passed, 2 total
+Snapshots:   0 total
+Time:        1.066 s
+Ran all test suites matching src/__tests__/TeacherManagement.test.js.
