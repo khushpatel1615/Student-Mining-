@@ -59,6 +59,7 @@ function generateLearningRecommendation($pdo, $studentId)
             'type' => 'assignment',
             'type_label' => detectAssignmentType($assignment['title'] ?? ''),
             'subject_name' => $assignment['subject_name'] ?? 'this subject',
+            'subject_id' => $assignment['subject_id'] ?? null,
             'title' => $assignment['title'] ?? 'assignment',
             'date' => $assignment['due_date']
         ];
@@ -72,6 +73,7 @@ function generateLearningRecommendation($pdo, $studentId)
             'type' => 'exam',
             'type_label' => 'exam',
             'subject_name' => $exam['subject_name'] ?? 'this subject',
+            'subject_id' => $exam['subject_id'] ?? null,
             'title' => $exam['title'] ?? 'exam',
             'date' => $exam['start_datetime']
         ];
@@ -100,7 +102,7 @@ function generateLearningRecommendation($pdo, $studentId)
     });
 
     $target = $items[0];
-    $topics = getTopicsForSubject($target['subject_name']);
+    $topics = getTopicsForSubject($pdo, $target['subject_id'] ?? null, $target['subject_name']);
     $topicText = formatTopicList($topics);
 
     return buildRecommendationText(
@@ -188,9 +190,27 @@ function detectAssignmentType($title)
     return 'assignment';
 }
 
-function getTopicsForSubject($subjectName)
+function getTopicsForSubject($pdo, $subjectId, $subjectName)
 {
-    $name = strtolower($subjectName);
+    $topicsText = null;
+
+    if ($subjectId) {
+        $stmt = $pdo->prepare("SELECT topics FROM subject_topics WHERE subject_id = ? LIMIT 1");
+        $stmt->execute([$subjectId]);
+        $topicsText = $stmt->fetchColumn();
+    }
+
+    if (!$topicsText && $subjectName) {
+        $stmt = $pdo->prepare("SELECT topics FROM subject_topics WHERE subject_name = ? LIMIT 1");
+        $stmt->execute([$subjectName]);
+        $topicsText = $stmt->fetchColumn();
+    }
+
+    if ($topicsText) {
+        return array_map('trim', array_filter(explode(',', $topicsText)));
+    }
+
+    $name = strtolower($subjectName ?? '');
     $map = [
         'programming' => ['loops', 'arrays', 'functions', 'pointers'],
         'c ' => ['loops', 'arrays', 'functions', 'pointers'],
@@ -209,7 +229,7 @@ function getTopicsForSubject($subjectName)
     ];
 
     foreach ($map as $key => $topics) {
-        if (strpos($name, $key) !== false) {
+        if ($name && strpos($name, $key) !== false) {
             return $topics;
         }
     }
