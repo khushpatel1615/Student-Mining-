@@ -276,8 +276,8 @@ function ExamManagement() {
                     >
                         <option value="date_desc">Newest First</option>
                         <option value="date_asc">Oldest First</option>
-                        <option value="title_asc">Title A–Z</option>
-                        <option value="title_desc">Title Z–A</option>
+                        <option value="title_asc">Title A-Z</option>
+                        <option value="title_desc">Title Z-A</option>
                         <option value="marks_desc">Max Marks (High)</option>
                     </select>
                     <button className="btn-add" onClick={() => setShowModal(true)}>

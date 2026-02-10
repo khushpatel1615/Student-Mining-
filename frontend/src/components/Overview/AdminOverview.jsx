@@ -94,7 +94,6 @@ function AdminOverview() {
     const [topStudents, setTopStudents] = useState([])
     const [atRiskStudents, setAtRiskStudents] = useState([])
     const [performanceData, setPerformanceData] = useState(null)
-    const [attendanceData, setAttendanceData] = useState(null)
     const [semesterTrends, setSemesterTrends] = useState([])
     const [programStats, setProgramStats] = useState([])
 
@@ -255,8 +254,8 @@ function AdminOverview() {
                         icon: Award,
                         title: `${topProgram.name || 'Program'} leads with ${passRate.toFixed(1)}% pass rate`,
                         description: 'Best performing program this semester',
-                        action: 'View Analytics',
-                        actionPath: '/admin/dashboard?tab=analytics'
+                        action: 'View Programs',
+                        actionPath: '/admin/dashboard?tab=programs'
                     })
                 }
             }
@@ -535,9 +534,9 @@ function AdminOverview() {
                     <div className="kpi-content">
                         <span className="kpi-label">Total Students</span>
                         <span className="kpi-value">{systemStats.totalStudents}</span>
-                        <div className="kpi-trend positive">
-                            <TrendingUp size={14} />
-                            <span>+12 this semester</span>
+                        <div className="kpi-trend neutral">
+                            <Users size={14} />
+                            <span>{systemStats.totalTeachers} teachers</span>
                         </div>
                     </div>
                 </div>
@@ -549,9 +548,9 @@ function AdminOverview() {
                     <div className="kpi-content">
                         <span className="kpi-label">Average GPA</span>
                         <span className="kpi-value">{safeToFixed(systemStats.averageGPA, 2)}</span>
-                        <div className="kpi-trend positive">
-                            <TrendingUp size={14} />
-                            <span>+0.15 improvement</span>
+                        <div className={`kpi-trend ${systemStats.passRate >= 60 ? 'positive' : 'negative'}`}>
+                            {systemStats.passRate >= 60 ? <CheckCircle size={14} /> : <AlertTriangle size={14} />}
+                            <span>{safeToFixed(systemStats.passRate, 1)}% pass rate</span>
                         </div>
                     </div>
                 </div>
@@ -593,9 +592,15 @@ function AdminOverview() {
                     <div className="kpi-content">
                         <span className="kpi-label">Engagement Score</span>
                         <span className="kpi-value">{systemStats.engagementScore}%</span>
-                        <div className="kpi-trend positive">
+                        <div className={`kpi-trend ${systemStats.engagementScore >= 70 ? 'positive' : systemStats.engagementScore >= 40 ? 'neutral' : 'negative'}`}>
                             <Zap size={14} />
-                            <span>High activity</span>
+                            <span>
+                                {systemStats.engagementScore >= 70
+                                    ? 'High activity'
+                                    : systemStats.engagementScore >= 40
+                                        ? 'Moderate activity'
+                                        : 'Low activity'}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -641,30 +646,35 @@ function AdminOverview() {
                             <h3><BarChart3 size={18} /> GPA Trend</h3>
                             <span className="chart-subtitle">Last 8 semesters</span>
                         </div>
-                        <div className="chart-body">
-                            {getGPATrendChart() && (
-                                <Line
-                                    data={getGPATrendChart()}
-                                    options={{
-                                        responsive: true,
-                                        maintainAspectRatio: false,
-                                        plugins: {
-                                            legend: { display: false }
+                    <div className="chart-body">
+                        {getGPATrendChart() ? (
+                            <Line
+                                data={getGPATrendChart()}
+                                options={{
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: { display: false }
+                                    },
+                                    scales: {
+                                        y: {
+                                            min: 0,
+                                            max: 4,
+                                            grid: { color: 'rgba(0,0,0,0.05)' }
                                         },
-                                        scales: {
-                                            y: {
-                                                min: 0,
-                                                max: 4,
-                                                grid: { color: 'rgba(0,0,0,0.05)' }
-                                            },
-                                            x: {
-                                                grid: { display: false }
-                                            }
+                                        x: {
+                                            grid: { display: false }
                                         }
-                                    }}
-                                />
-                            )}
-                        </div>
+                                    }
+                                }}
+                            />
+                        ) : (
+                            <div className="empty-state">
+                                <BarChart3 size={32} />
+                                <p>No GPA trend data</p>
+                            </div>
+                        )}
+                    </div>
                     </div>
 
                     {/* Performance Distribution */}
@@ -673,27 +683,32 @@ function AdminOverview() {
                             <h3><PieChart size={18} /> Performance Distribution</h3>
                             <span className="chart-subtitle">Student grades breakdown</span>
                         </div>
-                        <div className="chart-body doughnut-chart">
-                            {getPerformanceChart() && (
-                                <Doughnut
-                                    data={getPerformanceChart()}
-                                    options={{
-                                        responsive: true,
-                                        maintainAspectRatio: false,
-                                        plugins: {
-                                            legend: {
-                                                position: 'right',
-                                                labels: {
-                                                    padding: 15,
-                                                    usePointStyle: true,
-                                                    font: { size: 12 }
-                                                }
+                    <div className="chart-body doughnut-chart">
+                        {getPerformanceChart() ? (
+                            <Doughnut
+                                data={getPerformanceChart()}
+                                options={{
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            position: 'right',
+                                            labels: {
+                                                padding: 15,
+                                                usePointStyle: true,
+                                                font: { size: 12 }
                                             }
                                         }
-                                    }}
-                                />
-                            )}
-                        </div>
+                                    }
+                                }}
+                            />
+                        ) : (
+                            <div className="empty-state">
+                                <PieChart size={32} />
+                                <p>No performance data</p>
+                            </div>
+                        )}
+                    </div>
                     </div>
 
 
@@ -828,32 +843,39 @@ function AdminOverview() {
                             </button>
                         </div>
                         <div className="card-body">
-                            <div className="programs-grid">
-                                {programStats.slice(0, 4).map(program => (
-                                    <div key={program.id} className="program-stat-card">
-                                        <div className="program-header">
-                                            <span className="program-code">{program.code}</span>
-                                            <span className="program-name">{program.name}</span>
+                            {programStats.length === 0 ? (
+                                <div className="empty-state">
+                                    <GraduationCap size={32} />
+                                    <p>No program analytics yet</p>
+                                </div>
+                            ) : (
+                                <div className="programs-grid">
+                                    {programStats.slice(0, 4).map(program => (
+                                        <div key={program.id || program.name} className="program-stat-card">
+                                            <div className="program-header">
+                                                {program.code && <span className="program-code">{program.code}</span>}
+                                                <span className="program-name">{program.name}</span>
+                                            </div>
+                                            <div className="program-metrics">
+                                                <div className="metric">
+                                                    <span className="metric-value">{program.student_count}</span>
+                                                    <span className="metric-label">Students</span>
+                                                </div>
+                                                <div className="metric">
+                                                    <span className="metric-value">{Number(program.average_gpa || 0).toFixed(2)}</span>
+                                                    <span className="metric-label">Avg GPA</span>
+                                                </div>
+                                                <div className="metric">
+                                                    <span className={`metric-value ${program.pass_rate >= 80 ? 'good' : program.pass_rate >= 60 ? 'average' : 'poor'}`}>
+                                                        {Number(program.pass_rate || 0).toFixed(0)}%
+                                                    </span>
+                                                    <span className="metric-label">Pass Rate</span>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="program-metrics">
-                                            <div className="metric">
-                                                <span className="metric-value">{program.student_count}</span>
-                                                <span className="metric-label">Students</span>
-                                            </div>
-                                            <div className="metric">
-                                                <span className="metric-value">{program.average_gpa?.toFixed(2) || 'N/A'}</span>
-                                                <span className="metric-label">Avg GPA</span>
-                                            </div>
-                                            <div className="metric">
-                                                <span className={`metric-value ${program.pass_rate >= 80 ? 'good' : program.pass_rate >= 60 ? 'average' : 'poor'}`}>
-                                                    {program.pass_rate?.toFixed(0) || 0}%
-                                                </span>
-                                                <span className="metric-label">Pass Rate</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

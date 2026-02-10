@@ -96,14 +96,14 @@ function TeacherExams() {
 
             if (studentsData.success) {
                 const studentsList = studentsData.data
-                const existingResults = resultsData.success && resultsData.data.results ? resultsData.data.results : []
+                    const existingResults = resultsData.success && resultsData.data.results ? resultsData.data.results : []
 
                 // Merge students with their results
                 const studentsWithResults = studentsList.map(student => {
                     const result = existingResults.find(r => String(r.student_id) === String(student.id))
                     return {
                         ...student,
-                        marks_obtained: result?.marks_obtained || '',
+                        marks_obtained: result?.marks_obtained ?? '',
                         remarks: result?.remarks || '',
                         result_id: result?.id || null
                     }
@@ -120,6 +120,15 @@ function TeacherExams() {
     const handleCreateExam = async (e) => {
         e.preventDefault()
         try {
+            const numericMarks = marks === '' || marks === null ? null : Number(marks)
+            if (numericMarks === null || Number.isNaN(numericMarks)) {
+                return
+            }
+            const maxMarks = Number(selectedExam?.total_marks ?? selectedExam?.max_marks ?? 0)
+            if (maxMarks > 0 && (numericMarks < 0 || numericMarks > maxMarks)) {
+                alert(`Marks must be between 0 and ${maxMarks}.`)
+                return
+            }
             const response = await fetch(`${API_BASE}/exams.php`, {
                 method: 'POST',
                 headers: {
@@ -157,7 +166,7 @@ function TeacherExams() {
                 body: JSON.stringify({
                     exam_id: selectedExam.id,
                     student_id: studentId,
-                    marks_obtained: parseFloat(marks),
+                    marks_obtained: numericMarks,
                     remarks: remarks
                 })
             })
@@ -202,9 +211,11 @@ function TeacherExams() {
             ...students.map(s => [
                 s.student_id,
                 s.full_name,
-                s.marks_obtained || 'N/A',
-                selectedExam.total_marks,
-                s.marks_obtained ? ((s.marks_obtained / selectedExam.total_marks) * 100).toFixed(2) + '%' : 'N/A',
+                s.marks_obtained ?? 'N/A',
+                selectedExam.total_marks ?? selectedExam.max_marks ?? 0,
+                s.marks_obtained !== '' && s.marks_obtained !== null && (selectedExam.total_marks ?? selectedExam.max_marks ?? 0)
+                    ? ((s.marks_obtained / (selectedExam.total_marks ?? selectedExam.max_marks ?? 0)) * 100).toFixed(2) + '%'
+                    : 'N/A',
                 s.remarks || ''
             ].join(','))
         ].join('\n')
@@ -253,7 +264,7 @@ function TeacherExams() {
         const avg = validMarks.reduce((a, b) => a + b, 0) / validMarks.length
         const highest = Math.max(...validMarks)
         const lowest = Math.min(...validMarks)
-        const passingMarks = selectedExam.total_marks * 0.4
+        const passingMarks = (selectedExam.total_marks ?? selectedExam.max_marks ?? 0) * 0.4
         const passed = validMarks.filter(m => m >= passingMarks).length
         const passRate = (passed / validMarks.length) * 100
 
@@ -475,7 +486,7 @@ function TeacherExams() {
                                                         )
                                                         setStudents(updated)
                                                     }}
-                                                    max={selectedExam.total_marks}
+                                                    max={selectedExam.total_marks ?? selectedExam.max_marks ?? undefined}
                                                     placeholder="0"
                                                 />
                                                 <span className="marks-total">/ {selectedExam.total_marks}</span>
@@ -498,7 +509,7 @@ function TeacherExams() {
                                                 <button
                                                     className="btn-save-small"
                                                     onClick={() => handleSaveResult(student.id, student.marks_obtained, student.remarks)}
-                                                    disabled={!student.marks_obtained}
+                                                    disabled={student.marks_obtained === '' || student.marks_obtained === null || Number.isNaN(Number(student.marks_obtained))}
                                                 >
                                                     Save
                                                 </button>

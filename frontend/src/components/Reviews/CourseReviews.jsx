@@ -244,12 +244,12 @@ function CourseReviews({ subjectId = null, subjectName = '' }) {
                         <p className="review-text">{review.review_text}</p>
                         {(review.pros || review.cons) && (
                             <div className="pros-cons">
-                                {review.pros && <span className="pro">👍 {review.pros}</span>}
-                                {review.cons && <span className="con">👎 {review.cons}</span>}
+                                {review.pros && <span className="pro">Pros: {review.pros}</span>}
+                                {review.cons && <span className="con">Cons: {review.cons}</span>}
                             </div>
                         )}
                         <div className="review-footer">
-                            {review.would_recommend && <span className="recommend">✓ Recommends</span>}
+                            {review.would_recommend && <span className="recommend">Recommends</span>}
                             <button className="btn-helpful" onClick={() => markHelpful(review.id)}>
                                 <ThumbsUp size={14} /> Helpful ({review.helpful_count || 0})
                             </button>

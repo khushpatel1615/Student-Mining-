@@ -17,7 +17,7 @@ const SkillsMap = () => {
 
     const fetchCourses = async () => {
         try {
-            const response = await fetch(`${API_BASE}/student_dashboard.php?action=summary`, {
+            const response = await fetch(`${API_BASE}/student_dashboard.php`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();

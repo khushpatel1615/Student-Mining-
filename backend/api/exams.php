@@ -38,15 +38,26 @@ try {
                 // Get single exam
                 $stmt = $pdo->prepare("
                     SELECT e.*, s.name as subject_name, s.code as subject_code, s.semester as subject_semester,
-                           u.full_name as teacher_name
+                           u.full_name as teacher_name,
+                           COALESCE(er.result_count, 0) as result_count,
+                           er.average_marks
                     FROM exams e
                     LEFT JOIN subjects s ON e.subject_id = s.id
                     LEFT JOIN users u ON e.teacher_id = u.id
+                    LEFT JOIN (
+                        SELECT exam_id, COUNT(*) as result_count, AVG(marks_obtained) as average_marks
+                        FROM exam_results
+                        GROUP BY exam_id
+                    ) er ON er.exam_id = e.id
                     WHERE e.id = ?
                 ");
                 $stmt->execute([$exam_id]);
                 $exam = $stmt->fetch(PDO::FETCH_ASSOC);
                 if ($exam) {
+                    // Backward-compatible aliases
+                    $exam['exam_date'] = $exam['start_datetime'] ?? null;
+                    $exam['max_marks'] = $exam['total_marks'] ?? null;
+
                         // Get results for this exam
                                     $stmt = $pdo->prepare("
                         SELECT er.*, u.full_name as student_name, u.student_id
@@ -64,10 +75,17 @@ try {
             // Get all exams
                 $query = "
                     SELECT DISTINCT e.*, s.name as subject_name, s.code as subject_code, s.semester as subject_semester,
-                           u.full_name as teacher_name
+                           u.full_name as teacher_name,
+                           COALESCE(er.result_count, 0) as result_count,
+                           er.average_marks
                     FROM exams e
                     LEFT JOIN subjects s ON e.subject_id = s.id
                     LEFT JOIN users u ON e.teacher_id = u.id
+                    LEFT JOIN (
+                        SELECT exam_id, COUNT(*) as result_count, AVG(marks_obtained) as average_marks
+                        FROM exam_results
+                        GROUP BY exam_id
+                    ) er ON er.exam_id = e.id
                 ";
                 $conditions = [];
                 $params = [];
@@ -112,6 +130,11 @@ try {
                 $stmt = $pdo->prepare($query);
                 $stmt->execute($params);
                 $exams = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                foreach ($exams as &$exam) {
+                    $exam['exam_date'] = $exam['start_datetime'] ?? null;
+                    $exam['max_marks'] = $exam['total_marks'] ?? null;
+                }
             // If student, get their result for each exam
                 if ($user_role === 'student') {
                     foreach ($exams as &$exam) {
@@ -146,8 +169,8 @@ try {
                 $data['subject_id'],
                 $data['title'],
                 $data['duration_minutes'] ?? 120,
-                $data['max_marks'] ?? 100,
-                $data['exam_date'],
+                $data['total_marks'] ?? $data['max_marks'] ?? 100,
+                $data['start_datetime'] ?? $data['exam_date'],
                 $user_id
             ]);
             echo json_encode(['success' => true, 'id' => $pdo->lastInsertId()]);
@@ -162,6 +185,34 @@ try {
                 if ($user_role !== 'admin' && $user_role !== 'teacher') {
                     http_response_code(403);
                     echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+                    exit();
+                }
+
+                if (!isset($data['marks_obtained']) || !is_numeric($data['marks_obtained'])) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'error' => 'Marks are required and must be numeric.']);
+                    exit();
+                }
+
+                $marks = (float) $data['marks_obtained'];
+                if ($marks < 0) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'error' => 'Marks cannot be negative.']);
+                    exit();
+                }
+
+                $stmt = $pdo->prepare("SELECT total_marks FROM exams WHERE id = ?");
+                $stmt->execute([$data['exam_id']]);
+                $examRow = $stmt->fetch(PDO::FETCH_ASSOC);
+                if (!$examRow) {
+                    http_response_code(404);
+                    echo json_encode(['success' => false, 'error' => 'Exam not found.']);
+                    exit();
+                }
+                $maxMarks = (float) ($examRow['total_marks'] ?? 0);
+                if ($maxMarks > 0 && $marks > $maxMarks) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'error' => 'Marks exceed max marks for this exam.']);
                     exit();
                 }
 
@@ -180,7 +231,7 @@ try {
                         WHERE id = ?
                     ");
                                 $stmt->execute([
-                                    $data['marks_obtained'],
+                                    $marks,
                                     $data['remarks'] ?? null,
                                     $existing['id']
                                 ]);
@@ -193,7 +244,7 @@ try {
                     $stmt->execute([
                         $data['exam_id'],
                         $data['student_id'],
-                        $data['marks_obtained'],
+                        $marks,
                         $data['remarks'] ?? null
                     ]);
                 }
@@ -213,8 +264,8 @@ try {
                 $stmt->execute([
                     $data['title'],
                     $data['duration_minutes'],
-                    $data['max_marks'],
-                    $data['exam_date'],
+                    $data['total_marks'] ?? $data['max_marks'] ?? 100,
+                    $data['start_datetime'] ?? $data['exam_date'],
                     $data['id']
                 ]);
             }

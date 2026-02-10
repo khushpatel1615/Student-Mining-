@@ -70,7 +70,7 @@ const StudentMiningProfile = ({ studentId }) => {
     const getTrendIcon = (trend) => {
         if (trend === 'improving') return <TrendingUp size={16} className="trend-up" />;
         if (trend === 'declining') return <TrendingDown size={16} className="trend-down" />;
-        return <span className="trend-stable">—</span>;
+        return <span className="trend-stable">-</span>;
     };
 
     if (loading) {

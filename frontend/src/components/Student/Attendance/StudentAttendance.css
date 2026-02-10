@@ -288,6 +288,16 @@
     color: #92400e;
 }
 
+.status-badge.late {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.status-badge.unmarked {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
 /* Empty State */
 .empty-state {
     text-align: center;

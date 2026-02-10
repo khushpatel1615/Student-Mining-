@@ -23,10 +23,11 @@ const CustomTooltip = ({ active, payload, label }) => {
     return null;
 };
 
-export const KPICard = ({ title, value, subValue, trend, trendValue, icon: Icon, color }) => {
-    const sparkData = useMemo(() => Array.from({ length: 15 }, (_, i) => ({
-        v: 50 + (trend === 'up' ? i * 2 : trend === 'down' ? -i * 2 : 0) + Math.random() * 10
-    })), [trend]);
+export const KPICard = ({ title, value, subValue, trend, trendValue, icon: Icon, color, sparkData = [] }) => {
+    const chartData = useMemo(() => {
+        if (Array.isArray(sparkData) && sparkData.length > 0) return sparkData;
+        return [];
+    }, [sparkData]);
 
     const colorClasses = {
         purple: { text: 'text-purple', bg: 'bg-purple-light', hex: '#8b5cf6' },
@@ -58,18 +59,22 @@ export const KPICard = ({ title, value, subValue, trend, trendValue, icon: Icon,
                 </div>
                 {/* Sparkline */}
                 <div className="kpi-chart-mini">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={sparkData}>
-                            <Line
-                                type="monotone"
-                                dataKey="v"
-                                stroke={theme.hex}
-                                strokeWidth={2.5}
-                                dot={false}
-                                isAnimationActive={false}
-                            />
-                        </LineChart>
-                    </ResponsiveContainer>
+                    {chartData.length === 0 ? (
+                        <div className="kpi-chart-empty" />
+                    ) : (
+                        <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={chartData}>
+                                <Line
+                                    type="monotone"
+                                    dataKey="v"
+                                    stroke={theme.hex}
+                                    strokeWidth={2.5}
+                                    dot={false}
+                                    isAnimationActive={false}
+                                />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    )}
                 </div>
             </div>
             <div className="kpi-sublabel">{subValue}</div>

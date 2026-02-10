@@ -27,11 +27,11 @@ const Performance = () => {
             }
 
             // Fetch dashboard summary
-            const summaryResponse = await fetch(`${API_BASE}/student_dashboard.php?action=summary`, {
+            const summaryResponse = await fetch(`${API_BASE}/student_dashboard.php`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const summaryData = await summaryResponse.json();
-            if (summaryData.success && summaryData.data.summary) {
+            if (summaryData.success && summaryData.data?.summary) {
                 setSummary({
                     gpa: summaryData.data.summary.gpa_4 || summaryData.data.summary.gpa || 0,
                     attendance: summaryData.data.summary.overall_attendance || 0
@@ -110,7 +110,7 @@ const Performance = () => {
             </div>
 
             <div>
-                <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>📊 Subject-wise Performance</h3>
+                <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Subject-wise Performance</h3>
                 {currentSemesterGrades.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '3rem', background: 'var(--bg-secondary)', borderRadius: '12px' }}>
                         <BarChart3 size={64} style={{ color: 'var(--text-muted)', marginBottom: '1rem' }} />
@@ -143,7 +143,7 @@ const Performance = () => {
             </div>
 
             <div style={{ marginTop: '2rem', padding: '1.5rem', background: '#ecfdf5', borderRadius: '12px' }}>
-                <h4 style={{ fontSize: '1rem', color: '#065f46', margin: '0 0 0.5rem' }}>🎯 Performance Insights</h4>
+                <h4 style={{ fontSize: '1rem', color: '#065f46', margin: '0 0 0.5rem' }}>Performance Insights</h4>
                 <ul style={{ margin: 0, paddingLeft: '1.25rem', color: '#047857', fontSize: '0.9rem' }}>
                     <li>Maintain a GPA above 3.0 for academic honors</li>
                     <li>Keep attendance above 75% to remain eligible for exams</li>

@@ -80,6 +80,7 @@ function handleFetchSheet($pdo, $dataDir)
     // For now, I'll allow it if token is present.
 
     $subjectId = $_GET['subject_id'] ?? null;
+    $dateParam = $_GET['date'] ?? null;
     if (!$subjectId) {
         throw new Exception("Subject ID required");
     }
@@ -108,40 +109,41 @@ function handleFetchSheet($pdo, $dataDir)
         ];
     }
 
-    // 2. Read CSV if exists
-    $file = getCsvFilename($dataDir, $subjectId);
+    // 2. Read Attendance from DB (primary source)
     $dates = [];
+    $currentAttendance = [];
+    $stmt = $pdo->prepare("
+        SELECT u.student_id, u.email, sa.attendance_date, sa.status
+        FROM student_enrollments se
+        JOIN users u ON se.user_id = u.id
+        LEFT JOIN student_attendance sa ON sa.enrollment_id = se.id
+        WHERE se.subject_id = ? AND se.status IN ('active', 'completed')
+        ORDER BY sa.attendance_date ASC
+    ");
+    $stmt->execute([$subjectId]);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    if (file_exists($file)) {
-        if (($handle = fopen($file, "r")) !== false) {
-            // Read Header: "Student ID", "Name", Date1, Date2...
-            $header = fgetcsv($handle);
-
-            if ($header && count($header) > 2) {
-                // Extract dates (skip ID and Name)
-                $dates = array_slice($header, 2);
-            }
-
-            // Read Rows
-            while (($row = fgetcsv($handle)) !== false) {
-                $sid = $row[0];
-                // If student is valid (still in DB), populate their attendance
-                // Even if not in DB (dropped?), we might want to keep?
-                // For now, only map to active students or add them if we want to see history of dropped?
-                // User said "all the students who are studying comes to the list". So DB is source of truth for rows.
-
-                if (isset($studentMap[$sid])) {
-                    // Map data to dates
-                    foreach ($dates as $index => $date) {
-                        // row index = index + 2
-                        $val = $row[$index + 2] ?? '-';
-                        $studentMap[$sid]['attendance'][$date] = $val;
-                    }
-                }
-            }
-            fclose($handle);
+    foreach ($rows as $row) {
+        $sid = $row['student_id'] ?: $row['email'];
+        $date = $row['attendance_date'];
+        if (!$sid || !$date) {
+            continue;
+        }
+        if (!in_array($date, $dates, true)) {
+            $dates[] = $date;
+        }
+        $code = mapAttendanceCode($row['status']);
+        if (isset($studentMap[$sid])) {
+            $studentMap[$sid]['attendance'][$date] = $code;
+        }
+        if ($dateParam && $dateParam === $date) {
+            $currentAttendance[$sid] = $code;
         }
     }
+
+    usort($dates, function ($a, $b) {
+        return strtotime($a) - strtotime($b);
+    });
 
     // 3. Format Response
     $rows = [];
@@ -157,7 +159,8 @@ function handleFetchSheet($pdo, $dataDir)
         'success' => true,
         'data' => [
             'dates' => $dates,
-            'students' => $rows
+            'students' => $rows,
+            'current' => $currentAttendance
         ]
     ]);
 }
@@ -306,6 +309,16 @@ function mapAttendanceStatus($status)
     return null;
 }
 
+function mapAttendanceCode($status)
+{
+    $status = is_string($status) ? trim($status) : $status;
+    if ($status === 'present') return 'P';
+    if ($status === 'absent') return 'A';
+    if ($status === 'excused') return 'E';
+    if ($status === 'late') return 'L';
+    return '-';
+}
+
 function handleStudentView($pdo, $dataDir)
 {
     // Basic student view: fetch all their attendance across subjects?
@@ -337,29 +350,21 @@ function handleStudentView($pdo, $dataDir)
         throw new Exception("Subject and Student ID required");
     }
 
-    $file = getCsvFilename($dataDir, $subjectId);
     $attendanceRecord = [];
-
-    if (file_exists($file)) {
-        if (($handle = fopen($file, "r")) !== false) {
-            $header = fgetcsv($handle); // dates start at index 2
-            $dates = array_slice($header, 2);
-
-            while (($row = fgetcsv($handle)) !== false) {
-                // Compare with the key we derived
-                if ($row[0] === $studentIdKey) {
-                    // Found student
-                    foreach ($dates as $i => $date) {
-                        $attendanceRecord[] = [
-                            'date' => $date,
-                            'status' => $row[$i + 2] ?? '-'
-                        ];
-                    }
-                    break;
-                }
-            }
-            fclose($handle);
-        }
+    $stmt = $pdo->prepare("
+        SELECT sa.attendance_date, sa.status
+        FROM student_attendance sa
+        JOIN student_enrollments se ON se.id = sa.enrollment_id
+        WHERE se.subject_id = ? AND se.user_id = ?
+        ORDER BY sa.attendance_date ASC
+    ");
+    $stmt->execute([$subjectId, $user['user_id']]);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($rows as $row) {
+        $attendanceRecord[] = [
+            'date' => $row['attendance_date'],
+            'status' => mapAttendanceCode($row['status'])
+        ];
     }
 
     echo json_encode([

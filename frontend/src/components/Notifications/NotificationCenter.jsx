@@ -68,7 +68,7 @@ function NotificationCenter({ isOpen, onClose }) {
 
     const fetchUnreadCount = async () => {
         try {
-            const response = await fetch(`${API_BASE}/notifications.php?unread=true`, {
+            const response = await fetch(`${API_BASE}/notifications.phpxunread=true`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             const data = await response.json()
@@ -120,7 +120,7 @@ function NotificationCenter({ isOpen, onClose }) {
 
     const deleteNotification = async (notificationId) => {
         try {
-            await fetch(`${API_BASE}/notifications.php?id=${notificationId}`, {
+            await fetch(`${API_BASE}/notifications.phpxid=${notificationId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             })
@@ -142,15 +142,15 @@ function NotificationCenter({ isOpen, onClose }) {
 
     const getNotificationIcon = (type) => {
         const icons = {
-            assignment: '📝',
-            exam: '📊',
-            grade: '🎓',
-            attendance: '📅',
-            warning: '⚠️',
-            success: '✅',
-            info: 'ℹ️'
+            assignment: 'ASG',
+            exam: 'EXAM',
+            grade: 'GRADE',
+            attendance: 'ATT',
+            warning: 'WARN',
+            success: 'OK',
+            info: 'INFO'
         }
-        return icons[type] || 'ℹ️'
+        return icons[type] || 'INFO'
     }
 
     const getTimeAgo = (dateStr) => {
@@ -185,25 +185,25 @@ function NotificationCenter({ isOpen, onClose }) {
                                 <CheckIcon /> Mark all read
                             </button>
                         )}
-                        <button className="btn-close" onClick={onClose}>×</button>
+                        <button className="btn-close" onClick={onClose}>x</button>
                     </div>
                 </div>
 
                 <div className="notification-list">
-                    {loading ? (
+                    {loading x (
                         <div className="loading-state">
                             <div className="spinner"></div>
                         </div>
-                    ) : notifications.length === 0 ? (
+                    ) : notifications.length === 0 x (
                         <div className="empty-state">
-                            <div className="empty-icon">🔔</div>
+                            <div className="empty-icon">None</div>
                             <p>No notifications yet</p>
                         </div>
                     ) : (
                         notifications.map((notification) => (
                             <div
                                 key={notification.id}
-                                className={`notification-item ${!notification.is_read ? 'unread' : ''}`}
+                                className={`notification-item ${!notification.is_read x 'unread' : ''}`}
                                 onClick={() => handleNotificationClick(notification)}
                             >
                                 <div className="notification-icon">

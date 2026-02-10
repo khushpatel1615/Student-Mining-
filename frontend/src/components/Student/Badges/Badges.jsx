@@ -17,7 +17,7 @@ const Badges = () => {
 
     const fetchBadges = async () => {
         try {
-            const response = await fetch(`${API_BASE}/student_dashboard.php?action=summary`, {
+            const response = await fetch(`${API_BASE}/student_dashboard.php`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -55,12 +55,12 @@ const Badges = () => {
     };
 
     const allPossibleBadges = [
-        { id: 'gpa-perfect', name: 'Perfect Scholar', icon: <Crown size={48} />, color: '#fbbf24', requirement: 'GPA ≥ 3.8' },
-        { id: 'gpa-excellent', name: 'Excellent Student', icon: <Trophy size={48} />, color: '#facc15', requirement: 'GPA ≥ 3.5' },
-        { id: 'gpa-good', name: 'Good Student', icon: <Star size={48} />, color: '#3b82f6', requirement: 'GPA ≥ 3.0' },
-        { id: 'attendance-perfect', name: 'Perfect Attendance', icon: <Target size={48} />, color: '#10b981', requirement: 'Attendance ≥ 95%' },
-        { id: 'attendance-excellent', name: 'Excellent Attendance', icon: <Zap size={48} />, color: '#06b6d4', requirement: 'Attendance ≥ 85%' },
-        { id: 'attendance-good', name: 'Good Attendance', icon: <Award size={48} />, color: '#8b5cf6', requirement: 'Attendance ≥ 75%' }
+        { id: 'gpa-perfect', name: 'Perfect Scholar', icon: <Crown size={48} />, color: '#fbbf24', requirement: 'GPA >= 3.8' },
+        { id: 'gpa-excellent', name: 'Excellent Student', icon: <Trophy size={48} />, color: '#facc15', requirement: 'GPA >= 3.5' },
+        { id: 'gpa-good', name: 'Good Student', icon: <Star size={48} />, color: '#3b82f6', requirement: 'GPA >= 3.0' },
+        { id: 'attendance-perfect', name: 'Perfect Attendance', icon: <Target size={48} />, color: '#10b981', requirement: 'Attendance >= 95%' },
+        { id: 'attendance-excellent', name: 'Excellent Attendance', icon: <Zap size={48} />, color: '#06b6d4', requirement: 'Attendance >= 85%' },
+        { id: 'attendance-good', name: 'Good Attendance', icon: <Award size={48} />, color: '#8b5cf6', requirement: 'Attendance >= 75%' }
     ];
 
     const lockedBadges = allPossibleBadges.filter(badge => !earnedBadges.find(eb => eb.id === badge.id));
@@ -87,7 +87,7 @@ const Badges = () => {
             </div>
 
             <div>
-                <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>🏆 Earned Badges</h3>
+                <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Earned Badges</h3>
                 {earnedBadges.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '3rem', background: 'var(--bg-secondary)', borderRadius: '12px', marginBottom: '2rem' }}>
                         <Award size={64} style={{ color: 'var(--text-muted)', marginBottom: '1rem' }} />
@@ -109,13 +109,13 @@ const Badges = () => {
 
             {lockedBadges.length > 0 && (
                 <div>
-                    <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>🔒 Locked Badges</h3>
+                    <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Locked Badges</h3>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.25rem' }}>
                         {lockedBadges.map(badge => (
                             <div key={badge.id} style={{ background: '#f3f4f6', padding: '1.5rem', borderRadius: '12px', border: '2px dashed #d1d5db', textAlign: 'center', opacity: 0.6 }}>
                                 <div style={{ color: '#9ca3af', marginBottom: '0.75rem', filter: 'grayscale(1)' }}>{badge.icon}</div>
                                 <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.5rem', color: '#6b7280' }}>{badge.name}</div>
-                                <div style={{ fontSize: '0.85rem', color: '#9ca3af' }}>🔐 {badge.requirement}</div>
+                                <div style={{ fontSize: '0.85rem', color: '#9ca3af' }}>{badge.requirement}</div>
                             </div>
                         ))}
                     </div>
@@ -123,7 +123,7 @@ const Badges = () => {
             )}
 
             <div style={{ marginTop: '2rem', padding: '1.5rem', background: '#ecfdf5', borderRadius: '12px' }}>
-                <h4 style={{ fontSize: '1rem', color: '#065f46', margin: '0 0 0.5rem' }}>✨ Keep Going!</h4>
+                <h4 style={{ fontSize: '1rem', color: '#065f46', margin: '0 0 0.5rem' }}>Keep Going!</h4>
                 <p style={{ fontSize: '0.9rem', color: '#047857', margin: 0 }}>
                     Badges are automatically earned based on your academic performance. Keep improving your GPA and attendance to unlock more achievements!
                 </p>

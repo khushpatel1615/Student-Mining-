@@ -82,7 +82,7 @@ function AnnouncementsPage() {
                             <Megaphone size={14} />
                             Announcement
                         </div>
-                        {selectedAnnouncement.is_pinned && <span className="pinned">📌 Pinned</span>}
+                        {selectedAnnouncement.is_pinned && <span className="pinned">Pinned</span>}
                     </div>
                     <h2>{selectedAnnouncement.title}</h2>
                     <div className="post-meta">
@@ -131,7 +131,7 @@ function AnnouncementsPage() {
                             className={`discussion-card announcement-card ${a.is_pinned ? 'pinned' : ''}`}
                             onClick={() => viewAnnouncement(a.id)}
                         >
-                            {a.is_pinned && <div className="pin-badge">📌</div>}
+                            {a.is_pinned && <div className="pin-badge">PIN</div>}
                             <div className="card-icon">
                                 <Megaphone size={24} />
                             </div>
@@ -143,7 +143,7 @@ function AnnouncementsPage() {
                                 </p>
                                 <div className="card-meta">
                                     <span className="author">{a.author_name}</span>
-                                    <span className="dot">•</span>
+                                    <span className="dot">*</span>
                                     <span>{formatTime(a.created_at)}</span>
                                 </div>
                             </div>

@@ -68,24 +68,24 @@ const Difficulty = () => {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
                 <div style={{ background: '#dcfce7', padding: '1.25rem', borderRadius: '10px', textAlign: 'center' }}>
                     <div style={{ fontSize: '2rem', fontWeight: 700, color: '#15803d' }}>{difficultyStats.easy}</div>
-                    <div style={{ fontSize: '0.85rem', color: '#166534', fontWeight: 500 }}>😊 Easy</div>
+                    <div style={{ fontSize: '0.85rem', color: '#166534', fontWeight: 500 }}>Easy</div>
                 </div>
                 <div style={{ background: '#dbeafe', padding: '1.25rem', borderRadius: '10px', textAlign: 'center' }}>
                     <div style={{ fontSize: '2rem', fontWeight: 700, color: '#1e40af' }}>{difficultyStats.moderate}</div>
-                    <div style={{ fontSize: '0.85rem', color: '#1e3a8a', fontWeight: 500 }}>🙂 Moderate</div>
+                    <div style={{ fontSize: '0.85rem', color: '#1e3a8a', fontWeight: 500 }}>Moderate</div>
                 </div>
                 <div style={{ background: '#fef3c7', padding: '1.25rem', borderRadius: '10px', textAlign: 'center' }}>
                     <div style={{ fontSize: '2rem', fontWeight: 700, color: '#92400e' }}>{difficultyStats.challenging}</div>
-                    <div style={{ fontSize: '0.85rem', color: '#78350f', fontWeight: 500 }}>😐 Challenging</div>
+                    <div style={{ fontSize: '0.85rem', color: '#78350f', fontWeight: 500 }}>Challenging</div>
                 </div>
                 <div style={{ background: '#fee2e2', padding: '1.25rem', borderRadius: '10px', textAlign: 'center' }}>
                     <div style={{ fontSize: '2rem', fontWeight: 700, color: '#991b1b' }}>{difficultyStats.difficult}</div>
-                    <div style={{ fontSize: '0.85rem', color: '#7f1d1d', fontWeight: 500 }}>😟 Difficult</div>
+                    <div style={{ fontSize: '0.85rem', color: '#7f1d1d', fontWeight: 500 }}>Difficult</div>
                 </div>
             </div>
 
             <div>
-                <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>📋 Subject-wise Analysis</h3>
+                <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Subject-wise Analysis</h3>
                 {subjectsWithDifficulty.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '3rem', background: 'var(--bg-secondary)', borderRadius: '12px' }}>
                         <Layers size={64} style={{ color: 'var(--text-muted)', marginBottom: '1rem' }} />
@@ -115,7 +115,7 @@ const Difficulty = () => {
                                     <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: `${subject.difficulty.score}%`, background: subject.difficulty.color, borderRadius: '4px', transition: 'width 0.3s' }}></div>
                                 </div>
                                 <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                                    Performance Score: {subject.difficulty.score}% • Grade: <span style={{ fontWeight: 600, color: subject.difficulty.color }}>{subject.final_grade || 'N/A'}</span>
+                                    Performance Score: {subject.difficulty.score}% - Grade: <span style={{ fontWeight: 600, color: subject.difficulty.color }}>{subject.final_grade || 'N/A'}</span>
                                 </div>
                             </div>
                         ))}

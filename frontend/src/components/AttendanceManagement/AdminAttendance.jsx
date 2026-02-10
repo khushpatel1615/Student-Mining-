@@ -81,20 +81,19 @@ const AdminAttendance = () => {
             setPastDates([]);
             setCurrentAttendance({});
         }
-    }, [selectedSubject]);
+    }, [selectedSubject, markingDate]);
 
     const fetchAttendanceSheet = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE}/attendance.php?action=fetch_sheet&subject_id=${selectedSubject}`, {
+            const res = await fetch(`${API_BASE}/attendance.php?action=fetch_sheet&subject_id=${selectedSubject}&date=${markingDate}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
             if (data.success) {
                 setPastDates(data.data.dates);
                 setStudents(data.data.students);
-                // Reset current marking
-                setCurrentAttendance({});
+                setCurrentAttendance(data.data.current || {});
             }
         } catch (err) {
             toast.error("Failed to load attendance sheet");
@@ -127,12 +126,8 @@ const AdminAttendance = () => {
         // Validate
         const missing = students.filter(s => !currentAttendance[s.student_id]);
         if (missing.length > 0) {
-            // Warn but allow? User said "when all the students attendance is done student can hit save".
-            // Implies we should check completion? Or maybe just save partial?
-            // I'll show a warning toast but allow saving, or maybe block?
-            // Let's block if user wants "all done".
-            // "then when all the students attendance is done student can hit save" - This phrasing might mean "After marking everyone, they CLICK save".
-            // I'll allow partial save but usually attendance is complete.
+            toast.error(`Please mark attendance for all students (${missing.length} remaining).`);
+            return;
         }
 
         setSaving(true);

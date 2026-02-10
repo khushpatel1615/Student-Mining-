@@ -18,7 +18,7 @@ const CoursePicks = () => {
     const fetchCourses = async () => {
         try {
             // Fetch enrolled courses
-            const dashResponse = await fetch(`${API_BASE}/student_dashboard.php?action=summary`, {
+            const dashResponse = await fetch(`${API_BASE}/student_dashboard.php`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const dashData = await dashResponse.json();
@@ -108,7 +108,7 @@ const CoursePicks = () => {
             </div>
 
             <div style={{ marginTop: '2rem', padding: '1.5rem', background: '#f0fdf4', borderRadius: '12px', border: '1px solid #86efac' }}>
-                <h4 style={{ fontSize: '1rem', color: '#15803d', margin: '0 0 0.5rem' }}>📚 Pro Tip</h4>
+                <h4 style={{ fontSize: '1rem', color: '#15803d', margin: '0 0 0.5rem' }}>Pro Tip</h4>
                 <p style={{ fontSize: '0.9rem', color: '#166534', margin: 0 }}>
                     Course recommendations are based on your current program, semester level, and academic performance. Contact your advisor to enroll in new courses!
                 </p>

@@ -10,16 +10,24 @@ import './PerformanceMetrics.css'
 ChartJS.register(ArcElement, Tooltip, Legend)
 
 const GradeDistribution = ({ grades = {} }) => {
-    // Mock data if none provided
-    const mockGrades = {
-        'A': 3,
-        'B': 2,
-        'C': 1,
-        'D': 0,
-        'F': 0
+    const hasGrades = grades && Object.keys(grades).length > 0
+        && Object.values(grades).some((value) => Number(value) > 0)
+
+    if (!hasGrades) {
+        return (
+            <div className="chart-container">
+                <div className="chart-header">
+                    <h3 className="chart-title">Grade Distribution</h3>
+                    <span className="chart-subtitle">No grade data yet</span>
+                </div>
+                <div className="chart-body chart-empty" style={{ height: '280px' }}>
+                    <p className="chart-empty-text">No grade distribution data available.</p>
+                </div>
+            </div>
+        )
     }
 
-    const gradeData = Object.keys(grades).length > 0 ? grades : mockGrades
+    const gradeData = grades
 
     const options = {
         responsive: true,
@@ -83,7 +91,7 @@ const GradeDistribution = ({ grades = {} }) => {
     return (
         <div className="chart-container">
             <div className="chart-header">
-                <h3 className="chart-title">📊 Grade Distribution</h3>
+                <h3 className="chart-title">Grade Distribution</h3>
                 <span className="chart-subtitle">{totalSubjects} total subjects</span>
             </div>
             <div className="chart-body" style={{ height: '280px', position: 'relative' }}>

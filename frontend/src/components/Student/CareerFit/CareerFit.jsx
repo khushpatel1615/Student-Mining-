@@ -38,7 +38,7 @@ const CareerFit = () => {
     // Fallback: Fetch basic gpa if analytics profile is incomplete
     const fetchFallbackData = async () => {
         try {
-            const response = await fetch(`${API_BASE}/student_dashboard.php?action=summary`, {
+            const response = await fetch(`${API_BASE}/student_dashboard.php`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -59,7 +59,7 @@ const CareerFit = () => {
                 description: 'Build applications and systems using programming languages',
                 avgSalary: '$85,000 - $120,000',
                 demand: 'High',
-                icon: '💻'
+                icon: 'DEV'
             },
             {
                 title: 'Data Analyst',
@@ -67,7 +67,7 @@ const CareerFit = () => {
                 description: 'Analyze data to help organizations make better decisions',
                 avgSalary: '$70,000 - $95,000',
                 demand: 'Very High',
-                icon: '📊'
+                icon: 'DATA'
             },
             {
                 title: 'Web Developer',
@@ -75,7 +75,7 @@ const CareerFit = () => {
                 description: 'Create and maintain websites and web applications',
                 avgSalary: '$75,000 - $105,000',
                 demand: 'High',
-                icon: '🌐'
+                icon: 'WEB'
             },
             {
                 title: 'Systems Administrator',
@@ -83,7 +83,7 @@ const CareerFit = () => {
                 description: 'Manage and maintain IT infrastructure and systems',
                 avgSalary: '$70,000 - $95,000',
                 demand: 'Moderate',
-                icon: '⚙️'
+                icon: 'SYS'
             }
         ];
         setCareers(recommendations.sort((a, b) => b.fitScore - a.fitScore));
@@ -135,7 +135,7 @@ const CareerFit = () => {
             </div>
 
             <div style={{ marginTop: '2rem', padding: '1.5rem', background: '#dbeafe', borderRadius: '12px' }}>
-                <h3 style={{ fontSize: '1.1rem', color: '#1e40af', margin: '0 0 0.5rem' }}>💡 Tip</h3>
+                <h3 style={{ fontSize: '1.1rem', color: '#1e40af', margin: '0 0 0.5rem' }}>Tip</h3>
                 <p style={{ color: '#1e3a8a', fontSize: '0.9rem', margin: 0 }}>
                     Career fit scores are calculated based on your academic performance, skills, and course selections.
                     Continue improving your grades and building relevant skills to increase your fit for top careers!

@@ -237,7 +237,7 @@ function AdminAnnouncements() {
                 <div className="discussions-list">
                     {announcements.map(a => (
                         <div key={a.id} className={`discussion-card ${a.is_pinned ? 'pinned' : ''}`}>
-                            {a.is_pinned && <div className="pin-badge">📌</div>}
+                            {a.is_pinned && <div className="pin-badge">PIN</div>}
                             <div className="card-main">
                                 <div className="category-badge announcement-badge" style={{ width: 'fit-content' }}>
                                     {a.program_id
@@ -253,7 +253,7 @@ function AdminAnnouncements() {
                                 </p>
                                 <div className="card-meta">
                                     <span className="author">By {a.author_name}</span>
-                                    <span className="dot">•</span>
+                                    <span className="dot">*</span>
                                     <span>{formatTime(a.created_at)}</span>
                                 </div>
                             </div>

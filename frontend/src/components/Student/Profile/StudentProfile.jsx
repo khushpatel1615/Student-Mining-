@@ -253,7 +253,7 @@ const StudentProfile = () => {
                                     value={formData.current_password}
                                     onChange={handleChange}
                                     className="profile-input"
-                                    placeholder="••••••••"
+                                    placeholder="********"
                                 />
                             </div>
                             <div className="form-row">
@@ -265,7 +265,7 @@ const StudentProfile = () => {
                                         value={formData.new_password}
                                         onChange={handleChange}
                                         className="profile-input"
-                                        placeholder="••••••••"
+                                        placeholder="********"
                                     />
                                 </div>
                                 <div className="form-group">
@@ -276,7 +276,7 @@ const StudentProfile = () => {
                                         value={formData.confirm_password}
                                         onChange={handleChange}
                                         className="profile-input"
-                                        placeholder="••••••••"
+                                        placeholder="********"
                                     />
                                 </div>
                             </div>

@@ -25,15 +25,22 @@ ChartJS.register(
 )
 
 const GPATrendChart = ({ data = [] }) => {
-    // Default mock data if none provided
-    const mockData = [
-        { semester: 'Sem 1', gpa: 3.2 },
-        { semester: 'Sem 2', gpa: 3.5 },
-        { semester: 'Sem 3', gpa: 3.7 },
-        { semester: 'Sem 4', gpa: 3.8 }
-    ]
+    const chartData = Array.isArray(data) ? data : []
+    const hasData = chartData.length > 0
 
-    const chartData = data.length > 0 ? data : mockData
+    if (!hasData) {
+        return (
+            <div className="chart-container">
+                <div className="chart-header">
+                <h3 className="chart-title">GPA Trend</h3>
+                    <span className="chart-subtitle">No GPA data yet</span>
+                </div>
+                <div className="chart-body chart-empty" style={{ height: '300px' }}>
+                    <p className="chart-empty-text">No GPA trend data available.</p>
+                </div>
+            </div>
+        )
+    }
 
     const options = {
         responsive: true,
@@ -107,7 +114,7 @@ const GPATrendChart = ({ data = [] }) => {
     return (
         <div className="chart-container">
             <div className="chart-header">
-                <h3 className="chart-title">📈 GPA Trend</h3>
+                <h3 className="chart-title">GPA Trend</h3>
                 <span className="chart-subtitle">Semester-by-semester progress</span>
             </div>
             <div className="chart-body" style={{ height: '300px' }}>

@@ -13,7 +13,7 @@ const AdminAIChat = () => {
         {
             id: 1,
             role: 'assistant',
-            content: "Hello Admin! 👋 I'm your AI Assistant. How can I help you manage the Student Data Mining system today?"
+            content: "Hello Admin! I'm your AI Assistant. How can I help you manage the Student Data Mining system today?"
         }
     ]);
     const [input, setInput] = useState('');
@@ -66,12 +66,12 @@ const AdminAIChat = () => {
                 setMessages(prev => [...prev, aiMsg]);
             } else {
                 const errorMsg = data.details || data.message || "Unknown API Error";
-                setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: `⚠️ **API Error**: ${errorMsg}` }]);
+                setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: `Warning: **API Error**: ${errorMsg}` }]);
             }
 
         } catch (error) {
             console.error("Chat error:", error);
-            setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: `⚠️ **Connection Error**: ${error.message}` }]);
+            setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: `Warning: **Connection Error**: ${error.message}` }]);
         } finally {
             setIsLoading(false);
         }
