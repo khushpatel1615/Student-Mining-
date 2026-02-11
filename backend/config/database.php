@@ -11,6 +11,20 @@ ini_set('display_errors', 0);
 // Load EnvLoader
 require_once __DIR__ . '/EnvLoader.php';
 
+// Global Exception Handler
+set_exception_handler(function ($e) {
+    error_log("Uncaught Exception: " . $e->getMessage());
+    if (!headers_sent()) {
+        header('Content-Type: application/json');
+        http_response_code(500);
+    }
+    echo json_encode([
+        'success' => false,
+        'error' => 'Internal Server Error: ' . $e->getMessage()
+    ]);
+    exit;
+});
+
 // Load environment variables
 EnvLoader::load(__DIR__ . '/../.env');
 
@@ -85,11 +99,5 @@ function setCORSHeaders()
     // CORS is now handled globally by handleCORS() on include
 }
 
-// JSON response helper
-function jsonResponse($data, $statusCode = 200)
-{
-    http_response_code($statusCode);
-    echo json_encode($data);
-    exit;
-}
+// jsonResponse is now in api_helpers.php
 ?>
