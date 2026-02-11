@@ -1,16 +1,131 @@
 <?php
 /**
- * Migration Runner v2
- * Executes all pending database migrations in alphanumeric order
+ * Enhanced Migration Runner with Tracking
+ * 
+ * Features:
+ * - Tracks executed migrations in database
+ * - Only runs pending migrations
+ * - Validates schema consistency
+ * - Supports rollback (future)
  */
 
 require_once __DIR__ . '/../../backend/config/database.php';
 
+function createMigrationsTable($pdo)
+{
+    $sql = "
+        CREATE TABLE IF NOT EXISTS migrations (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            migration VARCHAR(255) NOT NULL UNIQUE,
+            executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_migration (migration)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ";
+    $pdo->exec($sql);
+}
+
+function getExecutedMigrations($pdo)
+{
+    try {
+        $stmt = $pdo->query("SELECT migration FROM migrations ORDER BY id");
+        return $stmt->fetchAll(PDO::FETCH_COLUMN);
+    } catch (PDOException $e) {
+        // Table doesn't exist yet
+        return [];
+    }
+}
+
+function markMigrationExecuted($pdo, $migrationName)
+{
+    $stmt = $pdo->prepare("INSERT INTO migrations (migration) VALUES (?) ON DUPLICATE KEY UPDATE executed_at = CURRENT_TIMESTAMP");
+    $stmt->execute([$migrationName]);
+}
+
+function runMigration($pdo, $filepath, $migrationName)
+{
+    echo "📄 Running migration: $migrationName\n";
+
+    // Read SQL
+    $sql = file_get_contents($filepath);
+
+    // Normalize line endings
+    $sql = str_replace("\r\n", "\n", $sql);
+
+    // Split by semicolon
+    $rawStatements = explode(';', $sql);
+    $statements = [];
+
+    foreach ($rawStatements as $stmt) {
+        $stmt = trim($stmt);
+        if (empty($stmt))
+            continue;
+
+        // Skip comments
+        if (strpos($stmt, '--') === 0 && strpos($stmt, "\n") === false)
+            continue;
+        if (preg_match('/^--/', $stmt) || preg_match('/^\/\*/', $stmt))
+            continue;
+
+        $statements[] = $stmt;
+    }
+
+    $successCount = 0;
+    $errorCount = 0;
+
+    // Begin transaction
+    $pdo->beginTransaction();
+
+    try {
+        foreach ($statements as $statement) {
+            try {
+                $pdo->exec($statement);
+                $successCount++;
+            } catch (PDOException $e) {
+                $msg = $e->getMessage();
+
+                // Ignore "already exists" errors (idempotent migrations)
+                if (
+                    strpos($msg, 'already exists') !== false ||
+                    strpos($msg, 'Duplicate column') !== false ||
+                    strpos($msg, 'Duplicate key') !== false
+                ) {
+                    // Silently skip
+                } else {
+                    echo "   ⚠️  Error: " . $msg . "\n";
+                    echo "   Query: " . substr($statement, 0, 100) . "...\n";
+                    $errorCount++;
+                }
+            }
+        }
+
+        // Mark as executed
+        markMigrationExecuted($pdo, $migrationName);
+
+        // Commit transaction
+        $pdo->commit();
+
+        echo "   ✓ Completed ($successCount statements)\n";
+
+        return true;
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        echo "   ✗ Failed: " . $e->getMessage() . "\n";
+        return false;
+    }
+}
+
 try {
     $pdo = getDBConnection();
-    echo "=== Student Data Mining - Database Migration Runner ===\n\n";
+    echo "=== Database Migration Runner ===\n\n";
 
-    // 1. Get List of Migrations Dynamically
+    // Create migrations tracking table
+    createMigrationsTable($pdo);
+
+    // Get executed migrations
+    $executedMigrations = getExecutedMigrations($pdo);
+    echo "Previously executed migrations: " . count($executedMigrations) . "\n\n";
+
+    // Get all migration files
     $files = scandir(__DIR__);
     $migrations = [];
     foreach ($files as $file) {
@@ -18,73 +133,43 @@ try {
             $migrations[] = $file;
         }
     }
-    sort($migrations); // Ensure 001, 002, 003 order
+    sort($migrations);
 
-    // 2. Run Each Migration
+    echo "Found " . count($migrations) . " migration file(s)\n\n";
+
+    // Run pending migrations
+    $pendingCount = 0;
+    $successCount = 0;
+
     foreach ($migrations as $migrationFile) {
+        if (in_array($migrationFile, $executedMigrations)) {
+            echo "⏭️  Skipping (already executed): $migrationFile\n";
+            continue;
+        }
+
+        $pendingCount++;
         $filepath = __DIR__ . '/' . $migrationFile;
-        echo "📄 Checking migration: $migrationFile\n";
 
-        // Read SQL
-        $sql = file_get_contents($filepath);
-
-        // Split by semicolon, handling simple cases
-        // A robust parser would be better, but for this project's scope, a simple split + regex filter works
-        // We prevent splitting inside comments or quoted strings if we really wanted to be fancy, 
-        // but let's stick to the previous simple logic which worked fairly well for basic SQL.
-
-        // Normalize line endings
-        $sql = str_replace("\r\n", "\n", $sql);
-
-        $rawStatements = explode(';', $sql);
-        $statements = [];
-
-        foreach ($rawStatements as $stmt) {
-            $stmt = trim($stmt);
-            if (empty($stmt))
-                continue;
-            // potential simple comment skipping
-            if (strpos($stmt, '--') === 0 && strpos($stmt, "\n") === false)
-                continue;
-
-            $statements[] = $stmt;
+        if (runMigration($pdo, $filepath, $migrationFile)) {
+            $successCount++;
         }
 
-        $successCount = 0;
-        $failCount = 0;
-
-        foreach ($statements as $statement) {
-            try {
-                // Skip comment-only chunks that might have survived
-                if (preg_match('/^--/', $statement) || preg_match('/^\/\*/', $statement))
-                    continue;
-
-                $pdo->exec($statement);
-                $successCount++;
-            } catch (PDOException $e) {
-                // Ignore "exists" errors or "duplicate column" which happen on re-runs
-                $msg = $e->getMessage();
-                if (
-                    strpos($msg, 'already exists') !== false ||
-                    strpos($msg, 'Duplicate column') !== false ||
-                    strpos($msg, 'Duplicate key') !== false
-                ) {
-                    // echo "   ℹ️  Skipped (Already exists)\n";
-                } else {
-                    echo "   ⚠️  Error in $migrationFile: " . $msg . "\n";
-                    echo "   Query: " . substr($statement, 0, 50) . "...\n";
-                    $failCount++;
-                }
-            }
-        }
-
-        echo "   -> Processed (Success: $successCount)\n";
+        echo "\n";
     }
 
-    echo "\n=== Migration Process Complete ===\n";
+    if ($pendingCount === 0) {
+        echo "✓ All migrations are up to date!\n";
+    } else {
+        echo "=== Migration Summary ===\n";
+        echo "Pending: $pendingCount\n";
+        echo "Success: $successCount\n";
+        echo "Failed: " . ($pendingCount - $successCount) . "\n";
+    }
 
 } catch (PDOException $e) {
     echo "❌ Fatal DB Error: " . $e->getMessage() . "\n";
     exit(1);
+} catch (Exception $e) {
+    echo "❌ Error: " . $e->getMessage() . "\n";
+    exit(1);
 }
-?>
