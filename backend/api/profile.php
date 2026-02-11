@@ -7,65 +7,47 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
-define('UPLOAD_DIR', __DIR__ . '/../uploads/avatars/');
-if (!file_exists(UPLOAD_DIR)) {
-    mkdir(UPLOAD_DIR, 0777, true);
-}
 
-setCORSHeaders();
+// Define securely, but used locally
+define('UPLOAD_DIR', __DIR__ . '/../uploads/avatars/');
+
 $method = $_SERVER['REQUEST_METHOD'];
 $pdo = getDBConnection();
+
 try {
     switch ($method) {
         case 'PUT':
         case 'POST': // Allow POST for file uploads
             handleUpdate($pdo, $method);
-
             break;
         case 'OPTIONS':
-            http_response_code(200);
-
-            break;
+            exit(0);
         default:
-            http_response_code(405);
-            echo json_encode(['error' => 'Method not allowed']);
+            sendError('Method not allowed', 405);
     }
 } catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
+    sendError('An error occurred', 500, $e->getMessage());
 }
 
-/**
- * PUT - Update profile (Password or Details)
- */
 /**
  * Handle Profile Update (PUT/POST)
  */
 function handleUpdate($pdo, $requestMethod)
 {
-    $user = getAuthUser();
-    if (!$user) {
-        http_response_code(401);
-        echo json_encode(['error' => 'Unauthorized']);
-        return;
-    }
-
+    $user = requireAuth();
     $userId = $user['user_id'];
+
     $data = [];
-    // Parse data based on Content-Type
     $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+
     if (strpos($contentType, 'application/json') !== false) {
-        // Handle JSON PUT/POST
-        $data = json_decode(file_get_contents('php://input'), true);
+        $data = getJsonInput();
     } else {
-        // Handle Form Data (Multipart)
         $data = $_POST;
     }
 
     if (empty($data) && empty($_FILES)) {
-        http_response_code(400);
-        echo json_encode(['error' => 'No data provided']);
-        return;
+        sendError('No data provided');
     }
 
     // 1. Password Change
@@ -86,8 +68,7 @@ function handleUpdate($pdo, $requestMethod)
         return;
     }
 
-    http_response_code(400);
-    echo json_encode(['error' => 'Invalid update request']);
+    sendError('Invalid update request');
 }
 
 /**
@@ -96,20 +77,16 @@ function handleUpdate($pdo, $requestMethod)
 function handleAvatarUpload($pdo, $userId, $file)
 {
     if ($file['error'] !== UPLOAD_ERR_OK) {
-        http_response_code(400);
-        echo json_encode(['error' => 'File upload error code: ' . $file['error']]);
-        return;
+        sendError('File upload error code: ' . $file['error']);
     }
 
     // 1. Size validation (2MB max)
     $maxSize = 2 * 1024 * 1024;
     if ($file['size'] > $maxSize) {
-        http_response_code(400);
-        echo json_encode(['error' => 'File too large. Max 2MB allowed']);
-        return;
+        sendError('File too large. Max 2MB allowed');
     }
 
-    // 2. MIME type validation using finfo (not user-provided type)
+    // 2. MIME type validation using finfo
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
     $detectedMime = finfo_file($finfo, $file['tmp_name']);
     finfo_close($finfo);
@@ -121,21 +98,16 @@ function handleAvatarUpload($pdo, $userId, $file)
     ];
 
     if (!isset($allowedMimes[$detectedMime])) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Invalid file type. Only JPG, PNG, and WebP are allowed']);
-        return;
+        sendError('Invalid file type. Only JPG, PNG, and WebP are allowed');
     }
 
-    // 3. Attempt to decode the image (additional security layer)
+    // 3. Attempt to decode the image
     try {
         $imageInfo = getimagesize($file['tmp_name']);
         if ($imageInfo === false) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Invalid image file']);
-            return;
+            sendError('Invalid image file');
         }
 
-        // Verify image can be loaded (prevents malicious files)
         $img = null;
         switch ($detectedMime) {
             case 'image/jpeg':
@@ -150,81 +122,82 @@ function handleAvatarUpload($pdo, $userId, $file)
         }
 
         if ($img === false) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Could not process image']);
-            return;
+            sendError('Could not process image');
         }
         imagedestroy($img);
     } catch (Exception $e) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Invalid image file']);
-        return;
+        sendError('Invalid image file');
     }
 
-    // 4. Generate secure random filename (not based on user input)
+    // 4. Generate secure random filename
     $extension = $allowedMimes[$detectedMime];
-    $randomName = bin2hex(random_bytes(16));
+    try {
+        $randomName = bin2hex(random_bytes(16));
+    } catch (Exception $e) {
+        $randomName = md5(uniqid(rand(), true)); // Fallback
+    }
     $filename = $randomName . '.' . $extension;
+
+    // Ensure upload dir exists
+    if (!file_exists(UPLOAD_DIR)) {
+        if (!mkdir(UPLOAD_DIR, 0755, true)) {
+            sendError('Failed to create upload directory', 500);
+        }
+    }
+
     $filepath = UPLOAD_DIR . $filename;
 
-    // 5. Ensure the upload directory exists with proper permissions
-    if (!file_exists(UPLOAD_DIR)) {
-        mkdir(UPLOAD_DIR, 0755, true); // 0755 instead of 0777
-    }
-
-    // 6. Move uploaded file with proper permissions
+    // 5. Move uploaded file
     if (move_uploaded_file($file['tmp_name'], $filepath)) {
-        // Set file permissions (readable but not executable)
         chmod($filepath, 0644);
 
-        // 7. Delete old avatar if exists
+        // 6. Delete old avatar
         $stmt = $pdo->prepare("SELECT avatar_url FROM users WHERE id = ?");
         $stmt->execute([$userId]);
         $oldAvatar = $stmt->fetchColumn();
         if ($oldAvatar) {
-            $oldPath = __DIR__ . '/..' . $oldAvatar;
-            if (file_exists($oldPath) && is_file($oldPath)) {
-                unlink($oldPath);
+            // Extract filename from URL/Path if needed, but assuming stored as relative path
+            // e.g., '/backend/uploads/avatars/xyz.jpg'
+            $oldFilename = basename($oldAvatar);
+            if ($oldFilename && file_exists(UPLOAD_DIR . $oldFilename)) {
+                unlink(UPLOAD_DIR . $oldFilename);
             }
         }
 
-        // 8. Update database
+        // 7. Update database
+        // Store relative URL path
         $dbPath = '/backend/uploads/avatars/' . $filename;
         $stmt = $pdo->prepare("UPDATE users SET avatar_url = ? WHERE id = ?");
         $stmt->execute([$dbPath, $userId]);
 
-        echo json_encode([
+        sendResponse([
             'success' => true,
             'message' => 'Avatar updated successfully',
             'avatar_url' => $dbPath
         ]);
     } else {
-        http_response_code(500);
-        echo json_encode(['error' => 'Failed to save uploaded file']);
+        sendError('Failed to save uploaded file', 500);
     }
 }
-
 
 /**
  * Update Password
  */
 function updatePassword($pdo, $userId, $currentPassword, $newPassword)
 {
-    // 1. Verify current password
     $stmt = $pdo->prepare("SELECT password_hash FROM users WHERE id = ?");
     $stmt->execute([$userId]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
     if (!$user || !password_verify($currentPassword, $user['password_hash'])) {
-        http_response_code(401);
-        echo json_encode(['error' => 'Current password is incorrect']);
-        return;
+        sendError('Current password is incorrect', 401);
     }
 
-    // 2. Update to new password
     $newHash = password_hash($newPassword, PASSWORD_DEFAULT);
     $updateStmt = $pdo->prepare("UPDATE users SET password_hash = ? WHERE id = ?");
     $updateStmt->execute([$newHash, $userId]);
-    echo json_encode(['success' => true, 'message' => 'Password changed successfully']);
+
+    sendResponse(['success' => true, 'message' => 'Password changed successfully']);
 }
 
 /**
@@ -234,28 +207,23 @@ function updateProfile($pdo, $userId, $data)
 {
     $fields = [];
     $params = [];
+
     if (isset($data['full_name'])) {
-        // Basic validation
         if (strlen($data['full_name']) < 2) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Name must be at least 2 characters']);
-            return;
+            sendError('Name must be at least 2 characters');
         }
         $fields[] = 'full_name = ?';
         $params[] = $data['full_name'];
     }
 
-    // Can add other fields here later (e.g. email if allowed)
-
     if (empty($fields)) {
-        http_response_code(400);
-        echo json_encode(['error' => 'No valid fields to update']);
-        return;
+        sendError('No valid fields to update');
     }
 
     $params[] = $userId;
     $sql = "UPDATE users SET " . implode(', ', $fields) . " WHERE id = ?";
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
-    echo json_encode(['success' => true, 'message' => 'Profile updated successfully']);
+
+    sendResponse(['success' => true, 'message' => 'Profile updated successfully']);
 }

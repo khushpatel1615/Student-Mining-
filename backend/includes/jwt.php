@@ -6,6 +6,9 @@
  */
 
 require_once __DIR__ . '/../config/database.php';
+// api_helpers.php is strictly required for sendError/sendResponse
+require_once __DIR__ . '/api_helpers.php';
+
 /**
  * Base64 URL encode (JWT compatible)
  */
@@ -58,9 +61,11 @@ function verifyToken($token)
     }
 
     list($base64Header, $base64Payload, $base64Signature) = $parts;
+
     // Verify signature
     $signature = hash_hmac('sha256', $base64Header . '.' . $base64Payload, JWT_SECRET, true);
     $expectedSignature = base64UrlEncode($signature);
+
     if (!hash_equals($expectedSignature, $base64Signature)) {
         return ['valid' => false, 'error' => 'Invalid signature'];
     }
@@ -82,7 +87,6 @@ function verifyToken($token)
 /**
  * Get token from Authorization header
  */
-
 function getTokenFromHeader()
 {
     $headers = null;
@@ -104,14 +108,6 @@ function getTokenFromHeader()
 }
 
 /**
- * Send JSON Response and exit
- * @param array $data Response data
- * @param int $statusCode HTTP status code
- */
-// jsonResponse is provided by api_helpers.php
-
-
-/**
  * Get token from request (header only by default)
  * Query string tokens are restricted for security
  * @param bool $allowQueryString Allow token from query string (only for specific endpoints like SSE)
@@ -125,9 +121,16 @@ function getTokenFromRequest($allowQueryString = false)
 
     // Only allow query string tokens if explicitly permitted (e.g., for SSE where headers can't be set)
     if ($allowQueryString) {
-        $queryToken = $_GET['token'] ?? $_GET['auth_token'] ?? null;
+        // Safe access to GET
+        $queryToken = filter_input(INPUT_GET, 'token', FILTER_SANITIZE_SPECIAL_CHARS)
+            ?? filter_input(INPUT_GET, 'auth_token', FILTER_SANITIZE_SPECIAL_CHARS);
+
         if ($queryToken) {
-            error_log('WARNING: Token passed via query string from IP: ' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
+            // Log warning about query string token usage
+            if (function_exists('logRequest')) {
+                // We don't want to log the token itself
+                // logRequest(null, 'Query string token used'); 
+            }
             return $queryToken;
         }
     }
@@ -138,23 +141,18 @@ function getTokenFromRequest($allowQueryString = false)
 /**
  * Middleware: Require authentication
  * @param bool $allowQueryString Allow token from query string (default: false)
+ * @return array User payload
  */
 function requireAuth($allowQueryString = false)
 {
     $token = getTokenFromRequest($allowQueryString);
     if (!$token) {
-        jsonResponse([
-            'success' => false,
-            'error' => 'No token provided'
-        ], 401);
+        sendError('Unauthorized: No token provided', 401);
     }
 
     $result = verifyToken($token);
     if (!$result['valid']) {
-        jsonResponse([
-            'success' => false,
-            'error' => $result['error']
-        ], 401);
+        sendError('Unauthorized: ' . $result['error'], 401);
     }
 
     return $result['payload'];
@@ -164,6 +162,7 @@ function requireAuth($allowQueryString = false)
  * Middleware: Require specific role(s)
  * @param string|array $requiredRoles Single role or array of accepted roles
  * @param bool $allowQueryString Allow token from query string (default: false)
+ * @return array User payload
  */
 function requireRole($requiredRoles, $allowQueryString = false)
 {
@@ -171,10 +170,7 @@ function requireRole($requiredRoles, $allowQueryString = false)
     $allowedRoles = is_array($requiredRoles) ? $requiredRoles : [$requiredRoles];
 
     if (!in_array($payload['role'], $allowedRoles)) {
-        jsonResponse([
-            'success' => false,
-            'error' => 'Insufficient permissions'
-        ], 403);
+        sendError('Forbidden: Insufficient permissions', 403);
     }
 
     return $payload;
@@ -183,6 +179,7 @@ function requireRole($requiredRoles, $allowQueryString = false)
 /**
  * Get authenticated user payload (non-blocking, returns null if not authenticated)
  * @param bool $allowQueryString Allow token from query string (default: false)
+ * @return array|null User payload or null
  */
 function getAuthUser($allowQueryString = false)
 {

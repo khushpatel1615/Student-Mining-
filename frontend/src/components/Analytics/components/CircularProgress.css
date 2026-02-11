@@ -1,0 +1,22 @@
+/* CIRCULAR PROGRESS */
+.score-circle-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.circular-progress {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.circular-progress svg {
+    transform: rotate(-90deg);
+}
+
+.progress-value {
+    position: absolute;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
