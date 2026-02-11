@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useGoogleLogin } from '@react-oauth/google'
 import { useAuth } from '../../context/AuthContext'
+import { API_BASE } from '../../config'
 import './LoginCard.css'
 
 // SVGs from the user's design
@@ -53,7 +54,18 @@ function LoginCard() {
     const [showPassword, setShowPassword] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
 
+    // Forgot Password States
+    const [view, setView] = useState('login') // 'login', 'forgot-email', 'forgot-otp', 'forgot-new-password'
+    const [forgotEmail, setForgotEmail] = useState('')
+    const [otp, setOtp] = useState('')
+    const [newPassword, setNewPassword] = useState('')
+    const [confirmPassword, setConfirmPassword] = useState('')
+    const [resetMessage, setResetMessage] = useState('')
+
     const { loginWithCredentials, loginWithGoogle, error, clearError, loading } = useAuth()
+
+    // Local error state for non-auth context errors (forgot flow)
+    const [localError, setLocalError] = useState('')
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -61,15 +73,108 @@ function LoginCard() {
 
         setIsSubmitting(true)
         clearError()
+        setLocalError('')
 
         await loginWithCredentials(studentId.trim(), password)
         setIsSubmitting(false)
     }
 
+    const handleSendOTP = async (e) => {
+        e.preventDefault()
+        if (!forgotEmail) return
+
+        setIsSubmitting(true)
+        setLocalError('')
+        setResetMessage('')
+
+        try {
+            const response = await fetch(`${API_BASE}/forgot_password.php`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: forgotEmail })
+            })
+            const data = await response.json()
+
+            if (data.success) {
+                setResetMessage(data.message)
+                setView('forgot-otp')
+            } else {
+                setLocalError(data.error || 'Failed to send OTP')
+            }
+        } catch (err) {
+            setLocalError('Network error occurred')
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
+
+    const handleVerifyOTP = async (e) => {
+        e.preventDefault()
+        if (!otp) return
+
+        setIsSubmitting(true)
+        setLocalError('')
+
+        try {
+            const response = await fetch(`${API_BASE}/verify_otp.php`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: forgotEmail, otp })
+            })
+            const data = await response.json()
+
+            if (data.success) {
+                setResetMessage('')
+                setView('forgot-new-password')
+            } else {
+                setLocalError(data.error || 'Invalid OTP')
+            }
+        } catch (err) {
+            setLocalError('Network error occurred')
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
+
+    const handleResetPassword = async (e) => {
+        e.preventDefault()
+        if (!newPassword || newPassword !== confirmPassword) {
+            setLocalError('Passwords do not match')
+            return
+        }
+
+        setIsSubmitting(true)
+        setLocalError('')
+
+        try {
+            const response = await fetch(`${API_BASE}/reset_password.php`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: forgotEmail, otp, password: newPassword })
+            })
+            const data = await response.json()
+
+            if (data.success) {
+                setResetMessage('Password reset successfully! Please login.')
+                setView('login')
+                // Clear fields
+                setForgotEmail('')
+                setOtp('')
+                setNewPassword('')
+                setConfirmPassword('')
+            } else {
+                setLocalError(data.error || 'Failed to reset password')
+            }
+        } catch (err) {
+            setLocalError('Network error occurred')
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
+
     const googleLogin = useGoogleLogin({
         onSuccess: async (response) => {
             try {
-                // In a real app we might fetch user info here, but we just pass the token
                 await loginWithGoogle(response.access_token)
             } catch (err) {
                 console.error('Google login error:', err)
@@ -79,6 +184,249 @@ function LoginCard() {
             console.error('Google Login Failed:', error)
         }
     })
+
+    const renderContent = () => {
+        // ... Logic will be inserted here ... 
+        /* 
+           Since I am writing the WHOLE file, I will just paste the logic instead of comments.
+        */
+        if (view === 'login') {
+            return (
+                <>
+                    <div className="form-header">
+                        <h2>Welcome back</h2>
+                        <p>Please enter your credentials to access your account</p>
+                    </div>
+
+                    {(error || localError || resetMessage) && (
+                        <div className={`error-alert ${resetMessage && !error && !localError ? 'success-alert' : ''}`} style={resetMessage && !error && !localError ? { backgroundColor: '#d1fae5', color: '#065f46', borderColor: '#34d399' } : {}}>
+                            <AlertIcon />
+                            <span>{error || localError || resetMessage}</span>
+                        </div>
+                    )}
+
+                    <button
+                        className="google-btn"
+                        onClick={() => googleLogin()}
+                        disabled={loading || isSubmitting}
+                    >
+                        <GoogleIcon />
+                        Continue with Google
+                    </button>
+
+                    <div className="divider">or</div>
+
+                    <form onSubmit={handleSubmit}>
+                        <div className="form-group">
+                            <label htmlFor="studentId">Student ID or Email</label>
+                            <input
+                                type="text"
+                                id="studentId"
+                                placeholder="student@university.edu"
+                                required
+                                value={studentId}
+                                onChange={(e) => setStudentId(e.target.value)}
+                                disabled={isSubmitting}
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="password">Password</label>
+                            <div className="input-wrapper">
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    id="password"
+                                    placeholder="Enter your password"
+                                    required
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    disabled={isSubmitting}
+                                    autoComplete="current-password"
+                                />
+                                <button
+                                    type="button"
+                                    className="toggle-password"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                >
+                                    {showPassword ? '🙈' : '👁️'}
+                                </button>
+                            </div>
+                            <div className="forgot-password">
+                                <a href="#forgot" onClick={(e) => { e.preventDefault(); setView('forgot-email'); clearError(); setLocalError(''); setResetMessage(''); }}>Forgot password?</a>
+                            </div>
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="submit-btn"
+                            disabled={isSubmitting || loading}
+                        >
+                            {isSubmitting ? 'Signing in...' : 'Sign In'}
+                        </button>
+                    </form>
+                </>
+            )
+        }
+
+        if (view === 'forgot-email') {
+            return (
+                <>
+                    <div className="form-header">
+                        <h2>Reset Password</h2>
+                        <p>Enter your email to receive a One-Time Password (OTP)</p>
+                    </div>
+
+                    {localError && (
+                        <div className="error-alert">
+                            <AlertIcon />
+                            <span>{localError}</span>
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSendOTP}>
+                        <div className="form-group">
+                            <label htmlFor="forgotEmail">Email Address</label>
+                            <input
+                                type="email"
+                                id="forgotEmail"
+                                placeholder="your.email@university.edu"
+                                required
+                                value={forgotEmail}
+                                onChange={(e) => setForgotEmail(e.target.value)}
+                                disabled={isSubmitting}
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="submit-btn"
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? 'Sending OTP...' : 'Send OTP'}
+                        </button>
+
+                        <div className="form-footer">
+                            <a href="#back" onClick={(e) => { e.preventDefault(); setView('login'); }}>Back to Login</a>
+                        </div>
+                    </form>
+                </>
+            )
+        }
+
+        if (view === 'forgot-otp') {
+            return (
+                <>
+                    <div className="form-header">
+                        <h2>Verify OTP</h2>
+                        <p>Enter the 6-digit code sent to {forgotEmail}</p>
+                    </div>
+
+                    {(localError || resetMessage) && (
+                        <div className={`error-alert ${resetMessage && !localError ? 'success-alert' : ''}`} style={resetMessage && !localError ? { backgroundColor: '#d1fae5', color: '#065f46', borderColor: '#34d399' } : {}}>
+                            <AlertIcon />
+                            <span>{localError || resetMessage}</span>
+                        </div>
+                    )}
+
+                    <form onSubmit={handleVerifyOTP}>
+                        <div className="form-group">
+                            <label htmlFor="otp">One-Time Password</label>
+                            <input
+                                type="text"
+                                id="otp"
+                                placeholder="123456"
+                                required
+                                value={otp}
+                                onChange={(e) => setOtp(e.target.value)}
+                                disabled={isSubmitting}
+                                maxLength={6}
+                                style={{ letterSpacing: '0.25em', textAlign: 'center', fontSize: '1.25rem' }}
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="submit-btn"
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? 'Verifying...' : 'Verify OTP'}
+                        </button>
+
+                        <div className="form-footer">
+                            <a href="#resend" onClick={handleSendOTP}>Resend OTP</a>
+                            <span style={{ margin: '0 8px' }}>|</span>
+                            <a href="#back" onClick={(e) => { e.preventDefault(); setView('forgot-email'); }}>Change Email</a>
+                        </div>
+                    </form>
+                </>
+            )
+        }
+
+        if (view === 'forgot-new-password') {
+            return (
+                <>
+                    <div className="form-header">
+                        <h2>New Password</h2>
+                        <p>Create a new secure password</p>
+                    </div>
+
+                    {localError && (
+                        <div className="error-alert">
+                            <AlertIcon />
+                            <span>{localError}</span>
+                        </div>
+                    )}
+
+                    <form onSubmit={handleResetPassword}>
+                        <div className="form-group">
+                            <label htmlFor="newPassword">New Password</label>
+                            <div className="input-wrapper">
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    id="newPassword"
+                                    placeholder="Min 8 characters"
+                                    required
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    disabled={isSubmitting}
+                                />
+                                <button
+                                    type="button"
+                                    className="toggle-password"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                >
+                                    {showPassword ? '🙈' : '👁️'}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="confirmPassword">Confirm Password</label>
+                            <div className="input-wrapper">
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    id="confirmPassword"
+                                    placeholder="Re-enter password"
+                                    required
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    disabled={isSubmitting}
+                                />
+                            </div>
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="submit-btn"
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? 'Reset Password' : 'Reset Password'}
+                        </button>
+                    </form>
+                </>
+            )
+        }
+    }
 
     return (
         <div className="login-container">
@@ -131,76 +479,7 @@ function LoginCard() {
 
             {/* Right Panel - Form */}
             <div className="form-panel">
-                <div className="form-header">
-                    <h2>Welcome back</h2>
-                    <p>Please enter your credentials to access your account</p>
-                </div>
-
-                {error && (
-                    <div className="error-alert">
-                        <AlertIcon />
-                        <span>{error}</span>
-                    </div>
-                )}
-
-                <button
-                    className="google-btn"
-                    onClick={() => googleLogin()}
-                    disabled={loading || isSubmitting}
-                >
-                    <GoogleIcon />
-                    Continue with Google
-                </button>
-
-                <div className="divider">or</div>
-
-                <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label htmlFor="studentId">Student ID or Email</label>
-                        <input
-                            type="text"
-                            id="studentId"
-                            placeholder="student@university.edu"
-                            required
-                            value={studentId}
-                            onChange={(e) => setStudentId(e.target.value)}
-                            disabled={isSubmitting}
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="password">Password</label>
-                        <div className="input-wrapper">
-                            <input
-                                type={showPassword ? 'text' : 'password'}
-                                id="password"
-                                placeholder="Enter your password"
-                                required
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                disabled={isSubmitting}
-                            />
-                            <button
-                                type="button"
-                                className="toggle-password"
-                                onClick={() => setShowPassword(!showPassword)}
-                            >
-                                {showPassword ? '🙈' : '👁️'}
-                            </button>
-                        </div>
-                        <div className="forgot-password">
-                            <a href="#forgot" onClick={(e) => e.preventDefault()}>Forgot password?</a>
-                        </div>
-                    </div>
-
-                    <button
-                        type="submit"
-                        className="submit-btn"
-                        disabled={isSubmitting || loading}
-                    >
-                        {isSubmitting ? 'Signing in...' : 'Sign In'}
-                    </button>
-                </form>
+                {renderContent()}
 
                 <div className="form-footer">
                     Need help? <a href="#support" onClick={(e) => e.preventDefault()}>Contact Support</a>

@@ -1,0 +1,111 @@
+/* STATS CARDS */
+.lba-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.lba-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: var(--lba-bg-white, #ffffff);
+    border-radius: var(--lba-radius-lg, 12px);
+    box-shadow: var(--lba-shadow-sm, 0 1px 2px 0 rgba(0, 0, 0, 0.05));
+    border: 1px solid var(--lba-border-light, #f3f4f6);
+    transition: all 0.2s ease;
+}
+
+.lba-stat-card:hover {
+    box-shadow: var(--lba-shadow, 0 1px 3px 0 rgba(0, 0, 0, 0.1));
+}
+
+.clickable-stat {
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.clickable-stat:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--lba-shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1));
+}
+
+.active-stat {
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.lba-stat-critical.active-stat {
+    border-color: var(--lba-critical, #dc2626);
+    box-shadow: 0 0 0 1px var(--lba-critical, #dc2626);
+    background-color: #fef2f2;
+}
+
+.lba-stat-at-risk.active-stat {
+    border-color: var(--lba-at-risk, #ea580c);
+    box-shadow: 0 0 0 1px var(--lba-at-risk, #ea580c);
+    background-color: #fff7ed;
+}
+
+.lba-stat-warning.active-stat {
+    border-color: var(--lba-warning, #d97706);
+    box-shadow: 0 0 0 1px var(--lba-warning, #d97706);
+    background-color: #fffbeb;
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--lba-radius, 8px);
+    flex-shrink: 0;
+}
+
+.lba-stat-critical .stat-icon {
+    background: var(--lba-critical-bg, #fef2f2);
+    color: var(--lba-critical, #dc2626);
+}
+
+.lba-stat-at-risk .stat-icon {
+    background: var(--lba-at-risk-bg, #fff7ed);
+    color: var(--lba-at-risk, #ea580c);
+}
+
+.lba-stat-warning .stat-icon {
+    background: var(--lba-warning-bg, #fffbeb);
+    color: var(--lba-warning, #d97706);
+}
+
+.lba-stat-info .stat-icon {
+    background: var(--lba-info-bg, #eff6ff);
+    color: var(--lba-info, #2563eb);
+}
+
+.stat-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--lba-text-dark, #111827);
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--lba-text-medium, #374151);
+    margin-top: 4px;
+}
+
+.stat-subtitle {
+    font-size: 0.75rem;
+    color: var(--lba-text-muted, #9ca3af);
+    margin-top: 2px;
+}

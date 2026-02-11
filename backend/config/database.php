@@ -13,14 +13,30 @@ require_once __DIR__ . '/EnvLoader.php';
 
 // Global Exception Handler
 set_exception_handler(function ($e) {
+    if (php_sapi_name() === 'cli') {
+        echo "Uncaught Exception: " . $e->getMessage() . "\n";
+        exit(1);
+    }
     error_log("Uncaught Exception: " . $e->getMessage());
     if (!headers_sent()) {
         header('Content-Type: application/json');
         http_response_code(500);
     }
+
+    // Check if we can use sendError
+    if (function_exists('sendError')) {
+        sendError('Internal Server Error', 500);
+    }
+
+    // Fallback JSON if API helpers not loaded
+    $msg = (getenv('APP_ENV') === 'dev' || getenv('APP_ENV') === 'development')
+        ? $e->getMessage()
+        : 'Internal Server Error';
+
     echo json_encode([
         'success' => false,
-        'error' => 'Internal Server Error: ' . $e->getMessage()
+        'error' => $msg,
+        'requestId' => defined('REQUEST_ID') ? REQUEST_ID : uniqid('err_')
     ]);
     exit;
 });
@@ -57,7 +73,12 @@ define('GOOGLE_CLIENT_SECRET', getenv('GOOGLE_CLIENT_SECRET'));
 
 // CORS Configuration
 $allowedOrigins = getenv('ALLOWED_ORIGINS') ? explode(',', getenv('ALLOWED_ORIGINS')) : ['http://localhost:5173', 'http://localhost:3000'];
-define('ALLOWED_ORIGINS', $allowedOrigins);
+// Trim each origin
+$allowedOrigins = array_map('trim', $allowedOrigins);
+// Define constant if not already defined (though usually it shouldn't be)
+if (!defined('ALLOWED_ORIGINS')) {
+    define('ALLOWED_ORIGINS', $allowedOrigins);
+}
 
 // Load and Validate CORS
 require_once __DIR__ . '/cors.php';
@@ -84,20 +105,19 @@ function getDBConnection()
         try {
             $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
         } catch (PDOException $e) {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'error' => 'Database connection failed']);
-            exit;
+            // Log full error for admin
+            error_log("Database Connection Failed: " . $e->getMessage());
+
+            // Return safe generic error to user
+            if (function_exists('sendError')) {
+                sendError('Database Connection Failed', 500);
+            } else {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'error' => 'Database Connection Failed']);
+                exit;
+            }
         }
     }
 
     return $pdo;
 }
-
-// Deprecated: setCORSHeaders - kept for backward compat if called explicitly, but empty as handled globally
-function setCORSHeaders()
-{
-    // CORS is now handled globally by handleCORS() on include
-}
-
-// jsonResponse is now in api_helpers.php
-?>
