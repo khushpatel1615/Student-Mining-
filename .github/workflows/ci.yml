@@ -1,0 +1,159 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop, production-hardening ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  # Frontend Pipeline
+  frontend:
+    name: Frontend Build & Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Run linter
+        working-directory: ./frontend
+        run: npm run lint
+
+      - name: Run tests
+        working-directory: ./frontend
+        run: npm test
+
+      - name: Build production bundle
+        working-directory: ./frontend
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/dist
+          retention-days: 7
+
+  # Backend Pipeline
+  backend:
+    name: Backend Lint & Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: mbstring, xml, ctype, json, pdo, mysql, redis, gd
+          coverage: none
+
+      - name: Validate composer.json (if exists)
+        working-directory: ./backend
+        run: |
+          if [ -f composer.json ]; then
+            composer validate --strict
+          fi
+
+      - name: Install Composer dependencies (if composer.json exists)
+        working-directory: ./backend
+        run: |
+          if [ -f composer.json ]; then
+            composer install --prefer-dist --no-progress
+          fi
+
+      - name: Run PHP linter
+        working-directory: ./backend
+        run: |
+          find . -name "*.php" -not -path "./vendor/*" -exec php -l {} \; > /dev/null
+
+      - name: Run JWT tests
+        working-directory: ./backend
+        env:
+          JWT_SECRET: test_secret_key_for_ci_only
+          JWT_EXPIRY: 3600
+          DB_HOST: localhost
+          DB_NAME: test_db
+          DB_USER: root
+          DB_PASS: ""
+        run: php tests/JwtTest.php
+
+  # Security Scanning
+  security:
+    name: Security Checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Run npm audit
+        working-directory: ./frontend
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Check for known vulnerabilities
+        working-directory: ./frontend
+        run: npx audit-ci --moderate
+        continue-on-error: true
+
+      - name: Dependency Review
+        if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
+
+  # Code Quality
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Check code formatting (Prettier)
+        working-directory: ./frontend
+        run: npm run format:check
+        continue-on-error: true
+
+      - name: Run ESLint with warnings
+        working-directory: ./frontend
+        run: npm run lint
+        continue-on-error: false
