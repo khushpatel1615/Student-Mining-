@@ -69,11 +69,19 @@ function requireMethod($allowedMethods)
     $method = $_SERVER['REQUEST_METHOD'];
     $allowed = (array) $allowedMethods;
     if (!in_array($method, $allowed)) {
-    // Special handling for OPTIONS handled by cors.php, but if we get here
+        // Special handling for OPTIONS handled by cors.php, but if we get here
         if ($method === 'OPTIONS') {
             exit;
         }
 
         sendError("Method $method Not Allowed", 405);
     }
+}
+
+/**
+ * Alias for sendResponse for backward compatibility
+ */
+function jsonResponse($data, $statusCode = 200)
+{
+    sendResponse($data, $statusCode);
 }

@@ -12,6 +12,8 @@ require_once __DIR__ . '/../includes/jwt.php';
 requireMethod('POST');
 // Get Input
 $input = getJsonInput();
+// throw new Exception("Test Error"); // Uncomment to test handler
+
 if (!$input) {
     sendError('Invalid JSON input', 400);
 }

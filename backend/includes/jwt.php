@@ -108,13 +108,8 @@ function getTokenFromHeader()
  * @param array $data Response data
  * @param int $statusCode HTTP status code
  */
-function jsonResponse($data, $statusCode = 200)
-{
-    http_response_code($statusCode);
-    header('Content-Type: application/json');
-    echo json_encode($data);
-    exit;
-}
+// jsonResponse is provided by api_helpers.php
+
 
 /**
  * Get token from request (header only by default)

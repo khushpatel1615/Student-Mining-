@@ -1,22 +1,37 @@
 import { useState } from 'react'
 import { useGoogleLogin } from '@react-oauth/google'
-
 import { useAuth } from '../../context/AuthContext'
-import { useTheme } from '../../context/ThemeContext'
 import './LoginCard.css'
 
-// Icons as inline SVGs for zero dependencies
-const DataIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
-        <path d="M3 5c0-1.66 4-3 9-3s9 1.34 9 3" />
-        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
-        <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3" />
+// SVGs from the user's design
+const LogoIcon = () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 7C4 6.06812 4 5.60218 4.15224 5.23463C4.35523 4.74458 4.74458 4.35523 5.23463 4.15224C5.60218 4 6.06812 4 7 4H17C17.9319 4 18.3978 4 18.7654 4.15224C19.2554 4.35523 19.6448 4.74458 19.8478 5.23463C20 5.60218 20 6.06812 20 7M4 7V17C4 17.9319 4 18.3978 4.15224 18.7654C4.35523 19.2554 4.74458 19.6448 5.23463 19.8478C5.60218 20 6.06812 20 7 20H17C17.9319 20 18.3978 20 18.7654 19.8478C19.2554 19.6448 19.6448 19.2554 19.8478 18.7654C20 18.3978 20 17.9319 20 17V7M4 7H20M16 11H12M12 11H8M12 11V15M12 15H16M12 15H8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+)
+
+const SecurityIcon = () => (
+    <svg viewBox="0 0 24 24">
+        <path d="M9 11L12 14L22 4" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M21 12V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H16" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+)
+
+const AnalyticsIcon = () => (
+    <svg viewBox="0 0 24 24">
+        <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+)
+
+const SupportIcon = () => (
+    <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M12 6V12L16 14" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
 )
 
 const GoogleIcon = () => (
-    <svg viewBox="0 0 24 24">
+    <svg className="google-icon" viewBox="0 0 24 24">
         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
         <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
         <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
@@ -24,59 +39,11 @@ const GoogleIcon = () => (
     </svg>
 )
 
-const UserIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-        <circle cx="12" cy="7" r="4" />
-    </svg>
-)
-
-const LockIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-    </svg>
-)
-
-const EyeIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-        <circle cx="12" cy="12" r="3" />
-    </svg>
-)
-
-const EyeOffIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-        <line x1="1" y1="1" x2="23" y2="23" />
-    </svg>
-)
-
 const AlertIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="10" />
         <line x1="12" y1="8" x2="12" y2="12" />
         <line x1="12" y1="16" x2="12.01" y2="16" />
-    </svg>
-)
-
-const SunIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="5" />
-        <line x1="12" y1="1" x2="12" y2="3" />
-        <line x1="12" y1="21" x2="12" y2="23" />
-        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-        <line x1="1" y1="12" x2="3" y2="12" />
-        <line x1="21" y1="12" x2="23" y2="12" />
-        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-    </svg>
-)
-
-const MoonIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
     </svg>
 )
 
@@ -87,9 +54,7 @@ function LoginCard() {
     const [isSubmitting, setIsSubmitting] = useState(false)
 
     const { loginWithCredentials, loginWithGoogle, error, clearError, loading } = useAuth()
-    const { theme, toggleTheme } = useTheme()
 
-    // Handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault()
         if (!studentId.trim() || !password) return
@@ -101,18 +66,10 @@ function LoginCard() {
         setIsSubmitting(false)
     }
 
-    // Handle Google Login
     const googleLogin = useGoogleLogin({
         onSuccess: async (response) => {
-            // Get ID token from access token
             try {
-                const userInfo = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-                    headers: { Authorization: `Bearer ${response.access_token}` }
-                })
-                const userData = await userInfo.json()
-
-                // For actual implementation, you'd use the credential from Google's One Tap
-                // This is a simplified version using access token
+                // In a real app we might fetch user info here, but we just pass the token
                 await loginWithGoogle(response.access_token)
             } catch (err) {
                 console.error('Google login error:', err)
@@ -124,109 +81,130 @@ function LoginCard() {
     })
 
     return (
-        <div className="login-card-container">
-            {/* Theme Toggle */}
-            <button
-                className="theme-toggle"
-                onClick={toggleTheme}
-                aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-            >
-                {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-            </button>
+        <div className="login-container">
+            {/* Left Panel - Branding */}
+            <div className="branding-panel">
+                <div className="brand-content">
+                    <div className="logo-container">
+                        <div className="logo">
+                            <LogoIcon />
+                        </div>
+                        <div className="brand-name">Student Data Mining</div>
+                    </div>
 
-            {/* Logo */}
-            <div className="login-logo">
-                <div className="login-logo-icon">
-                    <DataIcon />
+                    <h1>Transform academic data into actionable insights</h1>
+                    <p>Empowering institutions with intelligent analytics and comprehensive reporting tools.</p>
+
+                    <div className="features">
+                        <div className="feature">
+                            <div className="feature-icon">
+                                <SecurityIcon />
+                            </div>
+                            <div className="feature-content">
+                                <h3>Enterprise Security</h3>
+                                <p>Bank-level encryption and compliance</p>
+                            </div>
+                        </div>
+
+                        <div className="feature">
+                            <div className="feature-icon">
+                                <AnalyticsIcon />
+                            </div>
+                            <div className="feature-content">
+                                <h3>Real-time Analytics</h3>
+                                <p>Instant insights from your data</p>
+                            </div>
+                        </div>
+
+                        <div className="feature">
+                            <div className="feature-icon">
+                                <SupportIcon />
+                            </div>
+                            <div className="feature-content">
+                                <h3>24/7 Support</h3>
+                                <p>Dedicated assistance when you need it</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <h1 className="login-title">Welcome Back</h1>
-                <p className="login-subtitle">Sign in to Student Data Mining</p>
             </div>
 
-            {/* Error Message */}
-            {error && (
-                <div className="error-message">
-                    <AlertIcon />
-                    <p>{error}</p>
+            {/* Right Panel - Form */}
+            <div className="form-panel">
+                <div className="form-header">
+                    <h2>Welcome back</h2>
+                    <p>Please enter your credentials to access your account</p>
                 </div>
-            )}
 
-            {/* Google Sign In Button */}
-            <div className="google-btn-wrapper">
+                {error && (
+                    <div className="error-alert">
+                        <AlertIcon />
+                        <span>{error}</span>
+                    </div>
+                )}
+
                 <button
-                    type="button"
                     className="google-btn"
                     onClick={() => googleLogin()}
-                    disabled={loading}
+                    disabled={loading || isSubmitting}
                 >
                     <GoogleIcon />
                     Continue with Google
                 </button>
-            </div>
 
-            {/* Divider */}
-            <div className="login-divider">
-                <span>or</span>
-            </div>
+                <div className="divider">or</div>
 
-            {/* Login Form */}
-            <form className="login-form" onSubmit={handleSubmit}>
-                <div className="form-group">
-                    <label htmlFor="studentId" className="form-label">Student ID or Email</label>
-                    <div className="form-input-wrapper">
+                <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label htmlFor="studentId">Student ID or Email</label>
                         <input
                             type="text"
                             id="studentId"
-                            className="form-input"
-                            placeholder="Enter your ID or email"
+                            placeholder="student@university.edu"
+                            required
                             value={studentId}
                             onChange={(e) => setStudentId(e.target.value)}
                             disabled={isSubmitting}
-                            autoComplete="username"
                         />
-                        <span className="form-input-icon"><UserIcon /></span>
                     </div>
-                </div>
 
-                <div className="form-group">
-                    <label htmlFor="password" className="form-label">Password</label>
-                    <div className="form-input-wrapper">
-                        <input
-                            type={showPassword ? 'text' : 'password'}
-                            id="password"
-                            className="form-input"
-                            placeholder="Enter your password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            disabled={isSubmitting}
-                            autoComplete="current-password"
-                        />
-                        <span className="form-input-icon"><LockIcon /></span>
-                        <button
-                            type="button"
-                            className="password-toggle"
-                            onClick={() => setShowPassword(!showPassword)}
-                            aria-label={showPassword ? 'Hide password' : 'Show password'}
-                        >
-                            {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-                        </button>
+                    <div className="form-group">
+                        <label htmlFor="password">Password</label>
+                        <div className="input-wrapper">
+                            <input
+                                type={showPassword ? 'text' : 'password'}
+                                id="password"
+                                placeholder="Enter your password"
+                                required
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                disabled={isSubmitting}
+                            />
+                            <button
+                                type="button"
+                                className="toggle-password"
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? '🙈' : '👁️'}
+                            </button>
+                        </div>
+                        <div className="forgot-password">
+                            <a href="#forgot" onClick={(e) => e.preventDefault()}>Forgot password?</a>
+                        </div>
                     </div>
+
+                    <button
+                        type="submit"
+                        className="submit-btn"
+                        disabled={isSubmitting || loading}
+                    >
+                        {isSubmitting ? 'Signing in...' : 'Sign In'}
+                    </button>
+                </form>
+
+                <div className="form-footer">
+                    Need help? <a href="#support" onClick={(e) => e.preventDefault()}>Contact Support</a>
                 </div>
-
-                <button
-                    type="submit"
-                    className={`submit-btn ${isSubmitting ? 'loading' : ''}`}
-                    disabled={isSubmitting || !studentId.trim() || !password}
-                >
-                    Sign In
-                </button>
-            </form>
-
-            {/* Footer */}
-            <div className="login-footer">
-                <p>
-                    Having trouble? <a href="#">Contact Support</a>
-                </p>
             </div>
         </div>
     )
