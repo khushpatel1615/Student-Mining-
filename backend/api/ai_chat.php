@@ -8,36 +8,18 @@
 // Headers and CORS are handled by database.php -> cors.php
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
+require_once __DIR__ . '/../includes/rate_limiter.php';
+
 // 1. Authentication & Role Check
 $userPayload = requireRole('admin');
 // Only admins can access this tool
 
-// 2. Rate Limiting (Simple File-Based)
-$rateLimitFile = sys_get_temp_dir() . '/ai_chat_limit_' . md5($userPayload['user_id']);
-$limitWindow = 60;
-// 60 seconds
-$limitCount = 10;
-// 10 requests per minute
+// 2. Rate Limiting (Redis-based for multi-instance support)
+$identifier = getRateLimitIdentifier($userPayload);
+$maxRequests = intval(getenv('AI_CHAT_RATE_LIMIT') ?: 10);
+$windowSeconds = 60; // 1 minute
+enforceRateLimit($identifier, $maxRequests, $windowSeconds, 'ai_chat');
 
-$currentAccess = [
-    'time' => time(),
-    'count' => 1
-];
-if (file_exists($rateLimitFile)) {
-    $data = json_decode(file_get_contents($rateLimitFile), true);
-    if ($data && ($data['time'] > time() - $limitWindow)) {
-        if ($data['count'] >= $limitCount) {
-            http_response_code(429);
-            echo json_encode(['status' => 'error', 'message' => 'Rate limit exceeded. Please try again later.']);
-            exit;
-        }
-        $currentAccess = [
-            'time' => $data['time'], // Keep window start
-            'count' => $data['count'] + 1
-        ];
-    }
-}
-file_put_contents($rateLimitFile, json_encode($currentAccess));
 // 3. Environment Variables
 $apiKey = getenv('GEMINI_API_KEY');
 if (!$apiKey || trim($apiKey) === '' || $apiKey === 'your_gemini_api_key_here') {
