@@ -5,7 +5,17 @@ class EnvLoader
     public static function load($path)
     {
         if (!file_exists($path)) {
-            return;
+            // Log detailed error on server side
+            error_log("CRITICAL: Environment file not found at: $path");
+            error_log("Please copy .env.example to .env and configure required variables.");
+            
+            // Return safe error to client
+            http_response_code(500);
+            header('Content-Type: application/json');
+            die(json_encode([
+                'success' => false,
+                'error' => 'Server configuration error. Please contact administrator.'
+            ]));
         }
 
         $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -32,4 +42,36 @@ class EnvLoader
             }
         }
     }
+    
+    /**
+     * Validate that required environment variables are set
+     * @param array $requiredVars Array of required variable names
+     * @return void Exits with error if any required var is missing
+     */
+    public static function validate($requiredVars)
+    {
+        $missing = [];
+        
+        foreach ($requiredVars as $var) {
+            $value = getenv($var);
+            if ($value === false || $value === '' || $value === null) {
+                $missing[] = $var;
+            }
+        }
+        
+        if (!empty($missing)) {
+            // Log detailed error on server side
+            error_log("CRITICAL: Missing required environment variables: " . implode(', ', $missing));
+            error_log("Please check your .env file and ensure all required variables are set.");
+            
+            // Return safe error to client
+            http_response_code(500);
+            header('Content-Type: application/json');
+            die(json_encode([
+                'success' => false,
+                'error' => 'Server configuration error. Please contact administrator.'
+            ]));
+        }
+    }
 }
+

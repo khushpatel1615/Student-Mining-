@@ -14,14 +14,17 @@ require_once __DIR__ . '/EnvLoader.php';
 // Load environment variables
 EnvLoader::load(__DIR__ . '/../.env');
 
-// Required Environment Variables
-$requiredVars = ['DB_HOST', 'DB_NAME', 'DB_USER', 'JWT_SECRET'];
-foreach ($requiredVars as $var) {
-    if (!getenv($var) && !isset($_ENV[$var])) {
-        http_response_code(500);
-        die(json_encode(['success' => false, 'error' => 'Server configuration error: Missing required environment variables.']));
-    }
-}
+// Validate required environment variables
+// Core required vars: DB, JWT, CORS
+$requiredVars = [
+    'DB_HOST',
+    'DB_NAME',
+    'DB_USER',
+    'JWT_SECRET',
+    'ALLOWED_ORIGINS'
+];
+EnvLoader::validate($requiredVars);
+
 
 // Database credentials
 define('DB_HOST', getenv('DB_HOST') ?: 'localhost');

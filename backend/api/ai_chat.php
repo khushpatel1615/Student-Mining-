@@ -40,11 +40,17 @@ if (file_exists($rateLimitFile)) {
 file_put_contents($rateLimitFile, json_encode($currentAccess));
 // 3. Environment Variables
 $apiKey = getenv('GEMINI_API_KEY');
-if (!$apiKey) {
+if (!$apiKey || trim($apiKey) === '' || $apiKey === 'your_gemini_api_key_here') {
+    // Log detailed error on server side
+    error_log("CRITICAL: GEMINI_API_KEY not configured or using placeholder value");
+    error_log("Please set a valid Gemini API key in backend/.env");
+
+    // Return safe error to client
     http_response_code(500);
     echo json_encode(["status" => "error", "message" => "AI service not configured."]);
     exit();
 }
+
 
 // 4. Input Validation & Sanitization
 $data = json_decode(file_get_contents("php://input"));
@@ -67,13 +73,13 @@ if (empty($userMessage)) {
 $contextData = "System Status: Online";
 try {
     $pdo = getDBConnection();
-// Use parametrized queries safe from injection (though we are just counting here)
+    // Use parametrized queries safe from injection (though we are just counting here)
     $s_count = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'student' AND is_active = 1")->fetchColumn();
     $t_count = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'teacher' AND is_active = 1")->fetchColumn();
     $sub_count = $pdo->query("SELECT COUNT(*) FROM subjects")->fetchColumn();
     $contextData = "Stats: $s_count Students, $t_count Teachers, $sub_count Subjects.";
 } catch (Exception $e) {
-// Fail silently on stats
+    // Fail silently on stats
     error_log("AI Chat DB Stats Error: " . $e->getMessage());
 }
 
@@ -142,7 +148,7 @@ if (isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
         "reply" => $aiReply
     ]);
 } else {
-// Log actual error safely
+    // Log actual error safely
     $errorDetails = isset($responseData['error']) ? json_encode($responseData['error']) : 'Unknown';
     error_log("Gemini API Error: " . $errorDetails);
     http_response_code(500);

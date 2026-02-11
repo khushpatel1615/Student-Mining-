@@ -1,9 +1,243 @@
 # Security Best Practices & Audit Report
 
-> **Last Updated:** 2026-01-26  
-> **System:** StudentDataMining v1.0
+> **Last Updated:** 2026-02-11  
+> **System:** StudentDataMining v1.0  
+> **Status:** 🔒 **CRITICAL SECURITY UPDATE - Secrets Rotation Required**
 
 ---
+
+## 🚨 CRITICAL: Recent Security Actions (2026-02-11)
+
+### Compromised Secrets Removed
+The following secrets were found in uncommitted `.env` files and are now **TREATED AS COMPROMISED**:
+
+1. **JWT_SECRET:** `student-data-mining-secret-key-2024-change-in-production`
+2. **GEMINI_API_KEY:** `AIzaSyCCYtEH90pmAI7-DDjJ3e7_RpZMWq4MhG4`
+3. **SMTP_PASS (Gmail App Password):** `czbqhkcpylrgnbpp`
+4. **SMTP_USER:** `patel.khush1615.gnu@gmail.com`
+5. **GOOGLE_CLIENT_ID:** `558182958130-dd2vsg1k4vrgheuua9oe1h0534586ps5.apps.googleusercontent.com`
+
+### ✅ Actions Taken
+- ✅ Removed `.env` files from future commits (already in `.gitignore`)
+- ✅ Enhanced `.env.example` with comprehensive placeholders
+- ✅ Added fail-fast validation for missing environment variables
+- ✅ Enhanced server-side error logging (safe client messages)
+- ✅ Updated SECURITY.md with rotation procedures
+
+### ⚠️ REQUIRED ACTIONS BEFORE DEPLOYMENT
+
+**YOU MUST complete these steps immediately:**
+
+1. **Rotate ALL compromised secrets** (see rotation procedures below)
+2. **Never commit `.env` files** to version control
+3. **Review all team members** who had access to the repository
+4. **Audit access logs** for unauthorized use of these credentials
+
+---
+
+## 🔄 Secret Rotation Procedures
+
+### 1. JWT Secret Rotation
+
+**Impact:** Invalidates all existing user sessions (users will need to re-login)
+
+```bash
+# Generate a new secure JWT secret (64+ characters)
+# Linux/macOS:
+openssl rand -base64 64
+
+# Windows PowerShell:
+[Convert]::ToBase64String((1..64 | ForEach-Object { Get-Random -Maximum 256 }))
+```
+
+**Steps:**
+1. Generate new secret using above command
+2. Update `JWT_SECRET` in `backend/.env`
+3. Clear `user_sessions` table (optional, or wait for natural expiry)
+4. Notify users they may need to re-login
+
+```sql
+-- Optional: Clear all sessions
+TRUNCATE TABLE user_sessions;
+```
+
+---
+
+### 2. Google Gemini API Key Rotation
+
+**Impact:** AI Chat feature will be temporarily unavailable
+
+**Steps:**
+1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. **Revoke** the old API key: `AIzaSyCCYtEH90pmAI7-DDjJ3e7_RpZMWq4MhG4`
+3. Create a new API key
+4. Update `GEMINI_API_KEY` in `backend/.env`
+5. Test AI Chat functionality
+
+---
+
+### 3. Gmail SMTP Credentials Rotation
+
+**Impact:** Email notifications will be temporarily unavailable
+
+**Steps:**
+1. Go to [Google Account App Passwords](https://myaccount.google.com/apppasswords)
+2. **Revoke** the old app password
+3. Generate a new app password
+4. **Consider:** Using a dedicated email account for system notifications (not personal email)
+5. Update in `backend/.env`:
+   ```bash
+   SMTP_USER=new-system-email@gmail.com
+   SMTP_PASS=new_app_password_here
+   SMTP_FROM=new-system-email@gmail.com
+   ```
+
+**⚠️ RECOMMENDATION:** Create a new dedicated Gmail account for system emails:
+- Example: `studentdatamining-alerts@gmail.com`
+- Enable 2FA and create an App Password
+- Do NOT use personal email accounts
+
+---
+
+### 4. Google OAuth Client Rotation (If Used)
+
+**Impact:** Users cannot use "Sign in with Google" temporarily
+
+**Steps:**
+1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+2. **Delete or regenerate** the old OAuth client
+3. Create new OAuth 2.0 Client ID
+4. Update `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `backend/.env`
+5. Update `VITE_GOOGLE_CLIENT_ID` in `frontend/.env` (if applicable)
+
+---
+
+### 5. Database Password Rotation
+
+**Impact:** Application will be unavailable during rotation
+
+**Steps:**
+1. Connect to MySQL as root
+2. Change password for application database user:
+   ```sql
+   ALTER USER 'root'@'localhost' IDENTIFIED BY 'new_strong_password';
+   FLUSH PRIVILEGES;
+   ```
+3. Update `DB_PASS` in `backend/.env`
+4. Test database connectivity
+
+---
+
+## 🔐 Environment Variables Management
+
+### Required Environment Variables
+
+All environment variables are defined in `backend/.env.example`. **DO NOT** modify `.env.example` with real secrets!
+
+#### Critical Variables (Required)
+- `JWT_SECRET` - Must be 64+ random characters
+- `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS` - Database credentials
+- `ALLOWED_ORIGINS` - Comma-separated list of allowed frontend URLs
+- `GEMINI_API_KEY` - For AI Chat feature
+- `SMTP_*` - For email notifications (6 variables)
+
+#### Optional Variables
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` - OAuth sign-in
+
+### Environment Variable Validation
+
+The system now **fails fast** with clear error messages when required variables are missing:
+
+**Server-side (error_log):**
+```
+CRITICAL: Missing required environment variables: JWT_SECRET, GEMINI_API_KEY
+Please check your .env file and ensure all required variables are set.
+```
+
+**Client-side (API response):**
+```json
+{
+  "success": false,
+  "error": "Server configuration error. Please contact administrator."
+}
+```
+
+### Setup Instructions
+
+1. **Copy example files:**
+   ```bash
+   cp backend/.env.example backend/.env
+   cp frontend/.env.example frontend/.env
+   ```
+
+2. **Generate secure secrets:**
+   ```bash
+   # JWT Secret (64+ characters)
+   openssl rand -base64 64
+   ```
+
+3. **Configure all required variables** in `backend/.env`
+
+4. **Never commit `.env` files**:
+   ```bash
+   # Verify .env is ignored
+   git status
+   # Should NOT show backend/.env or frontend/.env
+   ```
+
+5. **Test configuration:**
+   ```bash
+   # Check server logs for any CRITICAL errors
+   tail -f /path/to/php_error.log
+   ```
+
+---
+
+## ⛔ DO NOT COMMIT SECRETS - CRITICAL RULES
+
+### 1. Never Commit These Files
+- ❌ `backend/.env`
+- ❌ `frontend/.env`
+- ❌ Any file containing real API keys, passwords, or secrets
+- ✅ `backend/.env.example` (with placeholders only)
+- ✅ `frontend/.env.example` (with placeholders only)
+
+### 2. Before Every Commit
+```bash
+# Check what you're about to commit
+git status
+git diff --cached
+
+# Ensure no .env files are staged
+git ls-files | grep "\.env$"
+# Should return NOTHING (only .env.example files are OK)
+```
+
+### 3. If You Accidentally Commit Secrets
+
+**IMMEDIATELY do the following:**
+
+```bash
+# DO NOT just delete the file in a new commit - it's still in history!
+
+# 1. Remove from current commit (if not pushed)
+git reset HEAD backend/.env
+git commit --amend
+
+# 2. If already pushed, contact team lead immediately
+# 3. Rotate ALL secrets that were exposed
+# 4. Use git-filter-branch or BFG Repo-Cleaner to remove from history
+```
+
+### 4. Team Guidelines
+- **CODE REVIEW:** Always check for secrets before approving PRs
+- **AUTOMATED CHECKS:** Consider using pre-commit hooks (e.g., `detect-secrets`)
+- **ONBOARDING:** Train new developers on secret management
+- **INCIDENT RESPONSE:** Report any secret exposure immediately
+
+---
+
+
 
 ## ✅ Implemented Security Measures
 
@@ -259,10 +493,15 @@ logAudit($userId, 'grade_updated', ['student_id' => $studentId, 'subject_id' => 
 
 | Date | Update | Severity |
 |------|--------|----------|
+| 2026-02-11 | **CRITICAL:** Removed committed secrets, enhanced env validation | Critical |
+| 2026-02-11 | Added fail-fast validation with server-side logging | High |
+| 2026-02-11 | Updated .env.example with all SMTP variables | Medium |
+| 2026-02-11 | Enhanced GEMINI_API_KEY validation | Medium |
 | 2026-01-26 | Enabled SSL verification in AI endpoint | Medium |
 | 2026-01-26 | Centralized CORS configuration | High |
 | 2026-01-26 | Enhanced .env.example with security notes | Low |
 | 2026-01-26 | Improved .gitignore patterns | Medium |
+
 
 ---
 
@@ -306,5 +545,5 @@ logAudit($userId, 'grade_updated', ['student_id' => $studentId, 'subject_id' => 
 
 ---
 
-**Last Reviewed:** 2026-01-26  
-**Next Review Due:** 2026-04-26 (Quarterly)
+**Last Reviewed:** 2026-02-11  
+**Next Review Due:** 2026-05-11 (Quarterly)
