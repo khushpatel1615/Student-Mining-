@@ -8,7 +8,7 @@
  * - Request/response interceptors
  */
 
-import { API_BASE } from './config';
+import { API_BASE } from '../config';
 
 class ApiClient {
     constructor() {
