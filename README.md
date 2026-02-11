@@ -37,10 +37,37 @@
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- **Node.js** v18+ | **PHP** 8.1+ | **MySQL** 8.0+ | **Apache** 2.4+
+### Option 1: Docker (Recommended for Production)
 
-### Installation (5 Minutes)
+```bash
+# 1. Clone the repository
+git clone https://github.com/khushpatel1615/Student-Mining-.git
+cd Student-Mining-
+
+# 2. Configure environment
+cp .env.example .env
+# Edit .env with your credentials (JWT_SECRET, database passwords, API keys)
+
+# 3. Start all services (MySQL, Redis, Backend, Frontend)
+docker-compose up -d
+
+# 4. Access the application
+# Frontend: http://localhost:5173
+# Backend API: http://localhost:8080/api
+
+# 5. View logs
+docker-compose logs -f
+
+# 6. Stop services
+docker-compose down
+```
+
+### Option 2: Traditional Setup (Development)
+
+#### Prerequisites
+- **Node.js** v18+ | **PHP** 8.1+ | **MySQL** 8.0+ | **Apache** 2.4+ | **Redis** (optional)
+
+#### Installation (5 Minutes)
 
 ```bash
 # 1. Clone the repository
