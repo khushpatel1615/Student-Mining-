@@ -23,11 +23,11 @@ try {
 
             break;
         case 'OPTIONS':
-                                                                                                                                                                                                                                                                                                                                                                                                                                            http_response_code(200);
+            http_response_code(200);
 
             break;
         default:
-                                                                                                                                                                                                                                                                                                                                                                                                                                            http_response_code(405);
+            http_response_code(405);
             echo json_encode(['error' => 'Method not allowed']);
     }
 } catch (Exception $e) {
@@ -52,13 +52,13 @@ function handleUpdate($pdo, $requestMethod)
 
     $userId = $user['user_id'];
     $data = [];
-// Parse data based on Content-Type
+    // Parse data based on Content-Type
     $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
     if (strpos($contentType, 'application/json') !== false) {
-    // Handle JSON PUT/POST
+        // Handle JSON PUT/POST
         $data = json_decode(file_get_contents('php://input'), true);
     } else {
-    // Handle Form Data (Multipart)
+        // Handle Form Data (Multipart)
         $data = $_POST;
     }
 
@@ -91,7 +91,7 @@ function handleUpdate($pdo, $requestMethod)
 }
 
 /**
- * Handle Avatar Upload
+ * Handle Avatar Upload (Secure)
  */
 function handleAvatarUpload($pdo, $userId, $file)
 {
@@ -101,40 +101,109 @@ function handleAvatarUpload($pdo, $userId, $file)
         return;
     }
 
-    // Validation
-    $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    // 1. Size validation (2MB max)
     $maxSize = 2 * 1024 * 1024;
-// 2MB
-
-    if (!in_array($file['type'], $allowedTypes)) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Invalid file type. Only JPG, PNG, and WebP needed']);
-        return;
-    }
-
     if ($file['size'] > $maxSize) {
         http_response_code(400);
         echo json_encode(['error' => 'File too large. Max 2MB allowed']);
         return;
     }
 
-    // Generate filename
-    $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-    $filename = 'avatar_' . $userId . '_' . time() . '.' . $ext;
+    // 2. MIME type validation using finfo (not user-provided type)
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $detectedMime = finfo_file($finfo, $file['tmp_name']);
+    finfo_close($finfo);
+
+    $allowedMimes = [
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/webp' => 'webp'
+    ];
+
+    if (!isset($allowedMimes[$detectedMime])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Invalid file type. Only JPG, PNG, and WebP are allowed']);
+        return;
+    }
+
+    // 3. Attempt to decode the image (additional security layer)
+    try {
+        $imageInfo = getimagesize($file['tmp_name']);
+        if ($imageInfo === false) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid image file']);
+            return;
+        }
+
+        // Verify image can be loaded (prevents malicious files)
+        $img = null;
+        switch ($detectedMime) {
+            case 'image/jpeg':
+                $img = @imagecreatefromjpeg($file['tmp_name']);
+                break;
+            case 'image/png':
+                $img = @imagecreatefrompng($file['tmp_name']);
+                break;
+            case 'image/webp':
+                $img = @imagecreatefromwebp($file['tmp_name']);
+                break;
+        }
+
+        if ($img === false) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Could not process image']);
+            return;
+        }
+        imagedestroy($img);
+    } catch (Exception $e) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Invalid image file']);
+        return;
+    }
+
+    // 4. Generate secure random filename (not based on user input)
+    $extension = $allowedMimes[$detectedMime];
+    $randomName = bin2hex(random_bytes(16));
+    $filename = $randomName . '.' . $extension;
     $filepath = UPLOAD_DIR . $filename;
-// Relative path for storing in DB (accessible via web)
-    // NOTE: This assumes /backend/uploads is accessible. We might need a rewrite rule or direct path.
-    // For now, we store generic path. Frontend might need to prepend base URL.
-    $dbPath = '/backend/uploads/avatars/' . $filename;
+
+    // 5. Ensure the upload directory exists with proper permissions
+    if (!file_exists(UPLOAD_DIR)) {
+        mkdir(UPLOAD_DIR, 0755, true); // 0755 instead of 0777
+    }
+
+    // 6. Move uploaded file with proper permissions
     if (move_uploaded_file($file['tmp_name'], $filepath)) {
+        // Set file permissions (readable but not executable)
+        chmod($filepath, 0644);
+
+        // 7. Delete old avatar if exists
+        $stmt = $pdo->prepare("SELECT avatar_url FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $oldAvatar = $stmt->fetchColumn();
+        if ($oldAvatar) {
+            $oldPath = __DIR__ . '/..' . $oldAvatar;
+            if (file_exists($oldPath) && is_file($oldPath)) {
+                unlink($oldPath);
+            }
+        }
+
+        // 8. Update database
+        $dbPath = '/backend/uploads/avatars/' . $filename;
         $stmt = $pdo->prepare("UPDATE users SET avatar_url = ? WHERE id = ?");
         $stmt->execute([$dbPath, $userId]);
-        echo json_encode(['success' => true, 'message' => 'Avatar updated successfully', 'avatar_url' => $dbPath]);
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Avatar updated successfully',
+            'avatar_url' => $dbPath
+        ]);
     } else {
         http_response_code(500);
-        echo json_encode(['error' => 'Failed to move uploaded file']);
+        echo json_encode(['error' => 'Failed to save uploaded file']);
     }
 }
+
 
 /**
  * Update Password
@@ -166,7 +235,7 @@ function updateProfile($pdo, $userId, $data)
     $fields = [];
     $params = [];
     if (isset($data['full_name'])) {
-    // Basic validation
+        // Basic validation
         if (strlen($data['full_name']) < 2) {
             http_response_code(400);
             echo json_encode(['error' => 'Name must be at least 2 characters']);
