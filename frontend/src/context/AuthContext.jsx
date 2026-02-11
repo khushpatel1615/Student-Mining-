@@ -1,49 +1,48 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import apiClient, { ApiError } from '../utils/apiClient'
 
 const AuthContext = createContext()
 
-import { API_BASE } from '../config'
-
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null)
-    const [token, setToken] = useState(() => localStorage.getItem('auth_token'))
+    const [token, setToken] = useState(null) // In-memory only (removed localStorage)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const navigate = useNavigate()
 
-    // Verify token on mount
+    // Set up global 401 handler
     useEffect(() => {
-        if (token) {
-            verifyToken()
-        } else {
-            setLoading(false)
-        }
+        apiClient.setUnauthorizedHandler(() => {
+            console.warn('Unauthorized - logging out');
+            logout();
+        });
+    }, []);
+
+    // On mount, check if we need to restore session
+    // NOTE: With in-memory storage, users must log in each session
+    // Future: Implement HttpOnly cookie auth or refresh token flow
+    useEffect(() => {
+        setLoading(false);
     }, [])
 
-    const verifyToken = async () => {
+    const verifyToken = async (authToken) => {
         try {
-            const response = await fetch(`${API_BASE}/verify-token.php`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            })
-
-            const data = await response.json()
+            apiClient.setToken(authToken);
+            const data = await apiClient.get('/verify-token.php');
 
             if (data.success) {
-                setUser(data.user)
+                setUser(data.user);
+                setToken(authToken);
+                return { success: true };
             } else {
-                // Token invalid, clear it
-                logout()
+                logout();
+                return { success: false };
             }
         } catch (err) {
-            console.error('Token verification failed:', err)
-            logout()
-        } finally {
-            setLoading(false)
+            console.error('Token verification failed:', err);
+            logout();
+            return { success: false };
         }
     }
 
@@ -53,20 +52,15 @@ export function AuthProvider({ children }) {
         setError(null)
 
         try {
-            const response = await fetch(`${API_BASE}/login.php`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ student_id: studentId, password })
-            })
-
-            const data = await response.json()
+            const data = await apiClient.post('/login.php', {
+                student_id: studentId,
+                password: password
+            });
 
             if (data.success) {
                 setToken(data.token)
                 setUser(data.user)
-                localStorage.setItem('auth_token', data.token)
+                apiClient.setToken(data.token);
 
                 // Redirect based on role
                 redirectByRole(data.user.role)
@@ -76,7 +70,9 @@ export function AuthProvider({ children }) {
                 return { success: false, error: data.error }
             }
         } catch (err) {
-            const errorMsg = 'Connection failed. Please check if the server is running.'
+            const errorMsg = err instanceof ApiError
+                ? err.message
+                : 'Connection failed. Please check if the server is running.';
             setError(errorMsg)
             return { success: false, error: errorMsg }
         } finally {
@@ -90,20 +86,12 @@ export function AuthProvider({ children }) {
         setError(null)
 
         try {
-            const response = await fetch(`${API_BASE}/google-auth.php`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ credential })
-            })
-
-            const data = await response.json()
+            const data = await apiClient.post('/google-auth.php', { credential });
 
             if (data.success) {
                 setToken(data.token)
                 setUser(data.user)
-                localStorage.setItem('auth_token', data.token)
+                apiClient.setToken(data.token);
 
                 // Redirect based on role
                 redirectByRole(data.user.role)
@@ -113,7 +101,9 @@ export function AuthProvider({ children }) {
                 return { success: false, error: data.error }
             }
         } catch (err) {
-            const errorMsg = 'Google authentication failed. Please try again.'
+            const errorMsg = err instanceof ApiError
+                ? err.message
+                : 'Google authentication failed. Please try again.';
             setError(errorMsg)
             return { success: false, error: errorMsg }
         } finally {
@@ -136,19 +126,10 @@ export function AuthProvider({ children }) {
         }
 
         try {
-            const response = await fetch(`${API_BASE}/set-password.php`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    new_password: newPassword,
-                    current_password: currentPassword
-                })
-            })
-
-            const data = await response.json()
+            const data = await apiClient.post('/set-password.php', {
+                new_password: newPassword,
+                current_password: currentPassword
+            });
 
             if (data.success) {
                 // Update user state to reflect they now have a password
@@ -158,7 +139,10 @@ export function AuthProvider({ children }) {
                 return { success: false, error: data.error }
             }
         } catch (err) {
-            return { success: false, error: 'Failed to set password. Please try again.' }
+            const errorMsg = err instanceof ApiError
+                ? err.message
+                : 'Failed to set password. Please try again.';
+            return { success: false, error: errorMsg }
         }
     }
 
@@ -166,7 +150,7 @@ export function AuthProvider({ children }) {
         setUser(null)
         setToken(null)
         setError(null)
-        localStorage.removeItem('auth_token')
+        apiClient.clearToken();
         navigate('/')
     }
 
@@ -201,4 +185,3 @@ export function useAuth() {
 }
 
 export default AuthContext
-

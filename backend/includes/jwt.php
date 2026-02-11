@@ -58,7 +58,7 @@ function verifyToken($token)
     }
 
     list($base64Header, $base64Payload, $base64Signature) = $parts;
-// Verify signature
+    // Verify signature
     $signature = hash_hmac('sha256', $base64Header . '.' . $base64Payload, JWT_SECRET, true);
     $expectedSignature = base64UrlEncode($signature);
     if (!hash_equals($expectedSignature, $base64Signature)) {
@@ -104,18 +104,37 @@ function getTokenFromHeader()
 }
 
 /**
- * Get token from header or query string (for SSE/EventSource)
+ * Send JSON Response and exit
+ * @param array $data Response data
+ * @param int $statusCode HTTP status code
  */
-function getTokenFromRequest()
+function jsonResponse($data, $statusCode = 200)
+{
+    http_response_code($statusCode);
+    header('Content-Type: application/json');
+    echo json_encode($data);
+    exit;
+}
+
+/**
+ * Get token from request (header only by default)
+ * Query string tokens are restricted for security
+ * @param bool $allowQueryString Allow token from query string (only for specific endpoints like SSE)
+ */
+function getTokenFromRequest($allowQueryString = false)
 {
     $token = getTokenFromHeader();
     if ($token) {
         return $token;
     }
 
-    $queryToken = $_GET['token'] ?? $_GET['auth_token'] ?? null;
-    if ($queryToken) {
-        return $queryToken;
+    // Only allow query string tokens if explicitly permitted (e.g., for SSE where headers can't be set)
+    if ($allowQueryString) {
+        $queryToken = $_GET['token'] ?? $_GET['auth_token'] ?? null;
+        if ($queryToken) {
+            error_log('WARNING: Token passed via query string from IP: ' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
+            return $queryToken;
+        }
     }
 
     return null;
@@ -123,41 +142,56 @@ function getTokenFromRequest()
 
 /**
  * Middleware: Require authentication
+ * @param bool $allowQueryString Allow token from query string (default: false)
  */
-function requireAuth()
+function requireAuth($allowQueryString = false)
 {
-    $token = getTokenFromRequest();
+    $token = getTokenFromRequest($allowQueryString);
     if (!$token) {
-        jsonResponse(['success' => false, 'error' => 'No token provided'], 401);
+        jsonResponse([
+            'success' => false,
+            'error' => 'No token provided'
+        ], 401);
     }
 
     $result = verifyToken($token);
     if (!$result['valid']) {
-        jsonResponse(['success' => false, 'error' => $result['error']], 401);
+        jsonResponse([
+            'success' => false,
+            'error' => $result['error']
+        ], 401);
     }
 
     return $result['payload'];
 }
 
 /**
- * Middleware: Require specific role
+ * Middleware: Require specific role(s)
+ * @param string|array $requiredRoles Single role or array of accepted roles
+ * @param bool $allowQueryString Allow token from query string (default: false)
  */
-function requireRole($requiredRole)
+function requireRole($requiredRoles, $allowQueryString = false)
 {
-    $payload = requireAuth();
-    if ($payload['role'] !== $requiredRole) {
-        jsonResponse(['success' => false, 'error' => 'Insufficient permissions'], 403);
+    $payload = requireAuth($allowQueryString);
+    $allowedRoles = is_array($requiredRoles) ? $requiredRoles : [$requiredRoles];
+
+    if (!in_array($payload['role'], $allowedRoles)) {
+        jsonResponse([
+            'success' => false,
+            'error' => 'Insufficient permissions'
+        ], 403);
     }
 
     return $payload;
 }
 
 /**
- * Get authenticated user payload
+ * Get authenticated user payload (non-blocking, returns null if not authenticated)
+ * @param bool $allowQueryString Allow token from query string (default: false)
  */
-function getAuthUser()
+function getAuthUser($allowQueryString = false)
 {
-    $token = getTokenFromRequest();
+    $token = getTokenFromRequest($allowQueryString);
     if (!$token) {
         return null;
     }
