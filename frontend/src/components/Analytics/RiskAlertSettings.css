@@ -701,61 +701,6 @@
     opacity: 0.8;
 }
 
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-    .risk-alert-settings {
-        color: #f9fafb;
-    }
-
-    .risk-alert-settings .header-text h1,
-    .risk-alert-settings .stat-value,
-    .risk-alert-settings .form-section h3,
-    .risk-alert-settings .toggle-label span,
-    .risk-alert-settings .preview-header h3,
-    .risk-alert-settings .history-header h3,
-    .risk-alert-settings .history-title,
-    .risk-alert-settings .student-info .name,
-    .risk-alert-settings .range-value {
-        color: #f9fafb;
-    }
-
-    .risk-alert-settings .stat-card,
-    .risk-alert-settings .tabs-container {
-        background-color: #1f2937;
-        border-color: #374151;
-    }
-
-    .risk-alert-settings .tabs {
-        background-color: #111827;
-        border-color: #374151;
-    }
-
-    .risk-alert-settings .tab {
-        color: #9ca3af;
-    }
-
-    .risk-alert-settings .tab.active {
-        background-color: #1f2937;
-    }
-
-    .risk-alert-settings .form-group input,
-    .risk-alert-settings .form-group select,
-    .risk-alert-settings .form-group textarea {
-        background-color: #374151;
-        border-color: #4b5563;
-        color: #f9fafb;
-    }
-
-    .risk-alert-settings .toggle-group,
-    .risk-alert-settings .preview-table th,
-    .risk-alert-settings .history-item {
-        background-color: #111827;
-    }
-
-    .risk-alert-settings .preview-table tr:hover {
-        background-color: #374151;
-    }
-}
 
 /* Responsive */
 @media (max-width: 768px) {

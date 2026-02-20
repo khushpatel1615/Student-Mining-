@@ -431,7 +431,7 @@
 }
 
 .modal-content {
-    background: var(--bg-secondary, #ffffff);
+    background: #ffffff !important;
     border: 1px solid var(--border-color, #e5e7eb);
     border-radius: 16px;
     width: 100%;

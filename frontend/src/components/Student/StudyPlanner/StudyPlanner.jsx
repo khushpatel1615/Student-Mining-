@@ -120,7 +120,7 @@ const StudyPlanner = () => {
                             return (
                                 <div key={index} style={{ background: 'var(--bg-secondary)', padding: '1rem 1.25rem', borderRadius: '10px', border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                        <div style={{ width: '48px', height: '48px', borderRadius: '10px', background: item.type === 'exam' ? '#fef3c7' : '#dbeafe', color: item.type === 'exam' ? '#92400e' : '#1e40af', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
+                                        <div style={{ width: '48px', height: '48px', borderRadius: '10px', background: item.type === 'exam' ? '#fef3c7' : '#eef2ff', color: item.type === 'exam' ? '#92400e' : '#4338ca', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
                                             {item.type === 'exam' ? 'EX' : 'AS'}
                                         </div>
                                         <div>

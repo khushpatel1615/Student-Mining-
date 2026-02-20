@@ -303,7 +303,7 @@
 }
 
 .modal-content {
-    background: var(--bg-primary);
+    background: #ffffff !important;
     border-radius: var(--radius-lg);
     max-width: 600px;
     width: 90%;
