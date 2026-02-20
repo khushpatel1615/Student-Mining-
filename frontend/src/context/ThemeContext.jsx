@@ -3,17 +3,16 @@ import { createContext, useContext, useState, useEffect } from 'react'
 const ThemeContext = createContext()
 
 export function ThemeProvider({ children }) {
-    const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+    // Always light — dark mode removed
     const [zoom, setZoom] = useState(1);
 
     useEffect(() => {
-        // Apply theme to document
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-    }, [theme]);
+        // Force light theme, clear any stored dark preference
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.removeItem('theme');
+    }, []);
 
     useEffect(() => {
-        // Apply zoom to document (supported in modern browsers)
         document.documentElement.style.zoom = zoom;
     }, [zoom]);
 
@@ -21,15 +20,11 @@ export function ThemeProvider({ children }) {
     const zoomOut = () => setZoom(prev => Math.max(prev - 0.1, 0.8));
     const resetZoom = () => setZoom(1);
 
-    const toggleTheme = () => {
-        setTheme(prev => prev === 'light' ? 'dark' : 'light')
-    }
-
     const value = {
-        theme,
-        setTheme,
-        toggleTheme,
-        isDark: theme === 'dark',
+        theme: 'light',
+        setTheme: () => { },
+        toggleTheme: () => { },
+        isDark: false,
         zoom,
         zoomIn,
         zoomOut,

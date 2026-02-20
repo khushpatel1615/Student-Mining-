@@ -48,8 +48,21 @@
     animation: fadeIn 0.5s ease-out;
     width: 100%;
     padding: 1.5rem;
-    background: var(--sm-bg-page);
+    background: #f8f9fc;
     min-height: 100vh;
+    /* Force light mode for this component regardless of app theme */
+    color-scheme: light;
+    --sm-bg-page: #f8f9fc;
+    --sm-bg-card: #ffffff;
+    --sm-bg-header: #f1f3f8;
+    --sm-border-light: rgba(99, 102, 241, 0.12);
+    --bg-card: #ffffff;
+    --bg-hover: rgba(0, 0, 0, 0.04);
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --border-color: #e2e8f0;
+    --border-light: #f1f5f9;
 }
 
 @keyframes fadeIn {

@@ -213,13 +213,53 @@
 
 /* Content Card */
 .content-card {
-    background: var(--bg-card);
+    background: #ffffff;
     border-radius: 20px;
     border: 1px solid var(--border-color);
     padding: 0;
     overflow: hidden;
     box-shadow: var(--shadow-md);
     animation: fadeIn 0.4s ease-out;
+}
+
+/*
+ * Force light-mode CSS variables inside the content card.
+ * Using !important because CSS custom properties support it, and we need
+ * these to win over [data-theme='dark'] rules inherited from <html>.
+ * All admin content panels were designed for light/white backgrounds.
+ */
+.content-card,
+.content-card * {
+    --bg-app: #f8fafc !important;
+    --bg-card: #ffffff !important;
+    --bg-sidebar: #ffffff !important;
+    --bg-hover: rgba(0, 0, 0, 0.04) !important;
+    --bg-active: #eef2ff !important;
+    --bg-header: rgba(255, 255, 255, 0.8) !important;
+    --bg-primary: #f8fafc !important;
+    --bg-secondary: #ffffff !important;
+    --bg-tertiary: #f1f5f9 !important;
+    --bg-glass: rgba(255, 255, 255, 0.9) !important;
+    --bg-glass-border: rgba(0, 0, 0, 0.08) !important;
+    --glass-bg: rgba(255, 255, 255, 0.7) !important;
+    --glass-border: rgba(255, 255, 255, 0.3) !important;
+    --text-primary: #0f172a !important;
+    --text-secondary: #475569 !important;
+    --text-muted: #94a3b8 !important;
+    --text-tertiary: #94a3b8 !important;
+    --border-color: #e2e8f0 !important;
+    --border-light: #f1f5f9 !important;
+    --border-medium: #cbd5e1 !important;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05) !important;
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
+    --primary-light: rgba(99, 102, 241, 0.1) !important;
+    --success-light: #d1fae5 !important;
+    --error-light: #fee2e2 !important;
+    --warning-light: #fef3c7 !important;
+    --info-light: #dbeafe !important;
+    color-scheme: light;
 }
 
 /* Ensure children have padding if they don't handle it */

@@ -61,10 +61,7 @@
     animation: slideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-[data-theme="dark"] .modal-container {
-    background: linear-gradient(145deg, #1e1e2e, #2a2a3e);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
+
 
 .modal-icon {
     width: 80px;
@@ -93,9 +90,7 @@
     letter-spacing: -0.02em;
 }
 
-[data-theme="dark"] .modal-title {
-    color: #ffffff;
-}
+
 
 .modal-message {
     color: #6b7280;
@@ -105,9 +100,7 @@
     font-weight: 400;
 }
 
-[data-theme="dark"] .modal-message {
-    color: #a1a1aa;
-}
+
 
 .modal-actions {
     display: flex;
@@ -132,11 +125,7 @@
     border: 2px solid #e5e7eb;
 }
 
-[data-theme="dark"] .modal-btn-cancel {
-    background: rgba(255, 255, 255, 0.1);
-    color: #e5e7eb;
-    border: 2px solid rgba(255, 255, 255, 0.15);
-}
+
 
 .modal-btn-cancel:hover {
     background: #e5e7eb;
@@ -144,10 +133,7 @@
     transform: translateY(-2px);
 }
 
-[data-theme="dark"] .modal-btn-cancel:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.25);
-}
+
 
 .modal-btn-confirm {
     background: linear-gradient(145deg, #ef4444, #dc2626);

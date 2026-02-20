@@ -8,7 +8,7 @@ class EnvLoader
             // Log detailed error on server side
             error_log("CRITICAL: Environment file not found at: $path");
             error_log("Please copy .env.example to .env and configure required variables.");
-            
+
             // Return safe error to client
             http_response_code(500);
             header('Content-Type: application/json');
@@ -42,7 +42,7 @@ class EnvLoader
             }
         }
     }
-    
+
     /**
      * Validate that required environment variables are set
      * @param array $requiredVars Array of required variable names
@@ -51,19 +51,22 @@ class EnvLoader
     public static function validate($requiredVars)
     {
         $missing = [];
-        
+
         foreach ($requiredVars as $var) {
             $value = getenv($var);
+            if ($value === false) {
+                $value = $_ENV[$var] ?? $_SERVER[$var] ?? false;
+            }
             if ($value === false || $value === '' || $value === null) {
                 $missing[] = $var;
             }
         }
-        
+
         if (!empty($missing)) {
             // Log detailed error on server side
             error_log("CRITICAL: Missing required environment variables: " . implode(', ', $missing));
             error_log("Please check your .env file and ensure all required variables are set.");
-            
+
             // Return safe error to client
             http_response_code(500);
             header('Content-Type: application/json');

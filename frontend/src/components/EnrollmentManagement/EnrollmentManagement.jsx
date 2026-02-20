@@ -1,42 +1,227 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import {
+    BookOpen, ChevronDown, MoreVertical,
+    User, Calendar, Hash, Eye, Edit3, UserMinus, Plus, Check, Users
+} from 'lucide-react'
 
-import { API_BASE } from '../../config';
+import { API_BASE } from '../../config'
 import { useAuth } from '../../context/AuthContext'
 import SkeletonTable from '../SkeletonTable/SkeletonTable'
 import EmptyState from '../EmptyState/EmptyState'
 import './EnrollmentManagement.css'
 
-// Icons
-const PlusIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="12" y1="5" x2="12" y2="19" />
-        <line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
-)
+// ─── Helpers ────────────────────────────────────────────────────────────────
 
-const CloseIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="18" y1="6" x2="6" y2="18" />
-        <line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
-)
+const toSentenceCase = (str) => {
+    if (!str) return ''
+    return str.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+}
 
-const UsersIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-)
+const getInitials = (name) => {
+    if (!name) return '??'
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+}
 
-const CheckIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="20 6 9 17 4 12" />
-    </svg>
-)
+const getAcademicYearFromDate = (dateString) => {
+    if (!dateString) return '-'
+    const date = new Date(dateString)
+    if (isNaN(date.getTime())) return '-'
+    const year = date.getFullYear()
+    const month = date.getMonth()
+    const startYear = month >= 5 ? year : year - 1
+    return `${startYear}-${startYear + 1}`
+}
 
+const formatDate = (dateString) => {
+    if (!dateString) return null
+    const d = new Date(dateString)
+    if (isNaN(d.getTime())) return null
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
 
+// ─── Status helpers ──────────────────────────────────────────────────────────
+
+const STATUS_CONFIG = {
+    active: { label: 'Active', accent: '#16a34a', bg: '#16a34a' },
+    completed: { label: 'Completed', accent: '#4f46e5', bg: '#4f46e5' },
+    dropped: { label: 'Dropped', accent: '#64748b', bg: '#64748b' },
+    failed: { label: 'Failed', accent: '#dc2626', bg: '#dc2626' },
+}
+
+const getStatusConfig = (status) => STATUS_CONFIG[status] || STATUS_CONFIG.active
+
+// ─── Action Menu (Kebab) ─────────────────────────────────────────────────────
+
+const ActionMenu = ({ student }) => {
+    const [open, setOpen] = useState(false)
+    const ref = useRef(null)
+
+    useEffect(() => {
+        const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
+        document.addEventListener('mousedown', handler)
+        return () => document.removeEventListener('mousedown', handler)
+    }, [])
+
+    return (
+        <div className="ec-action-menu" ref={ref}>
+            <button
+                className="ec-kebab-btn"
+                onClick={(e) => { e.stopPropagation(); setOpen(o => !o) }}
+                title="Actions"
+            >
+                <MoreVertical size={15} />
+            </button>
+            {open && (
+                <div className="ec-dropdown" onClick={e => e.stopPropagation()}>
+                    <button className="ec-dropdown-item">
+                        <Eye size={14} /> View Profile
+                    </button>
+                    <button className="ec-dropdown-item">
+                        <Edit3 size={14} /> Edit
+                    </button>
+                    <button className="ec-dropdown-item danger">
+                        <UserMinus size={14} /> Unenroll
+                    </button>
+                </div>
+            )}
+        </div>
+    )
+}
+
+// ─── Student Enrollment Card ─────────────────────────────────────────────────
+
+const StudentEnrollmentCard = ({
+    student,
+    expanded,
+    onToggle,
+    selected,
+    onSelect,
+    getStatusColor,
+    updateEnrollmentStatus
+}) => {
+    const sc = getStatusConfig(student.status || student.subjects?.[0]?.status || 'active')
+    const enrolledOn = formatDate(student.enrolled_at)
+    const academicYear = student.academic_year || getAcademicYearFromDate(student.enrolled_at)
+
+    // Derive overall card status from subjects if not on student
+    const cardStatus = student.status || student.subjects?.[0]?.status || 'active'
+    const accentColor = getStatusConfig(cardStatus).accent
+
+    return (
+        <div
+            className={`ec-card ${expanded ? 'ec-card--expanded' : ''} ${selected ? 'ec-card--selected' : ''}`}
+            style={{ '--accent-color': accentColor }}
+        >
+            {/* Main Row */}
+            <div className="ec-card-main" onClick={onToggle}>
+
+                {/* Checkbox */}
+                <div className="ec-checkbox-wrap" onClick={e => { e.stopPropagation(); onSelect() }}>
+                    <div className={`ec-checkbox ${selected ? 'ec-checkbox--checked' : ''}`}>
+                        {selected && <Check size={11} strokeWidth={3} />}
+                    </div>
+                </div>
+
+                {/* Avatar + Name */}
+                <div className="ec-identity">
+                    <div className="ec-avatar">
+                        {student.avatar_url
+                            ? <img src={student.avatar_url} alt={student.student_name} />
+                            : getInitials(student.student_name)
+                        }
+                    </div>
+                    <div className="ec-identity-info">
+                        <span className="ec-name">{toSentenceCase(student.student_name)}</span>
+                        {student.program_code && (
+                            <span className="ec-dept">{student.program_code}</span>
+                        )}
+                    </div>
+                </div>
+
+                {/* Meta: Enrollment ID */}
+                <div className="ec-meta-block">
+                    <span className="ec-meta-label">
+                        <Hash size={11} /> Enrollment ID
+                    </span>
+                    <span className="ec-meta-value mono">{student.student_id || '—'}</span>
+                </div>
+
+                {/* Meta: Subjects */}
+                <div className="ec-meta-block">
+                    <span className="ec-meta-label">
+                        <BookOpen size={11} /> Subjects
+                    </span>
+                    <span className="ec-subjects-pill">
+                        <BookOpen size={12} />
+                        {student.subjects.length}
+                    </span>
+                </div>
+
+                {/* Meta: Academic Year */}
+                <div className="ec-meta-block">
+                    <span className="ec-meta-label">
+                        <Calendar size={11} /> Academic Year
+                    </span>
+                    <span className="ec-meta-value">{academicYear}</span>
+                </div>
+
+                {/* Status Badge */}
+                <div className="ec-status-wrap">
+                    <span
+                        className="ec-status-badge"
+                        style={{ background: accentColor }}
+                    >
+                        {toSentenceCase(cardStatus)}
+                    </span>
+                </div>
+
+                {/* Actions */}
+                <div className="ec-actions-wrap" onClick={e => e.stopPropagation()}>
+                    <ActionMenu student={student} />
+                    <button className={`ec-chevron ${expanded ? 'ec-chevron--open' : ''}`}>
+                        <ChevronDown size={16} />
+                    </button>
+                </div>
+            </div>
+
+            {/* Expanded: Subject Chips */}
+            {expanded && (
+                <div className="ec-subjects-panel">
+                    <div className="ec-subjects-header">
+                        <span>Enrolled Subjects</span>
+                        {enrolledOn && (
+                            <span className="ec-enrolled-date">Enrolled {enrolledOn}</span>
+                        )}
+                    </div>
+                    <div className="ec-subjects-grid">
+                        {student.subjects.map(subject => (
+                            <div key={subject.enrollment_id || subject.id} className="ec-subject-chip">
+                                <div className="ec-chip-left">
+                                    <span className="ec-chip-code">{subject.subject_code}</span>
+                                    <span className="ec-chip-name">{subject.subject_name}</span>
+                                    <span className="ec-chip-sem">Sem {subject.semester}</span>
+                                </div>
+                                <select
+                                    className={`status-select ${getStatusColor(subject.status)}`}
+                                    value={subject.status}
+                                    onClick={e => e.stopPropagation()}
+                                    onChange={e => updateEnrollmentStatus(subject.enrollment_id || subject.id, e.target.value)}
+                                >
+                                    <option value="active">Active</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="dropped">Dropped</option>
+                                    <option value="failed">Failed</option>
+                                </select>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    )
+}
+
+// ─── Main Component ──────────────────────────────────────────────────────────
 
 function EnrollmentManagement() {
     const { token } = useAuth()
@@ -49,7 +234,6 @@ function EnrollmentManagement() {
     // Filters
     const [selectedProgram, setSelectedProgram] = useState('')
     const [selectedSemester, setSelectedSemester] = useState('')
-    const [selectedStudent, setSelectedStudent] = useState('')
 
     // Bulk enroll modal
     const [showBulkModal, setShowBulkModal] = useState(false)
@@ -57,59 +241,31 @@ function EnrollmentManagement() {
     const [bulkSemester, setBulkSemester] = useState('1')
     const [selectedStudents, setSelectedStudents] = useState([])
 
-    // Calculate default academic year
+    // Bulk card selection
+    const [selectedCards, setSelectedCards] = useState([])
+
     const getCurrentAcademicYear = () => {
-        const now = new Date();
-        const currentYear = now.getFullYear();
-        const currentMonth = now.getMonth(); // 0-11
-        // If June (5) or later, we are in the start of a year (e.g. 2025-2026)
-        // If before June, we are in the second half (e.g. 2024-2025)
-        const startYear = currentMonth >= 5 ? currentYear : currentYear - 1;
-        return `${startYear}-${startYear + 1}`;
-    };
-
-    const getAcademicYearFromDate = (dateString) => {
-        if (!dateString) return '-';
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) return '-';
-
-        const year = date.getFullYear();
-        const month = date.getMonth(); // 0-11
-
-        // If June (5) or later, we are in the start of a year (e.g. 2025-2026)
-        // If before June, we are in the second half (e.g. 2024-2025)
-        const startYear = month >= 5 ? year : year - 1;
-        return `${startYear}-${startYear + 1}`;
-    };
+        const now = new Date()
+        const y = now.getFullYear()
+        const m = now.getMonth()
+        const s = m >= 5 ? y : y - 1
+        return `${s}-${s + 1}`
+    }
 
     const [academicYear, setAcademicYear] = useState(getCurrentAcademicYear())
     const [saving, setSaving] = useState(false)
     const [expandedStudents, setExpandedStudents] = useState([])
-    const [viewStatus, setViewStatus] = useState('all') // 'all', 'active' or 'completed'
+    const [viewStatus, setViewStatus] = useState('all')
 
-    // Helper to format names to Sentence Case
-    const toSentenceCase = (str) => {
-        if (!str) return '';
-        return str.toLowerCase().split(' ').map(word => {
-            return word.charAt(0).toUpperCase() + word.slice(1);
-        }).join(' ');
-    }
-
-    const getInitials = (name) => {
-        if (!name) return '??';
-        return name
-            .split(' ')
-            .map(n => n[0])
-            .join('')
-            .toUpperCase()
-            .slice(0, 2)
-    }
-
-    const toggleStudentExpand = (studentId) => {
+    const toggleStudentExpand = (id) => {
         setExpandedStudents(prev =>
-            prev.includes(studentId)
-                ? prev.filter(id => id !== studentId)
-                : [...prev, studentId]
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        )
+    }
+
+    const toggleCardSelect = (id) => {
+        setSelectedCards(prev =>
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
         )
     }
 
@@ -117,10 +273,10 @@ function EnrollmentManagement() {
     useEffect(() => {
         const fetchPrograms = async () => {
             try {
-                const response = await fetch(`${API_BASE}/programs.php`, {
+                const res = await fetch(`${API_BASE}/programs.php`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 })
-                const data = await response.json()
+                const data = await res.json()
                 if (data.success) {
                     setPrograms(data.data)
                     if (data.data.length > 0) {
@@ -135,19 +291,17 @@ function EnrollmentManagement() {
         fetchPrograms()
     }, [token])
 
-    // Fetch students for bulk enrollment when bulkProgram changes
+    // Fetch students for bulk enrollment
     useEffect(() => {
         const fetchStudents = async () => {
             if (!bulkProgram) return
             try {
-                // Fetch students belonging to the selected program
-                const response = await fetch(`${API_BASE}/students.php?role=student&program_id=${bulkProgram}&limit=100`, {
+                const res = await fetch(`${API_BASE}/students.php?role=student&program_id=${bulkProgram}&limit=100`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 })
-                const data = await response.json()
+                const data = await res.json()
                 if (data.success) {
                     setStudents(data.data)
-                    // Reset selection when program changes
                     setSelectedStudents([])
                 }
             } catch (err) {
@@ -155,25 +309,18 @@ function EnrollmentManagement() {
             }
         }
         fetchStudents()
-    }, [token, bulkProgram]) // Dependency on bulkProgram
+    }, [token, bulkProgram])
 
     // Fetch enrollments
     const fetchEnrollments = useCallback(async () => {
         try {
             setLoading(true)
             setError(null)
-
             let url = `${API_BASE}/enrollments.php?status=${viewStatus}&`
             if (selectedProgram) url += `program_id=${selectedProgram}&`
             if (selectedSemester) url += `semester=${selectedSemester}&`
-            if (selectedStudent) url += `user_id=${selectedStudent}&`
-
-            const response = await fetch(url, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-
-            const data = await response.json()
-
+            const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } })
+            const data = await res.json()
             if (data.success) {
                 setEnrollments(data.data || [])
             } else {
@@ -184,46 +331,32 @@ function EnrollmentManagement() {
         } finally {
             setLoading(false)
         }
-    }, [token, selectedProgram, selectedSemester, selectedStudent, viewStatus])
+    }, [token, selectedProgram, selectedSemester, viewStatus])
 
     useEffect(() => {
-        if (selectedProgram) {
-            fetchEnrollments()
-        }
+        if (selectedProgram) fetchEnrollments()
     }, [fetchEnrollments, selectedProgram])
 
-    const toggleStudentSelection = (studentId) => {
+    const toggleStudentSelection = (id) => {
         setSelectedStudents(prev =>
-            prev.includes(studentId)
-                ? prev.filter(id => id !== studentId)
-                : [...prev, studentId]
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
         )
     }
 
     const selectAllStudents = () => {
-        if (selectedStudents.length === students.length) {
-            setSelectedStudents([])
-        } else {
-            setSelectedStudents(students.map(s => s.id))
-        }
+        setSelectedStudents(prev =>
+            prev.length === students.length ? [] : students.map(s => s.id)
+        )
     }
 
     const handleBulkEnroll = async () => {
-        if (selectedStudents.length === 0) {
-            setError('Please select at least one student')
-            return
-        }
-
+        if (selectedStudents.length === 0) { setError('Please select at least one student'); return }
         setSaving(true)
         setError(null)
-
         try {
-            const response = await fetch(`${API_BASE}/enrollments.php`, {
+            const res = await fetch(`${API_BASE}/enrollments.php`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({
                     program_id: parseInt(bulkProgram),
                     semester: parseInt(bulkSemester),
@@ -231,9 +364,7 @@ function EnrollmentManagement() {
                     academic_year: academicYear
                 })
             })
-
-            const data = await response.json()
-
+            const data = await res.json()
             if (data.success) {
                 setShowBulkModal(false)
                 setSelectedStudents([])
@@ -249,7 +380,7 @@ function EnrollmentManagement() {
     }
 
     const updateEnrollmentStatus = async (enrollmentId, newStatus) => {
-        const prevEnrollments = enrollments
+        const prev = enrollments
         setEnrollments(prev =>
             prev.map(item =>
                 (item.enrollment_id || item.id) === enrollmentId
@@ -257,51 +388,49 @@ function EnrollmentManagement() {
                     : item
             )
         )
-
         try {
-            const response = await fetch(`${API_BASE}/enrollments.php`, {
+            const res = await fetch(`${API_BASE}/enrollments.php`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    enrollment_id: enrollmentId,
-                    status: newStatus
-                })
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ enrollment_id: enrollmentId, status: newStatus })
             })
-
-            const data = await response.json()
-
+            const data = await res.json()
             if (!data.success) {
                 setError(data.error || 'Failed to update enrollment')
-                setEnrollments(prevEnrollments)
+                setEnrollments(prev)
             }
         } catch (err) {
             setError('Network error. Please try again.')
-            setEnrollments(prevEnrollments)
+            setEnrollments(prev)
         }
+    }
+
+    const getStatusColor = (status) => {
+        const map = { 'completed': 'status-completed', 'active': 'status-active', 'dropped': 'status-dropped', 'failed': 'status-failed' }
+        return map[status] || ''
     }
 
     const currentProgram = programs.find(p => p.id.toString() === selectedProgram)
-    const semesters = currentProgram ? Array.from({ length: currentProgram.total_semesters }, (_, i) => i + 1) : []
+    const semesters = currentProgram
+        ? Array.from({ length: currentProgram.total_semesters }, (_, i) => i + 1)
+        : []
 
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'completed': return 'status-completed'
-            case 'active': return 'status-active'
-            case 'dropped': return 'status-dropped'
-            case 'failed': return 'status-failed'
-            default: return ''
-        }
-    }
+    // Group enrollments by student
+    const studentList = Object.values(
+        enrollments.reduce((acc, curr) => {
+            if (!acc[curr.user_id]) acc[curr.user_id] = { ...curr, subjects: [] }
+            acc[curr.user_id].subjects.push(curr)
+            return acc
+        }, {})
+    )
+
+    const allSelected = selectedCards.length === studentList.length && studentList.length > 0
 
     return (
         <div className="enrollment-management">
             {/* Header */}
             <div className="enrollment-management-header">
                 <h2 className="enrollment-management-title">Enrollment Management</h2>
-
                 <div className="view-toggle">
                     {['all', 'active', 'completed', 'dropped', 'failed'].map(status => (
                         <button
@@ -314,7 +443,7 @@ function EnrollmentManagement() {
                     ))}
                 </div>
                 <button className="btn-add" onClick={() => setShowBulkModal(true)}>
-                    <PlusIcon />
+                    <Plus size={16} />
                     Bulk Enroll
                 </button>
             </div>
@@ -344,145 +473,72 @@ function EnrollmentManagement() {
                 </select>
             </div>
 
-            {/* Error Message */}
+            {/* Error */}
             {error && (
-                <div style={{
-                    padding: '1rem',
-                    marginBottom: '1rem',
-                    background: 'rgba(239, 68, 68, 0.1)',
-                    border: '1px solid var(--error)',
-                    borderRadius: 'var(--radius-md)',
-                    color: 'var(--error)',
-                    fontSize: '0.875rem'
-                }}>
-                    {error}
-                </div>
+                <div className="ec-error-msg">{error}</div>
             )}
 
-            {/* Enrollments Table */}
-            {/* Enrollments Table */}
+            {/* Cards List */}
             <div className="enrollments-table-container">
                 {loading ? (
                     <SkeletonTable rows={8} columns={5} />
                 ) : !selectedProgram ? (
                     <EmptyState
-                        icon={UsersIcon}
+                        icon={Users}
                         title="Select a Program"
                         description="Choose a program from the filters above to view and manage student enrollments."
                     />
-                ) : enrollments.length === 0 ? (
+                ) : studentList.length === 0 ? (
                     <EmptyState
-                        icon={CheckIcon}
+                        icon={Check}
                         title="No Enrollments Found"
-                        description="There are no students enrolled in the selected program and semester. Use 'Bulk Enroll' to get started."
+                        description="No students are enrolled. Use 'Bulk Enroll' to get started."
                         actionText="Bulk Enroll"
                         onAction={() => setShowBulkModal(true)}
                     />
                 ) : (
-                    <table className="enrollments-table">
-                        <thead>
-                            <tr>
-                                <th className="text-left">Student</th>
-                                <th className="text-right">Student ID</th>
-                                <th className="text-center">Subjects</th>
-                                <th className="text-center">Academic Year</th>
-                                <th className="text-center">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {Object.values(enrollments.reduce((acc, curr) => {
-                                if (!acc[curr.user_id]) acc[curr.user_id] = { ...curr, subjects: [] }
-                                acc[curr.user_id].subjects.push(curr)
-                                return acc
-                            }, {})).map(student => (
-                                <>
-                                    <tr
-                                        key={student.user_id}
-                                        onClick={() => toggleStudentExpand(student.user_id)}
-                                        style={{ cursor: 'pointer', background: expandedStudents.includes(student.user_id) ? 'var(--bg-tertiary)' : 'inherit' }}
-                                    >
-                                        <td>
-                                            <div className="student-info">
-                                                <div className="student-avatar">
-                                                    {student.avatar_url ? (
-                                                        <img src={student.avatar_url} alt={student.student_name} />
-                                                    ) : (
-                                                        getInitials(student.student_name)
-                                                    )}
-                                                </div>
-                                                <div className="student-details">
-                                                    <span className="student-name">{toSentenceCase(student.student_name)}</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="text-right tabular-nums">
-                                            <span className="student-id">{student.student_id}</span>
-                                        </td>
-                                        <td className="text-center">
-                                            <span className="badge">
-                                                {student.subjects.length} Subjects
-                                            </span>
-                                        </td>
-                                        <td className="text-center tabular-nums">{student.academic_year || getAcademicYearFromDate(student.enrolled_at)}</td>
-                                        <td className="text-center">
-                                            <button className="btn-icon">
-                                                <svg
-                                                    viewBox="0 0 24 24"
-                                                    width="20"
-                                                    height="20"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    style={{ transform: expandedStudents.includes(student.user_id) ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
-                                                >
-                                                    <polyline points="6 9 12 15 18 9" />
-                                                </svg>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    {expandedStudents.includes(student.user_id) && (
-                                        <tr className="expanded-row">
-                                            <td colSpan="5">
-                                                <div className="sub-table-wrapper">
-                                                    <table className="sub-table" style={{ width: '100%' }}>
-                                                        <thead>
-                                                            <tr>
-                                                                <th className="text-left">Subject</th>
-                                                                <th className="text-left">Code</th>
-                                                                <th className="text-center">Semester</th>
-                                                                <th className="text-center">Status</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {student.subjects.map(subject => (
-                                                                <tr key={subject.enrollment_id || subject.id}>
-                                                                    <td className="text-left">{subject.subject_name}</td>
-                                                                    <td className="text-left tabular-nums">{subject.subject_code}</td>
-                                                                    <td className="text-center">Semester {subject.semester}</td>
-                                                                    <td className="text-center">
-                                                                        <select
-                                                                            className={`status-select ${getStatusColor(subject.status)}`}
-                                                                            value={subject.status}
-                                                                            onClick={(e) => e.stopPropagation()}
-                                                                            onChange={(e) => updateEnrollmentStatus(subject.enrollment_id || subject.id, e.target.value)}
-                                                                        >
-                                                                            <option value="active">Active</option>
-                                                                            <option value="completed">Completed</option>
-                                                                            <option value="dropped">Dropped</option>
-                                                                            <option value="failed">Failed</option>
-                                                                        </select>
-                                                                    </td>
-                                                                </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    )}
-                                </>
+                    <>
+                        {/* Bulk selection bar */}
+                        {selectedCards.length > 0 && (
+                            <div className="ec-bulk-bar">
+                                <span>{selectedCards.length} student{selectedCards.length > 1 ? 's' : ''} selected</span>
+                                <button className="ec-bulk-btn danger" onClick={() => setSelectedCards([])}>
+                                    Clear selection
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Column header */}
+                        <div className="ec-list-header">
+                            <div
+                                className={`ec-checkbox ${allSelected ? 'ec-checkbox--checked' : ''}`}
+                                onClick={() => setSelectedCards(allSelected ? [] : studentList.map(s => s.user_id))}
+                            >
+                                {allSelected && <Check size={11} strokeWidth={3} />}
+                            </div>
+                            <span>Student</span>
+                            <span>Enrollment ID</span>
+                            <span>Subjects</span>
+                            <span>Academic Year</span>
+                            <span>Status</span>
+                            <span></span>
+                        </div>
+
+                        <div className="ec-cards-list">
+                            {studentList.map(student => (
+                                <StudentEnrollmentCard
+                                    key={student.user_id}
+                                    student={student}
+                                    expanded={expandedStudents.includes(student.user_id)}
+                                    onToggle={() => toggleStudentExpand(student.user_id)}
+                                    selected={selectedCards.includes(student.user_id)}
+                                    onSelect={() => toggleCardSelect(student.user_id)}
+                                    getStatusColor={getStatusColor}
+                                    updateEnrollmentStatus={updateEnrollmentStatus}
+                                />
                             ))}
-                        </tbody>
-                    </table>
+                        </div>
+                    </>
                 )}
             </div>
 
@@ -492,19 +548,13 @@ function EnrollmentManagement() {
                     <div className="modal-content" style={{ maxWidth: '700px' }} onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3 className="modal-title">Bulk Enroll Students</h3>
-                            <button className="modal-close" onClick={() => setShowBulkModal(false)}>
-                                <CloseIcon />
-                            </button>
+                            <button className="modal-close" onClick={() => setShowBulkModal(false)}>✕</button>
                         </div>
                         <div className="modal-body">
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
                                 <div className="form-group">
                                     <label className="form-label">Program *</label>
-                                    <select
-                                        className="form-select"
-                                        value={bulkProgram}
-                                        onChange={e => setBulkProgram(e.target.value)}
-                                    >
+                                    <select className="form-select" value={bulkProgram} onChange={e => setBulkProgram(e.target.value)}>
                                         {programs.map(p => (
                                             <option key={p.id} value={p.id}>{p.code}</option>
                                         ))}
@@ -512,11 +562,7 @@ function EnrollmentManagement() {
                                 </div>
                                 <div className="form-group">
                                     <label className="form-label">Semester *</label>
-                                    <select
-                                        className="form-select"
-                                        value={bulkSemester}
-                                        onChange={e => setBulkSemester(e.target.value)}
-                                    >
+                                    <select className="form-select" value={bulkSemester} onChange={e => setBulkSemester(e.target.value)}>
                                         {[1, 2, 3, 4, 5, 6].map(s => (
                                             <option key={s} value={s}>Semester {s}</option>
                                         ))}
@@ -533,18 +579,12 @@ function EnrollmentManagement() {
                                     />
                                 </div>
                             </div>
-
                             <div className="form-group">
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                                     <label className="form-label" style={{ margin: 0 }}>
                                         Select Students ({selectedStudents.length} selected)
                                     </label>
-                                    <button
-                                        type="button"
-                                        className="btn-secondary"
-                                        style={{ padding: '0.5rem 1rem', fontSize: '0.75rem' }}
-                                        onClick={selectAllStudents}
-                                    >
+                                    <button type="button" className="btn-secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.75rem' }} onClick={selectAllStudents}>
                                         {selectedStudents.length === students.length ? 'Deselect All' : 'Select All'}
                                     </button>
                                 </div>
@@ -556,7 +596,7 @@ function EnrollmentManagement() {
                                             onClick={() => toggleStudentSelection(student.id)}
                                         >
                                             <div className="student-checkbox">
-                                                {selectedStudents.includes(student.id) && <CheckIcon />}
+                                                {selectedStudents.includes(student.id) && <Check size={12} />}
                                             </div>
                                             <div className="student-details">
                                                 <span className="student-name">{toSentenceCase(student.full_name)}</span>
@@ -568,9 +608,7 @@ function EnrollmentManagement() {
                             </div>
                         </div>
                         <div className="modal-footer">
-                            <button className="btn-secondary" onClick={() => setShowBulkModal(false)}>
-                                Cancel
-                            </button>
+                            <button className="btn-secondary" onClick={() => setShowBulkModal(false)}>Cancel</button>
                             <button
                                 className="btn-primary"
                                 onClick={handleBulkEnroll}
@@ -587,6 +625,3 @@ function EnrollmentManagement() {
 }
 
 export default EnrollmentManagement
-
-
-

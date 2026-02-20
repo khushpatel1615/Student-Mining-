@@ -112,35 +112,8 @@
 /* Note: CSS capitalize doesn't handle all-caps to sentence case well, 
    so we'll mostly handle this in JS for better control as requested. */
 
-/* Dark Theme Overrides */
-[data-theme='dark'] {
-    --bg-page: #0f172a;
-    /* Slate 900 */
-    --bg-card: #1e293b;
-    /* Slate 800 */
-    --bg-sidebar: #020617;
-    /* Very deep slate */
-    --bg-header: rgba(15, 23, 42, 0.8);
-    --bg-hover: rgba(255, 255, 255, 0.06);
+/* Dark mode removed — app is light-theme only */
 
-    --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
-
-    --border-color: rgba(255, 255, 255, 0.08);
-    --border-light: rgba(255, 255, 255, 0.04);
-
-    --primary-light: rgba(99, 102, 241, 0.2);
-
-    --glass-bg: rgba(30, 41, 59, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.05);
-
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.7);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.8);
-
-    color-scheme: dark;
-}
 
 * {
     box-sizing: border-box;

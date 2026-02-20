@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, Sun, Moon, RefreshCw, Menu, ZoomIn, ZoomOut, Maximize, Minimize } from 'lucide-react';
+import { RefreshCw, Menu, ZoomIn, ZoomOut, Maximize, Minimize } from 'lucide-react';
 
 import { useTheme } from '../../context/ThemeContext';
 import './Header.css';
@@ -10,7 +10,7 @@ const Header = ({
     refreshing,
     onMobileMenuClick
 }) => {
-    const { theme, toggleTheme, zoomIn, zoomOut, zoom } = useTheme();
+    const { zoomIn, zoomOut, zoom } = useTheme();
     const [isFullscreen, setIsFullscreen] = useState(false);
 
     useEffect(() => {
@@ -42,7 +42,7 @@ const Header = ({
                     </span>
                 )}
 
-                {/* First Button: Fullscreen */}
+                {/* Fullscreen */}
                 <button
                     className="header-btn glass-btn"
                     onClick={toggleFullScreen}
@@ -51,7 +51,7 @@ const Header = ({
                     {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
                 </button>
 
-                {/* Zoom Controls (Instead of Notification) */}
+                {/* Zoom Controls */}
                 <div className="zoom-controls">
                     <button
                         className="header-btn glass-btn"
@@ -68,14 +68,6 @@ const Header = ({
                         <ZoomIn size={18} />
                     </button>
                 </div>
-
-                <button
-                    className="header-btn theme-btn glass-btn"
-                    onClick={toggleTheme}
-                    title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-                >
-                    {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-                </button>
             </div>
         </header>
     );
