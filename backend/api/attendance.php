@@ -3,8 +3,6 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
 
-setCORSHeaders();
-
 $method = $_SERVER['REQUEST_METHOD'];
 $pdo = getDBConnection();
 $DATA_DIR = __DIR__ . '/../data/attendance';
@@ -372,3 +370,4 @@ function handleStudentView($pdo, $dataDir)
         'data' => $attendanceRecord
     ]);
 }
+

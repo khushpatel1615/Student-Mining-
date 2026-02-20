@@ -7,7 +7,7 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
-setCORSHeaders();
+
 $method = $_SERVER['REQUEST_METHOD'];
 $pdo = getDBConnection();
 // Require authentication for all program routes
@@ -235,3 +235,4 @@ function verifyAdminToken()
 
     return $result['payload'];
 }
+

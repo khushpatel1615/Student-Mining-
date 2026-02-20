@@ -12,9 +12,7 @@ $userId = $authUser['user_id'];
 $pdo = getDBConnection();
 
 try {
-    if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-        jsonResponse(['success' => false, 'error' => 'Method not allowed'], 405);
-    }
+    requireMethod('GET');
 
     $recommendationData = generateLearningRecommendation($pdo, $userId);
 
@@ -24,7 +22,7 @@ try {
         'recommendations' => $recommendationData['all']
     ]);
 } catch (Exception $e) {
-    jsonResponse(['success' => false, 'error' => getenv('APP_ENV') === 'production' ? 'Internal server error' : $e->getMessage()], 500);
+    sendError(getenv('APP_ENV') === 'production' ? 'Internal server error' : $e->getMessage(), 500);
 }
 
 

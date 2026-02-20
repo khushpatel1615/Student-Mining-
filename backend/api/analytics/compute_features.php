@@ -9,7 +9,7 @@ if (php_sapi_name() !== 'cli') {
     // If accessed via HTTP, ensure Admin
     require_once __DIR__ . '/../../includes/jwt.php';
     require_once __DIR__ . '/../../config/database.php';
-    setCORSHeaders();
+
     // Check Admin Token
     $headers = getallheaders();
     $token = null;
@@ -407,3 +407,4 @@ function saveRiskScore($pdo, $userId, $data)
         'reasons' => json_encode($data['risk_factors'])
     ]);
 }
+

@@ -8,33 +8,30 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
-setCORSHeaders();
-// Only accept POST requests
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    jsonResponse(['success' => false, 'error' => 'Method not allowed'], 405);
-}
 
-// Get JSON input
-$rawInput = file_get_contents('php://input');
-$input = json_decode($rawInput, true);
+// Enforce Method
+requireMethod('POST');
+
+// Get Input
+$input = getJsonInput();
 if (!$input) {
-    jsonResponse(['success' => false, 'error' => 'Invalid JSON input'], 400);
+    sendError('Invalid JSON input', 400);
 }
 
 $credential = $input['credential'] ?? '';
 if (empty($credential)) {
-    jsonResponse(['success' => false, 'error' => 'Google credential is required'], 400);
+    sendError('Google credential is required', 400);
 }
 
 try {
-// Verify Google ID token
+    // Verify Google ID token
     $googleUser = verifyGoogleToken($credential);
     if (!$googleUser) {
-        jsonResponse(['success' => false, 'error' => 'Invalid Google credential'], 401);
+        sendError('Invalid Google credential', 401);
     }
 
     $pdo = getDBConnection();
-// Check if user exists by Google ID or email
+    // Check if user exists by Google ID or email
     $stmt = $pdo->prepare("
         SELECT id, email, student_id, full_name, role, avatar_url, google_id, password_hash, current_semester 
         FROM users 
@@ -46,11 +43,8 @@ try {
     ]);
     $user = $stmt->fetch();
     if (!$user) {
-    // User not registered in the system
-        jsonResponse([
-            'success' => false,
-            'error' => 'Account not registered. Please contact your administrator to register your email: ' . $googleUser['email']
-        ], 401);
+        // User not registered in the system
+        sendError('Account not registered. Please contact your administrator to register your email: ' . $googleUser['email'], 401);
     }
 
     // Update user's Google ID and avatar if not set
@@ -69,15 +63,15 @@ try {
         ]);
         $user['avatar_url'] = $user['avatar_url'] ?? $googleUser['picture'];
     } else {
-    // Just update last login
+        // Just update last login
         $updateStmt = $pdo->prepare("UPDATE users SET last_login = NOW() WHERE id = :id");
         $updateStmt->execute(['id' => $user['id']]);
     }
 
     // Generate JWT token
     $token = generateToken($user['id'], $user['email'], $user['role'], $user['full_name']);
-// Return success response
-    jsonResponse([
+    // Return success response
+    sendResponse([
         'success' => true,
         'message' => 'Google authentication successful',
         'token' => $token,
@@ -93,7 +87,7 @@ try {
         ]
     ]);
 } catch (Exception $e) {
-    jsonResponse(['success' => false, 'error' => 'Authentication error occurred'], 500);
+    sendError('Authentication error occurred', 500, $e->getMessage());
 }
 
 /**
@@ -104,10 +98,10 @@ function verifyGoogleToken($token)
     // 1. Try as ID Token (JWT)
     $parts = explode('.', $token);
     if (count($parts) === 3) {
-    // Decode payload
+        // Decode payload
         $payload = json_decode(base64_decode(strtr($parts[1], '-_', '+/')), true);
         if ($payload) {
-        // Verify with Google
+            // Verify with Google
             $url = 'https://oauth2.googleapis.com/tokeninfo?id_token=' . urlencode($token);
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
@@ -144,7 +138,7 @@ function verifyGoogleToken($token)
         $userPayload = json_decode($response, true);
         if ($userPayload && isset($userPayload['sub'])) {
             return $userPayload;
-        // UserInfo response has 'sub', 'email', 'picture' etc.
+            // UserInfo response has 'sub', 'email', 'picture' etc.
         }
     }
 

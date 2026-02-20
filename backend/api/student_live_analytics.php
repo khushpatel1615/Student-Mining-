@@ -33,7 +33,6 @@ if (!function_exists('setCORSHeaders')) {
 
 }
 
-setCORSHeaders();
 header('Content-Type: application/json');
 $method = $_SERVER['REQUEST_METHOD'];
 $pdo = getDBConnection();
@@ -234,3 +233,4 @@ try {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
+

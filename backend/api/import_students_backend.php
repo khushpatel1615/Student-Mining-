@@ -7,7 +7,7 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
-setCORSHeaders();
+
 header('Content-Type: application/json');
 // Admin only
 requireRole('admin');
@@ -252,3 +252,4 @@ function importAttendance($pdo, $attendance)
         throw $e;
     }
 }
+

@@ -25,12 +25,7 @@ function logDebug($message, $data = [])
     $logEntry .= str_repeat('-', 40) . "\n";
     file_put_contents($logFile, $logEntry, FILE_APPEND);
 }
-setCORSHeaders();
-
-// Accept GET and POST
-if (!in_array($_SERVER['REQUEST_METHOD'], ['GET', 'POST'])) {
-    jsonResponse(['success' => false, 'error' => 'Method not allowed'], 405);
-}
+requireMethod(['GET', 'POST']);
 
 // Get token from header
 $token = getTokenFromHeader();
@@ -38,7 +33,7 @@ logDebug('Token verification request', ['token_present' => !empty($token), 'meth
 
 if (!$token) {
     logDebug('No token found in headers');
-    jsonResponse(['success' => false, 'error' => 'No token provided'], 401);
+    sendError('No token provided', 401);
 }
 
 // Verify token
@@ -54,7 +49,7 @@ if (!$result['valid']) {
     // But wait, google-auth.php returns a backend JWT token in the 'token' field.
     // So the frontend should have a JWT.
 
-    jsonResponse(['success' => false, 'error' => $result['error']], 401);
+    sendError($result['error'], 401);
 }
 
 $payload = $result['payload'];
@@ -68,12 +63,12 @@ try {
 
     if (!$user) {
         logDebug('User not found in DB', ['user_id' => $payload['user_id']]);
-        jsonResponse(['success' => false, 'error' => 'User account not found or inactive'], 401);
+        sendError('User account not found or inactive', 401);
     }
 
     logDebug('Token verified successfully', ['user' => $user['email']]);
 
-    jsonResponse([
+    sendResponse([
         'success' => true,
         'user' => [
             'id' => $user['id'],
@@ -88,5 +83,5 @@ try {
     ]);
 } catch (PDOException $e) {
     logDebug('Database error', ['message' => $e->getMessage()]);
-    jsonResponse(['success' => false, 'error' => 'Database error'], 500);
+    sendError('Database error', 500);
 }

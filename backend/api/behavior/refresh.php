@@ -7,8 +7,6 @@
 require_once __DIR__ . '/../../includes/jwt.php';
 require_once __DIR__ . '/../../config/database.php';
 
-setCORSHeaders();
-
 // Handle preflight
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -64,3 +62,4 @@ try {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
+

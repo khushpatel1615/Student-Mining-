@@ -7,7 +7,7 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
-setCORSHeaders();
+
 $method = $_SERVER['REQUEST_METHOD'];
 $pdo = getDBConnection();
 try {
@@ -478,3 +478,4 @@ function verifyAdminToken()
 
     return $user;
 }
+

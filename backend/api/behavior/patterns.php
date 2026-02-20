@@ -9,8 +9,6 @@
 require_once __DIR__ . '/../../includes/jwt.php';
 require_once __DIR__ . '/../../config/database.php';
 
-setCORSHeaders();
-
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405);
     echo json_encode(['success' => false, 'error' => 'Method not allowed']);
@@ -114,3 +112,4 @@ function calculateTrend($current, $previous)
         return 'declining';
     return 'stable';
 }
+

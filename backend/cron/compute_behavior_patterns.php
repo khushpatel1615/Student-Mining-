@@ -104,8 +104,6 @@ if (!defined('BEHAVIOR_COMPUTE_LIB')) {
         require_once __DIR__ . '/../includes/jwt.php';
         require_once __DIR__ . '/../config/database.php';
 
-        setCORSHeaders();
-
         $headers = getallheaders();
         $token = null;
         $authHeader = isset($headers['Authorization']) ? $headers['Authorization'] : '';
@@ -494,3 +492,4 @@ function insertOrUpdatePattern($pdo, $userId, $weekStart, $patternData)
 if (php_sapi_name() === 'cli') {
     exit(($result['processed'] ?? 0) > 0 && ($result['errors'] ?? 0) === 0 ? 0 : 1);
 }
+

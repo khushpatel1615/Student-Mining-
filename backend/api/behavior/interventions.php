@@ -10,8 +10,6 @@
 require_once __DIR__ . '/../../includes/jwt.php';
 require_once __DIR__ . '/../../config/database.php';
 
-setCORSHeaders();
-
 // Handle preflight
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -344,3 +342,4 @@ function logInterventionActivity($pdo, $userId, $action, $interventionId, $stude
         error_log('Failed to log intervention activity: ' . $e->getMessage());
     }
 }
+
