@@ -26,7 +26,7 @@ This PR addresses a security audit that found secrets in local `.env` files. Whi
 
 ### 🔍 Secrets Found (in local .env, NOT in git)
 - JWT_SECRET: `student-data-mining-secret-key-2024-change-in-production`
-- GEMINI_API_KEY: `REDACTED_GEMINI_API_KEY`
+- GEMINI_API_KEY: `[REDACTED — key has been revoked]`
 - SMTP credentials (Gmail App Password)
 - Google OAuth Client ID
 

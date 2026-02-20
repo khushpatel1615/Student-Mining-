@@ -12,7 +12,7 @@
 The following secrets were found in uncommitted `.env` files and are now **TREATED AS COMPROMISED**:
 
 1. **JWT_SECRET:** `student-data-mining-secret-key-2024-change-in-production`
-2. **GEMINI_API_KEY:** `REDACTED_GEMINI_API_KEY`
+2. **GEMINI_API_KEY:** `[REDACTED — key has been revoked, rotate immediately]`
 3. **SMTP_PASS (Gmail App Password):** `REDACTED_SMTP_APP_PASSWORD`
 4. **SMTP_USER:** `patel.khush1615.gnu@gmail.com`
 5. **GOOGLE_CLIENT_ID:** `558182958130-dd2vsg1k4vrgheuua9oe1h0534586ps5.apps.googleusercontent.com`
@@ -69,7 +69,7 @@ TRUNCATE TABLE user_sessions;
 
 **Steps:**
 1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. **Revoke** the old API key: `REDACTED_GEMINI_API_KEY`
+2. **Revoke** the old API key — it has been redacted from this file. The key is now revoked.
 3. Create a new API key
 4. Update `GEMINI_API_KEY` in `backend/.env`
 5. Test AI Chat functionality

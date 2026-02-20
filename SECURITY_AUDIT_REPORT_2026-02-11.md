@@ -24,7 +24,7 @@ A security audit was conducted to identify and remove any committed secrets from
 | Secret Type | Value Found | Status |
 |-------------|-------------|--------|
 | **JWT_SECRET** | `student-data-mining-secret-key-2024-change-in-production` | ⚠️ COMPROMISED |
-| **GEMINI_API_KEY** | `REDACTED_GEMINI_API_KEY` | ⚠️ COMPROMISED |
+| **GEMINI_API_KEY** | `[REDACTED — revoked]` | ⚠️ COMPROMISED |
 | **SMTP_PASS** | `REDACTED_SMTP_APP_PASSWORD` (Gmail App Password) | ⚠️ COMPROMISED |
 | **SMTP_USER** | `patel.khush1615.gnu@gmail.com` | ⚠️ EXPOSED |
 | **GOOGLE_CLIENT_ID** | `558182958130-dd2vsg1k4vrgheuua9oe1h0534586ps5.apps.googleusercontent.com` | ⚠️ EXPOSED |
@@ -183,7 +183,7 @@ Please copy .env.example to .env and configure required variables.
 
 2. **Rotate Gemini API Key**
    - Go to: https://makersuite.google.com/app/apikey
-   - Revoke old key: `REDACTED_GEMINI_API_KEY`
+   - Revoke old key (redacted from docs — key is now revoked)
    - Create new key
    - Update `backend/.env`
 
