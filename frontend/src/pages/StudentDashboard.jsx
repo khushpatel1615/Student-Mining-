@@ -16,31 +16,34 @@ import {
     ChevronDown
 } from 'lucide-react'
 
-import MainLayout from '../components/Layout/MainLayout'
 import { useAuth } from '../context/AuthContext'
 import CalendarManagement from '../components/CalendarManagement/CalendarManagement'
 import { CircularProgress } from '../components/CircularProgress'
-import GradesTab from '../components/Student/Grades/GradesTab'
-import StudentProfile from '../components/Student/Profile/StudentProfile'
-import StudentAssignments from '../components/Student/Assignments/StudentAssignments'
-import StudentExams from '../components/Student/Exams/StudentExams'
-import Analytics from '../components/Student/Analytics/StudentAnalyticsDashboard'
-import SkillsMap from '../components/Student/SkillsMap/SkillsMap'
-import CareerFit from '../components/Student/CareerFit/CareerFit'
-import CoursePicks from '../components/Student/CoursePicks/CoursePicks'
-import StudyPlanner from '../components/Student/StudyPlanner/StudyPlanner'
-import Performance from '../components/Student/Performance/Performance'
-import Submissions from '../components/Student/Submissions/Submissions'
-import Difficulty from '../components/Student/Difficulty/Difficulty'
-import Badges from '../components/Student/Badges/Badges'
+import GradesTab from '../components/student/Grades/GradesTab'
+import StudentProfile from '../components/student/Profile/StudentProfile'
+import StudentAssignments from '../components/student/Assignments/StudentAssignments'
+import StudentExams from '../components/student/Exams/StudentExams'
+import Analytics from '../components/student/Analytics/StudentAnalyticsDashboard'
+import SkillsMap from '../components/student/SkillsMap/SkillsMap'
+import CareerFit from '../components/student/CareerFit/CareerFit'
+import CoursePicks from '../components/student/CoursePicks/CoursePicks'
+import StudyPlanner from '../components/student/StudyPlanner/StudyPlanner'
+import Performance from '../components/student/Performance/Performance'
+import Submissions from '../components/student/Submissions/Submissions'
+import Difficulty from '../components/student/Difficulty/Difficulty'
+import Badges from '../components/student/Badges/Badges'
 import ReportGenerator from '../components/Reports/ReportGenerator'
 import AnnouncementsPage from '../components/Discussions/AnnouncementsPage'
-import StudentAttendance from '../components/Student/Attendance/StudentAttendance'
-import QuickActions from '../components/Student/Overview/QuickActions'
-import ActivityFeed from '../components/Student/Overview/ActivityFeed'
+import StudentAttendance from '../components/student/Attendance/StudentAttendance'
+import QuickActions from '../components/student/Overview/QuickActions'
+import ActivityFeed from '../components/student/Overview/ActivityFeed'
+import MainLayout from '../components/layout/MainLayout'
+import LogoutModal from '../components/ui/LogoutModal'
 import './StudentDashboard.css'
 
-import { API_BASE } from '../config'
+import * as notificationService from '../services/notificationService'
+import * as calendarService from '../services/calendarService'
+import * as studentService from '../services/studentService'
 
 const StudentDashboard = () => {
     const { user, token, logout } = useAuth()
@@ -63,9 +66,6 @@ const StudentDashboard = () => {
     const [unreadCount, setUnreadCount] = useState(0)
     const [showNotifications, setShowNotifications] = useState(false)
 
-
-
-
     // Dashboard Data
     const [dashboardData, setDashboardData] = useState({
         gpa: 0,
@@ -77,136 +77,108 @@ const StudentDashboard = () => {
 
     // Fetch Notifications
     const fetchNotifications = useCallback(async () => {
-        try {
-            const response = await fetch(`${API_BASE}/notifications.php?limit=10`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
-            if (data.success) {
-                setNotifications(data.data?.notifications || [])
-                setUnreadCount(data.data?.unread_count || 0)
-            }
-        } catch (err) {
-            console.error('Failed to fetch notifications:', err)
+        const { data, error } = await notificationService.fetchNotifications(10);
+        if (data) {
+            setNotifications(data.notifications || []);
+            setUnreadCount(data.unread_count || 0);
+        } else if (error) {
+            console.error('Failed to fetch notifications:', error);
         }
-    }, [token])
+    }, [])
 
     // Mark as read
     const markAsRead = async (id = null) => {
-        try {
-            const body = id
-                ? { action: 'mark_read', notification_id: id }
-                : { action: 'mark_read' }
-            await fetch(`${API_BASE}/notifications.php`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(body)
-            })
-            fetchNotifications()
-        } catch (err) {
-            console.error('Failed to mark notifications read:', err)
+        const { error } = await notificationService.markAsRead(id);
+        if (!error) {
+            fetchNotifications();
+        } else {
+            console.error('Failed to mark notifications read:', error);
         }
     }
 
-    const fetchDashboardData = useCallback(async () => {
+    const fetchDashboardStats = useCallback(async () => {
         setRefreshing(true)
-        try {
-            // Include semester in query if selected
-            const params = selectedSemester ? `?semester=${selectedSemester}` : '';
-            const dashRes = await fetch(`${API_BASE}/student_dashboard.php${params}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const dashData = await dashRes.json();
+        const params = selectedSemester ? { semester: selectedSemester } : {}
 
-            const calRes = await fetch(`${API_BASE}/calendar.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const calData = await calRes.json();
+        const [dashRes, calRes] = await Promise.all([
+            studentService.fetchDashboardData(params),
+            calendarService.fetchCalendarEvents()
+        ]);
 
-            if (dashData.success) {
-                const summary = dashData.data.summary;
-                const subjects = dashData.data.subjects;
+        if (dashRes.data) {
+            const summary = dashRes.data.summary;
+            const subjects = dashRes.data.subjects;
 
-                // Extract available semesters logic improved by backend supporting full data
-                // For now keep the frontend logic but ensure it uses the data from subjects
-                const semesters = [...new Set(
-                    subjects
-                        .map(s => s.subject?.semester)
-                        .filter(sem => sem != null)
-                )].sort((a, b) => a - b);
+            const semesters = [...new Set(
+                subjects
+                    .map(s => s.subject?.semester)
+                    .filter(sem => sem != null)
+            )].sort((a, b) => a - b);
 
-                setAvailableSemesters(semesters);
+            setAvailableSemesters(semesters);
 
-                if (semesters.length > 0 && !selectedSemester) {
-                    const defaultSem = dashData.data.semester || 1;
-                    setSelectedSemester(defaultSem);
-                }
-
-                let upcoming = [];
-                if (calData.success) {
-                    const today = new Date();
-                    upcoming = calData.data.filter(ev => {
-                        const evDate = new Date(ev.event_date);
-                        const diffTime = evDate - today;
-                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        return diffDays >= 0 && diffDays <= 14;
-                    }).sort((a, b) => new Date(a.event_date) - new Date(b.event_date))
-                        .slice(0, 5);
-                }
-
-                const courses = subjects
-                    .filter(sub => sub && sub.subject) // Filter out invalid entries
-                    .map(sub => ({
-                        id: sub.subject.id,
-                        name: sub.subject.name,
-                        code: sub.subject.code,
-                        grade: sub.grade_letter || 'N/A',
-                        progress: sub.attendance?.percentage || 0,
-                        attendance: sub.attendance,
-                        overall_score: sub.overall_grade,
-                        credits: sub.subject.credits,
-                        components: sub.components,
-                        semester: sub.subject.semester
-                    }));
-
-                setDashboardData({
-                    gpa: summary.gpa,
-                    gpa_4: summary.gpa_4,
-                    gpa_text: summary.gpa_text,
-                    attendance: summary.overall_attendance,
-                    credits: summary.earned_credits,
-                    total_credits: summary.total_credits,
-                    courses: courses,
-                    upcoming_assignments: upcoming.map(ev => ({
-                        id: ev.id,
-                        title: ev.title,
-                        due: new Date(ev.event_date).toLocaleDateString(),
-                        status: ev.type,
-                        days_left: Math.ceil((new Date(ev.event_date) - new Date()) / (1000 * 60 * 60 * 24))
-                    }))
-                })
+            if (semesters.length > 0 && !selectedSemester) {
+                setSelectedSemester(dashRes.data.semester || 1);
             }
 
-            await fetchNotifications()
-            setLastUpdated(new Date())
-        } catch (error) {
-            console.error('Error fetching dashboard data:', error)
-        } finally {
-            setRefreshing(false)
+            let upcoming = [];
+            if (calRes.data) {
+                const today = new Date();
+                upcoming = calRes.data.filter(ev => {
+                    const evDate = new Date(ev.event_date);
+                    const diffTime = evDate - today;
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    return diffDays >= 0 && diffDays <= 14;
+                }).sort((a, b) => new Date(a.event_date) - new Date(b.event_date))
+                    .slice(0, 5);
+            }
+
+            const courses = subjects
+                .filter(sub => sub && sub.subject)
+                .map(sub => ({
+                    id: sub.subject.id,
+                    name: sub.subject.name,
+                    code: sub.subject.code,
+                    grade: sub.grade_letter || 'N/A',
+                    progress: sub.attendance?.percentage || 0,
+                    attendance: sub.attendance,
+                    overall_score: sub.overall_grade,
+                    credits: sub.subject.credits,
+                    components: sub.components,
+                    semester: sub.subject.semester
+                }));
+
+            setDashboardData({
+                gpa: summary.gpa,
+                gpa_4: summary.gpa_4,
+                gpa_text: summary.gpa_text,
+                attendance: summary.overall_attendance,
+                credits: summary.earned_credits,
+                total_credits: summary.total_credits,
+                courses: courses,
+                upcoming_assignments: upcoming.map(ev => ({
+                    id: ev.id,
+                    title: ev.title,
+                    due: new Date(ev.event_date).toLocaleDateString(),
+                    status: ev.type,
+                    days_left: Math.ceil((new Date(ev.event_date) - new Date()) / (1000 * 60 * 60 * 24))
+                }))
+            })
+        } else if (dashRes.error) {
+            console.error('Error fetching dashboard data:', dashRes.error);
         }
-    }, [token, fetchNotifications, selectedSemester, user])
+
+        await fetchNotifications()
+        setLastUpdated(new Date())
+        setRefreshing(false)
+    }, [fetchNotifications, selectedSemester])
 
     // Fetch dashboard data on mount and when token/user become available
     useEffect(() => {
         if (token && user) {
-            fetchDashboardData()
+            fetchDashboardStats()
         }
-    }, [token, user, selectedSemester, fetchDashboardData])
-
-
+    }, [token, user, selectedSemester, fetchDashboardStats])
 
     const getProgressColor = (gradient) => {
         switch (gradient) {
@@ -217,8 +189,6 @@ const StudentDashboard = () => {
             default: return '#6366f1'
         }
     }
-
-    // Stats Cards Logic has been moved inline into the main render for better semester integration
 
     const getGreeting = () => {
         const hour = new Date().getHours()
@@ -256,7 +226,7 @@ const StudentDashboard = () => {
         <MainLayout
             role="student"
             lastUpdated={lastUpdated}
-            onRefresh={fetchDashboardData}
+            onRefresh={fetchDashboardStats}
             refreshing={refreshing}
             notifications={notifications}
             unreadCount={unreadCount}
@@ -399,10 +369,7 @@ const StudentDashboard = () => {
                                         )
                                     })}
                                 </motion.div>
-
-
                             </div>
-
 
                             {/* Quick Actions & Activity Feed Row */}
                             <div className="content-grid" style={{ marginBottom: '1.5rem', gridTemplateColumns: '2fr 1fr' }}>
@@ -491,15 +458,11 @@ const StudentDashboard = () => {
                         </>
                     )}
 
-
-
                     {activeTab === 'attendance' && (
                         <div className="card card-padded-lg">
                             <StudentAttendance />
                         </div>
                     )}
-
-
 
                     {activeTab === 'profile' && (
                         <StudentProfile />
@@ -534,8 +497,6 @@ const StudentDashboard = () => {
                             <AnnouncementsPage />
                         </div>
                     )}
-
-
 
                     {(activeTab === 'schedule' || activeTab === 'calendar') && (
                         <div className="card">

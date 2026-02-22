@@ -1,27 +1,38 @@
-/**
- * Centralized API Client
- * 
- * Features:
- * - Automatic auth header injection
- * - Global 401 handling
- * - Standardized error handling
- * - Request/response interceptors
- */
-
 import { API_BASE } from '../config';
+
+/**
+ * Standardized API Error class
+ */
+class ApiError extends Error {
+    constructor(message, status, data = {}) {
+        super(message);
+        this.name = 'ApiError';
+        this.status = status;
+        this.data = data;
+    }
+}
 
 class ApiClient {
     constructor() {
         this.baseURL = API_BASE;
-        this.token = null;
+        this.token = this.getTokenFromStorage();
         this.onUnauthorized = null;
     }
 
+    getTokenFromStorage() {
+        return localStorage.getItem('token');
+    }
+
     /**
-     * Set the authentication token
+     * Set the authentication token and persist it
      */
     setToken(token) {
         this.token = token;
+        if (token) {
+            localStorage.setItem('token', token);
+        } else {
+            localStorage.removeItem('token');
+        }
     }
 
     /**
@@ -29,13 +40,27 @@ class ApiClient {
      */
     clearToken() {
         this.token = null;
+        localStorage.removeItem('token');
     }
 
     /**
-     * Set callback for unauthorized responses
+     * Set callback for unauthorized responses (401)
      */
     setUnauthorizedHandler(callback) {
         this.onUnauthorized = callback;
+    }
+
+    /**
+     * Build URL with query parameters
+     */
+    buildURL(endpoint, params = {}) {
+        const url = new URL(`${this.baseURL}${endpoint}`);
+        Object.keys(params).forEach(key => {
+            if (params[key] !== undefined && params[key] !== null && params[key] !== '') {
+                url.searchParams.append(key, params[key]);
+            }
+        });
+        return url.toString();
     }
 
     /**
@@ -44,6 +69,7 @@ class ApiClient {
     getHeaders(customHeaders = {}) {
         const headers = {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
             ...customHeaders
         };
 
@@ -58,23 +84,24 @@ class ApiClient {
      * Handle API response
      */
     async handleResponse(response) {
-        // Handle 401 Unauthorized globally
+        const contentType = response.headers.get('content-type');
+        let data;
+
+        if (contentType && contentType.includes('application/json')) {
+            data = await response.json();
+        } else {
+            data = await response.text();
+        }
+
         if (response.status === 401) {
             if (this.onUnauthorized) {
                 this.onUnauthorized();
             }
-            throw new ApiError('Unauthorized', 401, { shouldLogout: true });
+            throw new ApiError('Session expired. Please login again.', 401, data);
         }
 
-        // Parse JSON response
-        const contentType = response.headers.get('content-type');
-        const data = contentType && contentType.includes('application/json')
-            ? await response.json()
-            : await response.text();
-
-        // Handle error responses
         if (!response.ok) {
-            const errorMessage = data?.error || data?.message || `Request failed with status ${response.status}`;
+            const errorMessage = data?.error || data?.message || `Error ${response.status}: ${response.statusText}`;
             throw new ApiError(errorMessage, response.status, data);
         }
 
@@ -82,96 +109,98 @@ class ApiClient {
     }
 
     /**
-     * Make a GET request
+     * GET request
      */
-    async get(endpoint, options = {}) {
-        const response = await fetch(`${this.baseURL}${endpoint}`, {
-            method: 'GET',
-            headers: this.getHeaders(options.headers),
-            ...options
-        });
-
-        return this.handleResponse(response);
+    async get(endpoint, params = {}, options = {}) {
+        try {
+            const url = this.buildURL(endpoint, params);
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: this.getHeaders(options.headers),
+                ...options
+            });
+            return await this.handleResponse(response);
+        } catch (error) {
+            throw error;
+        }
     }
 
     /**
-     * Make a POST request
+     * POST request
      */
-    async post(endpoint, body, options = {}) {
-        const response = await fetch(`${this.baseURL}${endpoint}`, {
-            method: 'POST',
-            headers: this.getHeaders(options.headers),
-            body: JSON.stringify(body),
-            ...options
-        });
-
-        return this.handleResponse(response);
+    async post(endpoint, body = {}, options = {}) {
+        try {
+            const response = await fetch(`${this.baseURL}${endpoint}`, {
+                method: 'POST',
+                headers: this.getHeaders(options.headers),
+                body: JSON.stringify(body),
+                ...options
+            });
+            return await this.handleResponse(response);
+        } catch (error) {
+            throw error;
+        }
     }
 
     /**
-     * Make a PUT request
+     * PUT request
      */
-    async put(endpoint, body, options = {}) {
-        const response = await fetch(`${this.baseURL}${endpoint}`, {
-            method: 'PUT',
-            headers: this.getHeaders(options.headers),
-            body: JSON.stringify(body),
-            ...options
-        });
-
-        return this.handleResponse(response);
+    async put(endpoint, body = {}, options = {}) {
+        try {
+            const response = await fetch(`${this.baseURL}${endpoint}`, {
+                method: 'PUT',
+                headers: this.getHeaders(options.headers),
+                body: JSON.stringify(body),
+                ...options
+            });
+            return await this.handleResponse(response);
+        } catch (error) {
+            throw error;
+        }
     }
 
     /**
-     * Make a DELETE request
+     * DELETE request
      */
-    async delete(endpoint, options = {}) {
-        const response = await fetch(`${this.baseURL}${endpoint}`, {
-            method: 'DELETE',
-            headers: this.getHeaders(options.headers),
-            ...options
-        });
-
-        return this.handleResponse(response);
+    async delete(endpoint, params = {}, options = {}) {
+        try {
+            const url = this.buildURL(endpoint, params);
+            const response = await fetch(url, {
+                method: 'DELETE',
+                headers: this.getHeaders(options.headers),
+                ...options
+            });
+            return await this.handleResponse(response);
+        } catch (error) {
+            throw error;
+        }
     }
 
     /**
-     * Upload a file (multipart/form-data)
+     * Upload / Multipart request
      */
     async upload(endpoint, formData, options = {}) {
-        const headers = { ...options.headers };
+        try {
+            const headers = { ...options.headers };
+            if (this.token) {
+                headers['Authorization'] = `Bearer ${this.token}`;
+            }
+            // Note: Don't set Content-Type, browser will handle it for FormData
 
-        // Add auth header if token exists
-        if (this.token) {
-            headers['Authorization'] = `Bearer ${this.token}`;
+            const response = await fetch(`${this.baseURL}${endpoint}`, {
+                method: 'POST',
+                headers,
+                body: formData,
+                ...options
+            });
+            return await this.handleResponse(response);
+        } catch (error) {
+            throw error;
         }
-
-        // Don't set Content-Type for multipart/form-data - browser will set it with boundary
-        const response = await fetch(`${this.baseURL}${endpoint}`, {
-            method: 'POST',
-            headers,
-            body: formData,
-            ...options
-        });
-
-        return this.handleResponse(response);
     }
 }
 
-/**
- * Custom API Error class
- */
-class ApiError extends Error {
-    constructor(message, status, data = {}) {
-        super(message);
-        this.name = 'ApiError';
-        this.status = status;
-        this.data = data;
-    }
-}
-
-// Create and export singleton instance
 const apiClient = new ApiClient();
-
 export { apiClient, ApiError };
 export default apiClient;
+

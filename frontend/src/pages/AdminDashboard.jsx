@@ -12,11 +12,11 @@ import {
 
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
-import LogoutModal from '../components/LogoutModal/LogoutModal'
+import LogoutModal from '../components/ui/LogoutModal'
 import StudentManagement from '../components/StudentManagement/StudentManagement'
 import ProgramManagement from '../components/ProgramManagement/ProgramManagement'
 import SubjectManagement from '../components/SubjectManagement/SubjectManagement'
-import EnrollmentManagement from '../components/EnrollmentManagement/EnrollmentManagement'
+import EnrollmentManagement from '../components/enrollment/EnrollmentManagement'
 import GradeManagement from '../components/GradeManagement/GradeManagement'
 import AdminAttendance from '../components/AttendanceManagement/AdminAttendance'
 import CalendarManagement from '../components/CalendarManagement/CalendarManagement'
@@ -26,7 +26,7 @@ import AssignmentManagement from '../components/AssignmentManagement/AssignmentM
 import ExamManagement from '../components/ExamManagement/ExamManagement'
 import AdminAnnouncements from '../components/Discussions/AdminAnnouncements'
 import VideoLectures from '../components/VideoLectures/VideoLectures'
-import MainLayout from '../components/Layout/MainLayout'
+import MainLayout from '../components/layout/MainLayout'
 import RiskCenter from '../components/Analytics/RiskCenter'
 import LearningBehaviorDashboard from '../components/Analytics/LearningBehaviorDashboard'
 import RiskAlertSettings from '../components/Analytics/RiskAlertSettings'
@@ -34,8 +34,8 @@ import InsightsDashboard from '../components/Analytics/InsightsDashboard'
 import { CircularProgress } from '../components/CircularProgress'
 import './AdminDashboard.css'
 
-import { API_BASE } from '../config'
-
+import * as notificationService from '../services/notificationService'
+import * as studentService from '../services/studentService'
 
 function AdminDashboard() {
     const { user, token, logout } = useAuth()
@@ -63,66 +63,45 @@ function AdminDashboard() {
 
     // Fetch Notifications
     const fetchNotifications = useCallback(async () => {
-        try {
-            const response = await fetch(`${API_BASE}/notifications.php?limit=10`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
-            if (data.success) {
-                setNotifications(data.data?.notifications || [])
-                setUnreadCount(data.data?.unread_count || 0)
-            }
-        } catch (err) {
-            console.error('Failed to fetch notifications:', err)
+        const { data, error } = await notificationService.fetchNotifications(10);
+        if (data) {
+            setNotifications(data.notifications || []);
+            setUnreadCount(data.unread_count || 0);
+        } else if (error) {
+            console.error('Failed to fetch notifications:', error);
         }
-    }, [token])
+    }, [])
 
     // Mark as read
     const markAsRead = async (id = null) => {
-        try {
-            const body = id
-                ? { action: 'mark_read', notification_id: id }
-                : { action: 'mark_read' }
-            await fetch(`${API_BASE}/notifications.php`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(body)
-            })
-            fetchNotifications()
-        } catch (err) {
-            console.error('Failed to mark notifications read:', err)
+        const { error } = await notificationService.markAsRead(id);
+        if (!error) {
+            fetchNotifications();
+        } else {
+            console.error('Failed to mark notifications read:', error);
         }
     }
 
     // Fetch dashboard statistics
     const fetchStats = useCallback(async () => {
         setRefreshing(true)
-        try {
-            const studentsRes = await fetch(`${API_BASE}/students.php?limit=1`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+        const { pagination, error } = await studentService.fetchStudents({ limit: 1 });
+
+        if (pagination) {
+            setStats({
+                totalStudents: pagination.total || 0,
+                classAverage: 78,
+                atRiskCount: Math.floor((pagination.total || 0) * 0.08),
+                engagementRate: 85
             })
-            const studentsData = await studentsRes.json()
-
-            if (studentsData.success) {
-                setStats({
-                    totalStudents: studentsData.pagination?.total || 0,
-                    classAverage: 78,
-                    atRiskCount: Math.floor((studentsData.pagination?.total || 0) * 0.08),
-                    engagementRate: 85
-                })
-                setLastUpdated(new Date())
-            }
-
-            await fetchNotifications()
-        } catch (err) {
-            console.error('Failed to fetch stats:', err)
-        } finally {
-            setRefreshing(false)
+            setLastUpdated(new Date())
+        } else if (error) {
+            console.error('Failed to fetch stats:', error);
         }
-    }, [token, fetchNotifications])
+
+        await fetchNotifications()
+        setRefreshing(false)
+    }, [fetchNotifications])
 
     useEffect(() => {
         fetchStats()
@@ -141,8 +120,6 @@ function AdminDashboard() {
     }
 
     // ========== COMPONENTS ==========
-
-    // StatsCards component removed (unused)
 
     const renderActiveTab = () => {
         switch (activeTab) {
@@ -226,8 +203,6 @@ function AdminDashboard() {
                     </div>
                 )}
 
-                {/* Stats Cards removed - AdminAnalyticsDashboard has its own overview cards */}
-
                 {/* Main Content with Sidebar */}
                 <div className="admin-layout">
                     <div className="admin-main">
@@ -244,4 +219,3 @@ function AdminDashboard() {
 }
 
 export default AdminDashboard
-

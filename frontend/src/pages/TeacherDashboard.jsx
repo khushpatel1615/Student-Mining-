@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
-import { API_BASE } from '../config';
-import MainLayout from '../components/Layout/MainLayout'
+import MainLayout from '../components/layout/MainLayout'
 import { useAuth } from '../context/AuthContext'
 import TeacherAssignments from '../components/Teacher/Assignments/TeacherAssignments'
 import TeacherExams from '../components/Teacher/Exams/TeacherExams'
@@ -10,10 +9,10 @@ import TeacherGrades from '../components/Teacher/Grades/TeacherGrades'
 import CalendarManagement from '../components/CalendarManagement/CalendarManagement'
 import './TeacherDashboard.css'
 
-
+import * as teacherService from '../services/teacherService'
 
 const TeacherDashboard = () => {
-    const { user, token, logout } = useAuth()
+    const { user, logout } = useAuth()
     const [searchParams, setSearchParams] = useSearchParams()
     const activeTab = searchParams.get('tab') || 'overview'
     const setActiveTab = (tab) => setSearchParams({ tab })
@@ -33,47 +32,37 @@ const TeacherDashboard = () => {
 
     const fetchDashboardData = async () => {
         setRefreshing(true)
-        try {
-            // Fetch teacher's subjects
-            const subjectsRes = await fetch(`${API_BASE}/teachers.php?action=my_subjects`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const subjectsData = await subjectsRes.json()
+        const { data: subjects, error } = await teacherService.fetchMySubjects();
 
-            if (subjectsData.success) {
-                const subjects = subjectsData.data
-
-                // Fetch stats for each subject
-                const subjectsWithStats = await Promise.all(
-                    subjects.map(async (subject) => {
-                        const statsRes = await fetch(
-                            `${API_BASE}/teachers.php?action=subject_stats&subject_id=${subject.id}`,
-                            { headers: { 'Authorization': `Bearer ${token}` } }
-                        )
-                        const statsData = await statsRes.json()
-                        return {
-                            ...subject,
-                            stats: statsData.success ? statsData.data : { total_students: 0, avg_attendance: 0 }
-                        }
-                    })
-                )
-
-                const totalStudents = subjectsWithStats.reduce((sum, s) => sum + (s.stats.total_students || 0), 0)
-
-                setDashboardData({
-                    subjects: subjectsWithStats,
-                    totalStudents,
-                    upcomingExams: [],
-                    pendingGrading: 0
+        if (subjects) {
+            // Fetch stats for each subject
+            const subjectsWithStats = await Promise.all(
+                subjects.map(async (subject) => {
+                    const { data: stats } = await teacherService.fetchTeachers({
+                        action: 'subject_stats',
+                        subject_id: subject.id
+                    });
+                    return {
+                        ...subject,
+                        stats: stats || { total_students: 0, avg_attendance: 0 }
+                    }
                 })
-            }
+            )
 
-            setLastUpdated(new Date())
-        } catch (error) {
-            console.error('Error fetching dashboard data:', error)
-        } finally {
-            setRefreshing(false)
+            const totalStudents = subjectsWithStats.reduce((sum, s) => sum + (s.stats.total_students || 0), 0)
+
+            setDashboardData({
+                subjects: subjectsWithStats,
+                totalStudents,
+                upcomingExams: [],
+                pendingGrading: 0
+            })
+        } else if (error) {
+            console.error('Error fetching dashboard data:', error);
         }
+
+        setLastUpdated(new Date())
+        setRefreshing(false)
     }
 
     const getGreeting = () => {
@@ -214,8 +203,6 @@ const TeacherDashboard = () => {
                         </div>
                     )}
 
-
-
                     {activeTab === 'calendar' && (
                         <div className="card">
                             <CalendarManagement />
@@ -228,6 +215,3 @@ const TeacherDashboard = () => {
 }
 
 export default TeacherDashboard
-
-
-

@@ -17,7 +17,7 @@ if (!function_exists('setCORSHeaders')) {
             header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
             header('Access-Control-Allow-Credentials: true');
             header('Access-Control-Max-Age: 86400');
-// cache for 1 day
+            // cache for 1 day
         }
         // Access-Control headers are received during OPTIONS requests
         if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
@@ -48,7 +48,7 @@ if ($method !== 'GET') {
 }
 
 try {
-// 1. Authentication
+    // 1. Authentication
     $token = getTokenFromHeader();
     $validation = verifyToken($token);
     if (!$validation || !$validation['valid']) {
@@ -173,8 +173,10 @@ try {
 
     function getRiskLabel($riskScore)
     {
-        if ($riskScore >= 70) return 'High Risk';
-        if ($riskScore >= 40) return 'Moderate';
+        if ($riskScore >= 70)
+            return 'High Risk';
+        if ($riskScore >= 40)
+            return 'Moderate';
         return 'Safe';
     }
 
@@ -209,11 +211,13 @@ try {
     }
 
     $trends = [
-        'grades' => array_map(function ($row) { return ['t' => $row['t'], 'value' => $row['value']]; }, $gradeTrend),
-        'attendance' => array_map(function ($row) { return ['t' => $row['t'], 'value' => $row['value']]; }, $attendanceTrend),
+        'grades' => array_map(function ($row) {
+            return ['t' => $row['t'], 'value' => $row['value']]; }, $gradeTrend),
+        'attendance' => array_map(function ($row) {
+            return ['t' => $row['t'], 'value' => $row['value']]; }, $attendanceTrend),
         'risk' => $riskTrend
     ];
-// 7. Response Construction
+    // 7. Response Construction
     $response = [
         'success' => true,
         'timestamp' => date('c'),

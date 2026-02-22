@@ -1,12 +1,13 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import apiClient, { ApiError } from '../utils/apiClient'
+import apiClient from '../utils/apiClient'
+import * as authService from '../services/authService'
 
 const AuthContext = createContext()
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null)
-    const [token, setToken] = useState(null) // In-memory only (removed localStorage)
+    const [token, setToken] = useState(apiClient.token)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const navigate = useNavigate()
@@ -19,64 +20,40 @@ export function AuthProvider({ children }) {
         });
     }, []);
 
-    // On mount, check if we need to restore session
-    // NOTE: With in-memory storage, users must log in each session
-    // Future: Implement HttpOnly cookie auth or refresh token flow
+    // On mount, check if we have a token and verify it
     useEffect(() => {
-        setLoading(false);
-    }, [])
-
-    const verifyToken = async (authToken) => {
-        try {
-            apiClient.setToken(authToken);
-            const data = await apiClient.get('/verify-token.php');
-
-            if (data.success) {
-                setUser(data.user);
-                setToken(authToken);
-                return { success: true };
-            } else {
-                logout();
-                return { success: false };
+        const initAuth = async () => {
+            if (apiClient.token) {
+                const { data, error: verifyError } = await authService.verifyToken();
+                if (data && data.success) {
+                    setUser(data.user);
+                    setToken(apiClient.token);
+                } else {
+                    logout();
+                }
             }
-        } catch (err) {
-            console.error('Token verification failed:', err);
-            logout();
-            return { success: false };
-        }
-    }
+            setLoading(false);
+        };
+        initAuth();
+    }, [])
 
     // Login with Student ID and Password
     const loginWithCredentials = async (studentId, password) => {
         setLoading(true)
         setError(null)
 
-        try {
-            const data = await apiClient.post('/login.php', {
-                student_id: studentId,
-                password: password
-            });
+        const { data, error: loginError } = await authService.login(studentId, password);
 
-            if (data.success) {
-                setToken(data.token)
-                setUser(data.user)
-                apiClient.setToken(data.token);
-
-                // Redirect based on role
-                redirectByRole(data.user.role)
-                return { success: true }
-            } else {
-                setError(data.error)
-                return { success: false, error: data.error }
-            }
-        } catch (err) {
-            const errorMsg = err instanceof ApiError
-                ? err.message
-                : 'Connection failed. Please check if the server is running.';
-            setError(errorMsg)
-            return { success: false, error: errorMsg }
-        } finally {
+        if (data && data.success) {
+            setToken(data.token)
+            setUser(data.user)
+            redirectByRole(data.user.role)
             setLoading(false)
+            return { success: true }
+        } else {
+            setError(loginError || (data && data.error) || 'Login failed')
+            setLoading(false)
+            return { success: false, error: loginError || (data && data.error) }
         }
     }
 
@@ -85,29 +62,18 @@ export function AuthProvider({ children }) {
         setLoading(true)
         setError(null)
 
-        try {
-            const data = await apiClient.post('/google-auth.php', { credential });
+        const { data, error: authError } = await authService.loginWithGoogle(credential);
 
-            if (data.success) {
-                setToken(data.token)
-                setUser(data.user)
-                apiClient.setToken(data.token);
-
-                // Redirect based on role
-                redirectByRole(data.user.role)
-                return { success: true }
-            } else {
-                setError(data.error)
-                return { success: false, error: data.error }
-            }
-        } catch (err) {
-            const errorMsg = err instanceof ApiError
-                ? err.message
-                : 'Google authentication failed. Please try again.';
-            setError(errorMsg)
-            return { success: false, error: errorMsg }
-        } finally {
+        if (data && data.success) {
+            setToken(data.token)
+            setUser(data.user)
+            redirectByRole(data.user.role)
             setLoading(false)
+            return { success: true }
+        } else {
+            setError(authError || (data && data.error) || 'Google authentication failed')
+            setLoading(false)
+            return { success: false, error: authError || (data && data.error) }
         }
     }
 
@@ -121,28 +87,13 @@ export function AuthProvider({ children }) {
 
     // Set password for users who signed in via Google
     const setPassword = async (newPassword, currentPassword = null) => {
-        if (!token) {
-            return { success: false, error: 'Not authenticated' }
-        }
+        const { data, error: pwdError } = await authService.setPassword(newPassword, currentPassword);
 
-        try {
-            const data = await apiClient.post('/set-password.php', {
-                new_password: newPassword,
-                current_password: currentPassword
-            });
-
-            if (data.success) {
-                // Update user state to reflect they now have a password
-                setUser(prev => ({ ...prev, hasPassword: true }))
-                return { success: true, message: data.message }
-            } else {
-                return { success: false, error: data.error }
-            }
-        } catch (err) {
-            const errorMsg = err instanceof ApiError
-                ? err.message
-                : 'Failed to set password. Please try again.';
-            return { success: false, error: errorMsg }
+        if (data && data.success) {
+            setUser(prev => ({ ...prev, hasPassword: true }))
+            return { success: true, message: data.message }
+        } else {
+            return { success: false, error: pwdError || (data && data.error) }
         }
     }
 
@@ -150,7 +101,7 @@ export function AuthProvider({ children }) {
         setUser(null)
         setToken(null)
         setError(null)
-        apiClient.clearToken();
+        authService.logout();
         navigate('/')
     }
 

@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 
 import { API_BASE } from '../../config';
 import { useAuth } from '../../context/AuthContext'
-import SkeletonTable from '../SkeletonTable/SkeletonTable'
+import SkeletonTable from '../ui/SkeletonTable'
 import EmptyState from '../EmptyState/EmptyState'
 import './StudentManagement.css'
 
