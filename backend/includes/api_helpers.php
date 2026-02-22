@@ -5,6 +5,8 @@
  * Standardized response formatting and validation
  */
 
+define('REQUEST_START_TIME', microtime(true));
+
 // Generate a unique request ID if not already set
 if (!defined('REQUEST_ID')) {
     define('REQUEST_ID', uniqid('req_', true));
@@ -29,7 +31,7 @@ function sendResponse($data, $statusCode = 200)
     }
 
     // Log the response
-    logRequest($statusCode, null);
+    Logger::logRequest(REQUEST_START_TIME, $statusCode, $_SERVER['REQUEST_URI'] ?? 'cli');
 
     header('Content-Type: application/json; charset=utf-8');
     http_response_code($statusCode);
@@ -64,7 +66,7 @@ function sendError($message, $statusCode = 400, $details = null, $errorCode = nu
     }
 
     // Log the error
-    logRequest($statusCode, $message);
+    Logger::logRequest(REQUEST_START_TIME, $statusCode, $_SERVER['REQUEST_URI'] ?? 'cli');
 
     // Clear buffer
     while (ob_get_level()) {
@@ -77,42 +79,6 @@ function sendError($message, $statusCode = 400, $details = null, $errorCode = nu
     exit;
 }
 
-/**
- * Log Request details
- */
-function logRequest($statusCode, $error = null)
-{
-    if (php_sapi_name() === 'cli')
-        return;
-
-    $logData = [
-        'requestId' => REQUEST_ID,
-        'timestamp' => date('c'),
-        'method' => $_SERVER['REQUEST_METHOD'] ?? 'UNKNOWN',
-        'uri' => $_SERVER['REQUEST_URI'] ?? 'UNKNOWN',
-        'ip' => $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN',
-        'statusCode' => $statusCode,
-        'durationMs' => (microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000,
-    ];
-
-    if ($error) {
-        $logData['error'] = $error;
-    }
-
-    // Check for user ID in session or token if available (simple check)
-    // This assumes auth middleware might have run and set something, but we can't be sure here.
-    // If we have a global constant or variable for user, we could log it.
-
-    // Write to a structured log file (e.g., daily json log)
-    // Ensure logs directory exists
-    $logDir = __DIR__ . '/../logs';
-    if (!is_dir($logDir)) {
-        @mkdir($logDir, 0755, true);
-    }
-
-    $logFile = $logDir . '/api_requests_' . date('Y-m-d') . '.log';
-    @file_put_contents($logFile, json_encode($logData) . "\n", FILE_APPEND);
-}
 
 /**
  * Get Parsed JSON Input

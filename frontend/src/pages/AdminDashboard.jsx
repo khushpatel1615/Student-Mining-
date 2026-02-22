@@ -31,10 +31,13 @@ import RiskCenter from '../components/Analytics/RiskCenter'
 import LearningBehaviorDashboard from '../components/Analytics/LearningBehaviorDashboard'
 import RiskAlertSettings from '../components/Analytics/RiskAlertSettings'
 import InsightsDashboard from '../components/Analytics/InsightsDashboard'
+import GradeIntegrityReport from '../components/Analytics/GradeIntegrityReport'
+import SystemHealth from '../components/Admin/SystemHealth/SystemHealth'
 import { CircularProgress } from '../components/CircularProgress'
 import './AdminDashboard.css'
 
 import * as notificationService from '../services/notificationService'
+import * as healthService from '../services/healthService'
 import * as studentService from '../services/studentService'
 
 function AdminDashboard() {
@@ -47,14 +50,7 @@ function AdminDashboard() {
     const [lastUpdated, setLastUpdated] = useState(null)
     const [showImportModal, setShowImportModal] = useState(false)
     const [refreshing, setRefreshing] = useState(false)
-
-    // Dashboard stats
-    const [stats, setStats] = useState({
-        totalStudents: 0,
-        classAverage: 0,
-        atRiskCount: 0,
-        engagementRate: 0
-    })
+    const [systemHealthStatus, setSystemHealthStatus] = useState(null)
 
     // Notifications State
     const [notifications, setNotifications] = useState([])
@@ -82,24 +78,19 @@ function AdminDashboard() {
         }
     }
 
-    // Fetch dashboard statistics
+    // Dashboard stats
+    // However, the component relies on `fetchStats` to handle students fetching and notifications.
     const fetchStats = useCallback(async () => {
         setRefreshing(true)
+        // Kept for student pagination/total logic if needed, otherwise handled by real stats object
         const { pagination, error } = await studentService.fetchStudents({ limit: 1 });
-
-        if (pagination) {
-            setStats({
-                totalStudents: pagination.total || 0,
-                classAverage: 78,
-                atRiskCount: Math.floor((pagination.total || 0) * 0.08),
-                engagementRate: 85
-            })
-            setLastUpdated(new Date())
-        } else if (error) {
-            console.error('Failed to fetch stats:', error);
-        }
-
         await fetchNotifications()
+        try {
+            const healthPing = await healthService.fetchHealthPing()
+            if (healthPing?.data?.status) {
+                setSystemHealthStatus(healthPing.data.status)
+            }
+        } catch (err) { }
         setRefreshing(false)
     }, [fetchNotifications])
 
@@ -131,6 +122,8 @@ function AdminDashboard() {
                 return <LearningBehaviorDashboard />
             case 'insights':
                 return <InsightsDashboard />
+            case 'grade-integrity':
+                return <GradeIntegrityReport />
 
             case 'students':
                 return <StudentManagement />
@@ -158,6 +151,8 @@ function AdminDashboard() {
                 return <CalendarManagement role="admin" />
             case 'risk-alerts':
                 return <RiskAlertSettings />
+            case 'system-health':
+                return <SystemHealth />
             default:
                 return <AdminOverview />
         }
@@ -183,6 +178,7 @@ function AdminDashboard() {
 
             <MainLayout
                 role="admin"
+                systemHealthStatus={systemHealthStatus}
                 lastUpdated={lastUpdated}
                 onRefresh={fetchStats}
                 refreshing={refreshing}

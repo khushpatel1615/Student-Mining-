@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 
-import { API_BASE } from '../../config';
+import * as subjectService from '../../services/subjectService'
+import * as programService from '../../services/programService'
 import { useAuth } from '../../context/AuthContext'
 import './SubjectManagement.css'
 
-import { Plus, Edit, Trash2, X, BookOpen, AlertCircle } from 'lucide-react'
+import { Plus, Edit, Trash2, X, BookOpen, AlertCircle, Layers, CreditCard, Info, Book } from 'lucide-react'
 
 // Icons Map
 const PlusIcon = Plus
@@ -61,61 +62,52 @@ function SubjectManagement() {
 
     // Fetch programs
     useEffect(() => {
-        const fetchPrograms = async () => {
+        const loadPrograms = async () => {
             try {
-                const response = await fetch(`${API_BASE}/programs.php`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                })
-                const data = await response.json()
-                if (data.success) {
-                    setPrograms(data.data)
-                    if (data.data.length > 0 && !selectedProgram) {
-                        setSelectedProgram(data.data[0].id.toString())
+                const { data, error } = await programService.fetchPrograms()
+                if (data) {
+                    setPrograms(data)
+                    if (data.length > 0 && !selectedProgram) {
+                        setSelectedProgram(data[0].id.toString())
                         setSelectedSemester('1')
                     }
+                } else if (error) {
+                    setError(error)
                 }
             } catch (err) {
                 console.error('Failed to fetch programs:', err)
             }
         }
-        fetchPrograms()
-    }, [token])
+        loadPrograms()
+    }, [])
 
     // Fetch subjects
-    const fetchSubjects = useCallback(async () => {
+    const loadSubjects = useCallback(async () => {
         if (!selectedProgram || !selectedSemester) return
 
         try {
             setLoading(true)
             setError(null)
-
-            let url = `${API_BASE}/subjects.php?program_id=${selectedProgram}`
-            if (selectedSemester) {
-                url += `&semester=${selectedSemester}`
-            }
-
-            const response = await fetch(url, {
-                headers: { 'Authorization': `Bearer ${token}` },
-                cache: 'no-store'
+            const { data, error } = await subjectService.fetchSubjects({
+                program_id: selectedProgram,
+                semester: selectedSemester
             })
 
-            const data = await response.json()
-
-            if (data.success) {
-                setSubjects(data.data)
+            if (data) {
+                setSubjects(data)
             } else {
-                setError(data.error || 'Failed to fetch subjects')
+                setError(error || 'Failed to fetch subjects')
             }
         } catch (err) {
             setError('Network error. Please try again.')
         } finally {
             setLoading(false)
         }
-    }, [token, selectedProgram, selectedSemester])
+    }, [selectedProgram, selectedSemester])
 
     useEffect(() => {
-        fetchSubjects()
-    }, [fetchSubjects])
+        loadSubjects()
+    }, [loadSubjects])
 
     // Helper for Roman Numerals
     const toRoman = (num) => {
@@ -129,6 +121,7 @@ function SubjectManagement() {
         }
         return roman
     }
+
 
     const getTotalWeight = () => {
         return criteria.reduce((sum, c) => sum + (parseFloat(c.weight_percentage) || 0), 0)
@@ -161,14 +154,10 @@ function SubjectManagement() {
         setModalLoading(true)
         setModalError(null)
         try {
-            const response = await fetch(`${API_BASE}/subjects.php?id=${subject.id}`, {
-                headers: { 'Authorization': `Bearer ${token}` },
-                cache: 'no-store'
-            })
-            const data = await response.json()
+            const { data, error } = await subjectService.fetchSubjectDetails(subject.id)
 
-            if (data.success && data.data) {
-                const detailed = data.data
+            if (data) {
+                const detailed = data
                 setFormData({
                     program_id: detailed.program_id,
                     semester: detailed.semester,
@@ -189,7 +178,7 @@ function SubjectManagement() {
                     setCriteria([...DEFAULT_CRITERIA])
                 }
             } else {
-                const msg = data.error || 'Failed to load subject details'
+                const msg = error || 'Failed to load subject details'
                 setError(msg)
                 setModalError(msg)
             }
@@ -318,35 +307,25 @@ function SubjectManagement() {
         setSaving(true)
 
         try {
-            const url = `${API_BASE}/subjects.php`
-            const method = modalMode === 'add' ? 'POST' : 'PUT'
             const body = {
                 ...formData,
                 evaluation_criteria: adjustedCriteria.filter(c => c.component_name)
             }
-            if (modalMode === 'edit') {
-                body.id = editingSubject.id
+
+            let res;
+            if (modalMode === 'add') {
+                res = await subjectService.createSubject(body)
+            } else {
+                res = await subjectService.updateSubject(editingSubject.id, body)
             }
 
-            const response = await fetch(url, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(body)
-            })
-
-            const data = await response.json()
-
-            if (data.success) {
+            if (res.data?.success) {
                 setShowModal(false)
                 setError(null)
                 setModalError(null)
-                // Ensure latest data before reopening edit
-                await fetchSubjects()
+                loadSubjects()
             } else {
-                const msg = data.error || 'Failed to save subject'
+                const msg = res.error || 'Failed to save subject'
                 setError(msg)
                 setModalError(msg)
             }
@@ -361,21 +340,15 @@ function SubjectManagement() {
 
     const handleDelete = async () => {
         setSaving(true)
-
         try {
-            const response = await fetch(`${API_BASE}/subjects.php?id=${deletingSubject.id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
+            const { data, error } = await subjectService.deleteSubject(deletingSubject.id)
 
-            const data = await response.json()
-
-            if (data.success) {
+            if (data?.success) {
                 setShowDeleteModal(false)
                 setDeletingSubject(null)
-                fetchSubjects()
+                loadSubjects()
             } else {
-                setError(data.error || 'Failed to delete subject')
+                setError(error || 'Failed to delete subject')
             }
         } catch (err) {
             setError('Network error. Please try again.')
@@ -460,60 +433,83 @@ function SubjectManagement() {
                         <p>Add subjects to this semester.</p>
                     </div>
                 ) : (
-                    <>
-                        <div className="table-header-title">New Syllabus</div>
-                        <table className="subjects-table">
-                            <thead>
-                                <tr>
-                                    <th>Subject Name</th>
-                                    <th>Subject Type</th>
-                                    <th>Subject Code</th>
-                                    <th>Subject Credit</th>
-                                    <th>Subject Comment</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {subjects.map(subject => (
-                                    <tr key={subject.id}>
-                                        <td>
-                                            <span className="subject-name-cell">{subject.name}</span>
-                                        </td>
-                                        <td>
-                                            <span className="subject-type-cell">{subject.subject_type}</span>
-                                        </td>
-                                        <td>
-                                            <span className="subject-code-cell">{subject.code}</span>
-                                        </td>
-                                        <td>
-                                            <span className="credits-cell">{subject.credits}</span>
-                                        </td>
-                                        <td>
-                                            <span className="comment-cell">Effective From 2025</span>
-                                        </td>
-                                        <td>
-                                            <div className="action-buttons">
-                                                <button
-                                                    className="btn-action"
-                                                    onClick={() => openEditModal(subject)}
-                                                    title="Edit"
-                                                >
-                                                    <EditIcon />
-                                                </button>
-                                                <button
-                                                    className="btn-action delete"
-                                                    onClick={() => openDeleteModal(subject)}
-                                                    title="Delete"
-                                                >
-                                                    <TrashIcon />
-                                                </button>
+                    <div className="syllabus-container">
+                        <div className="syllabus-header">
+                            <div className="syllabus-info">
+                                <Book size={20} />
+                                <span>Subject Syllabus</span>
+                                <span className="program-badge">{currentProgram?.name}</span>
+                                <span className="semester-badge-pill">Semester {toRoman(selectedSemester)}</span>
+                            </div>
+                            <div className="syllabus-count">{subjects.length} Subjects</div>
+                        </div>
+
+                        <div className="subjects-list">
+                            {subjects.map(subject => (
+                                <div key={subject.id} className="subject-card">
+                                    <div className="subject-main">
+                                        <div className="subject-icon">
+                                            <BookOpen size={24} />
+                                        </div>
+                                        <div className="subject-details">
+                                            <div className="subject-top">
+                                                <h4 className="subject-name">{subject.name}</h4>
+                                                <span className={`type-badge ${subject.subject_type?.toLowerCase()}`}>
+                                                    {subject.subject_type}
+                                                </span>
                                             </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </>
+                                            <div className="subject-meta">
+                                                <span className="code-tag">
+                                                    <CreditCard size={14} />
+                                                    {subject.code}
+                                                </span>
+                                                <span className="credits-tag">
+                                                    <Layers size={14} />
+                                                    {subject.credits} Credits
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="subject-criteria">
+                                        <div className="criteria-header">
+                                            <Info size={14} />
+                                            <span>Evaluation Breakdown</span>
+                                        </div>
+                                        <div className="criteria-tags">
+                                            {subject.evaluation_criteria && subject.evaluation_criteria.length > 0 ? (
+                                                subject.evaluation_criteria.map((c, i) => (
+                                                    <div key={i} className="criteria-tag">
+                                                        <span className="criteria-name">{c.component_name}</span>
+                                                        <span className="criteria-weight">{parseFloat(c.weight_percentage)}%</span>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <span className="no-criteria">No criteria defined</span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="subject-actions">
+                                        <button
+                                            className="action-btn edit"
+                                            onClick={() => openEditModal(subject)}
+                                            title="Edit Subject"
+                                        >
+                                            <Edit size={18} />
+                                        </button>
+                                        <button
+                                            className="action-btn delete"
+                                            onClick={() => openDeleteModal(subject)}
+                                            title="Delete Subject"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 )}
             </div>
 
@@ -637,14 +633,14 @@ function SubjectManagement() {
                                                 <span>Marks</span>
                                                 <span></span>
                                             </div>
-                                        {criteria.map((c, index) => (
-                                            <div key={index} className="evaluation-row">
-                                                <input
-                                                    type="text"
-                                                    value={c.component_name}
-                                                    onChange={e => updateCriteria(index, 'component_name', e.target.value)}
-                                                    placeholder="Component name"
-                                                />
+                                            {criteria.map((c, index) => (
+                                                <div key={index} className="evaluation-row">
+                                                    <input
+                                                        type="text"
+                                                        value={c.component_name}
+                                                        onChange={e => updateCriteria(index, 'component_name', e.target.value)}
+                                                        placeholder="Component name"
+                                                    />
                                                     <input
                                                         type="number"
                                                         value={c.weight_percentage}

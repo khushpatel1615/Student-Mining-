@@ -56,3 +56,21 @@ export const fetchDashboardData = async (params = {}) => {
     }
 };
 
+export const createStudent = async (studentData) => {
+    try {
+        const data = await apiClient.post('/students.php', studentData);
+        return { data, error: null };
+    } catch (error) {
+        return { data: null, error: error.message };
+    }
+};
+
+export const deleteStudent = async (id) => {
+    try {
+        const data = await apiClient.delete(`/students.php?id=${id}`);
+        return { data, error: null };
+    } catch (error) {
+        return { data: null, error: error.message };
+    }
+};
+

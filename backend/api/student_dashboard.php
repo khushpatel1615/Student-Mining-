@@ -6,6 +6,7 @@
  */
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/cache.php';
 require_once __DIR__ . '/../includes/jwt.php';
 require_once __DIR__ . '/../includes/api_helpers.php';
 
@@ -44,6 +45,12 @@ function handleGet($pdo, $dataDir, $userId)
     if (isset($_GET['action']) && $_GET['action'] === 'analytics_stream') {
         handleAnalyticsStream($pdo, $dataDir, $userId);
         return;
+    }
+
+    $semester = isset($_GET['semester']) ? intval($_GET['semester']) : 'current';
+    $cacheKey = "dashboard_summary_{$userId}_{$semester}";
+    if ($cached = Cache::get($cacheKey)) {
+        sendResponse($cached);
     }
 
     // 1. Get Complete Student Profile
@@ -176,7 +183,7 @@ function handleGet($pdo, $dataDir, $userId)
     $gpa10 = $earnedCredits > 0 ? round($gradePointsSum / $earnedCredits, 2) : 0;
     $gpa4 = round($gpa10 / 2.5, 2); // Quick conversion from 10.0 to 4.0
 
-    sendResponse([
+    $response = [
         'enrolled' => true,
         'student' => [
             'id' => $student['id'],
@@ -202,7 +209,10 @@ function handleGet($pdo, $dataDir, $userId)
             'overall_attendance' => $overallAttendancePercent,
             'subjects_enrolled' => count($subjectsData)
         ]
-    ]);
+    ];
+
+    Cache::set($cacheKey, $response, 300);
+    sendResponse($response);
 }
 
 function handleAnalytics($pdo, $dataDir, $userId)
@@ -335,7 +345,8 @@ function buildAnalyticsData($pdo, $dataDir, $userId, $range, $requestedSemester)
         $attendanceTrend[] = ['t' => $date, 'value' => $pct];
     }
     usort($attendanceTrend, function ($a, $b) {
-        return strcmp($a['t'], $b['t']); });
+        return strcmp($a['t'], $b['t']);
+    });
 
     $gradeTrend = [];
     foreach ($gradeByDate as $date => $vals) {
@@ -345,7 +356,8 @@ function buildAnalyticsData($pdo, $dataDir, $userId, $range, $requestedSemester)
         $gradeTrend[] = ['t' => $date, 'value' => $avg];
     }
     usort($gradeTrend, function ($a, $b) {
-        return strcmp($a['t'], $b['t']); });
+        return strcmp($a['t'], $b['t']);
+    });
 
     // Metrics
     $overallAttendance = $totalClassesOverall > 0 ? round(($totalPresentOverall / $totalClassesOverall) * 100, 1) : 0;
@@ -358,9 +370,11 @@ function buildAnalyticsData($pdo, $dataDir, $userId, $range, $requestedSemester)
     $riskTrend = [];
     $allDates = array_unique(array_merge(
         array_map(function ($x) {
-            return $x['t']; }, $attendanceTrend),
+            return $x['t'];
+        }, $attendanceTrend),
         array_map(function ($x) {
-            return $x['t']; }, $gradeTrend)
+            return $x['t'];
+        }, $gradeTrend)
     ));
     sort($allDates);
 

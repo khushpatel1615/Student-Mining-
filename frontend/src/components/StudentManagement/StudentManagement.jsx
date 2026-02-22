@@ -1,125 +1,25 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
-import { API_BASE } from '../../config';
 import { useAuth } from '../../context/AuthContext'
 import SkeletonTable from '../ui/SkeletonTable'
 import EmptyState from '../EmptyState/EmptyState'
+import * as studentService from '../../services/studentService'
+import * as programService from '../../services/programService'
+import { importService } from '../../services/importService'
 import './StudentManagement.css'
 
-// Icons
-const SearchIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="11" cy="11" r="8" />
-        <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-)
-
-const PlusIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="12" y1="5" x2="12" y2="19" />
-        <line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
-)
-
-const EditIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-    </svg>
-)
-
-const TrashIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="3 6 5 6 21 6" />
-        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-    </svg>
-)
-
-const CloseIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="18" y1="6" x2="6" y2="18" />
-        <line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
-)
-
-const UsersIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-)
-
-const AlertIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-        <line x1="12" y1="9" x2="12" y2="13" />
-        <line x1="12" y1="17" x2="12.01" y2="17" />
-    </svg>
-)
-
-const CheckCircleIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-        <polyline points="22 4 12 14.01 9 11.01" />
-    </svg>
-)
-
-const UploadIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-        <polyline points="17 8 12 3 7 8" />
-        <line x1="12" y1="3" x2="12" y2="15" />
-    </svg>
-)
-
-const MailIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-        <polyline points="22,6 12,13 2,6" />
-    </svg>
-)
-
-const LockIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-    </svg>
-)
-
-const IdCardIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="4" width="18" height="16" rx="2" />
-        <line x1="16" y1="2" x2="16" y2="6" />
-        <line x1="8" y1="2" x2="8" y2="6" />
-        <rect x="7" y="10" width="10" height="8" />
-    </svg>
-)
-
-const UserIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-        <circle cx="12" cy="7" r="4" />
-    </svg>
-)
-
-const GraduationCapIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-        <path d="M6 12v5c3 3 9 3 12 0v-5" />
-    </svg>
-)
-
-const AwardIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="8" r="7" />
-        <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
-    </svg>
-)
+import {
+    Search, Plus, Edit2, Trash2, UserCheck, UserX,
+    Upload, Download, Filter, ChevronLeft, ChevronRight,
+    Users, MoreHorizontal, GraduationCap, Mail, IdCard, Calendar,
+    AlertCircle, CheckCircle, Lock, X
+} from 'lucide-react'
 
 import * as XLSX from 'xlsx'
+
+
+
 
 
 
@@ -215,27 +115,15 @@ function StudentManagement() {
             }
 
             // 1. Import Students
-            const response = await fetch(`${API_BASE}/import_students_backend.php`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    action: 'import_students',
-                    data: studentsToImport
-                })
-            })
-
-            const result = await response.json()
-            if (!result.success) throw new Error(result.error)
+            const result = await importService.importStudents(studentsToImport)
+            if (result.error) throw new Error(result.error)
 
             // 2. Import Enrollments (Legacy Logic)
             if (sheetName === '5th') {
-                const subjects = ['CPT', 'NS', 'PHP-CGM', 'JAVA', 'PYTHON', 'PRO', 'INE']
+                const subjectsArr = ['CPT', 'NS', 'PHP-CGM', 'JAVA', 'PYTHON', 'PRO', 'INE']
                 const enrollments = []
                 studentsToImport.forEach(student => {
-                    subjects.forEach(subjectCode => {
+                    subjectsArr.forEach(subjectCode => {
                         enrollments.push({
                             enrollment: student.enrollment,
                             subjectCode: subjectCode
@@ -243,21 +131,10 @@ function StudentManagement() {
                     })
                 })
 
-                await fetch(`${API_BASE}/import_students_backend.php`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        action: 'import_enrollments',
-                        data: enrollments
-                    })
-                })
-                // Merge stats defaulting to student import stats for display
+                await importService.importEnrollments(enrollments)
             }
 
-            setImportStats(result)
+            setImportStats(result.data)
             fetchStudents()
 
         } catch (err) {
@@ -319,55 +196,41 @@ function StudentManagement() {
             setLoading(true)
             setError(null)
 
-            const params = new URLSearchParams({
-                page: page.toString(),
-                limit: '20'
+            const { data, pagination: pag, error: err } = await studentService.fetchStudents({
+                page,
+                limit: 20,
+                search: debouncedSearch,
+                role: roleFilter
             })
 
-            if (debouncedSearch) params.append('search', debouncedSearch)
-            if (roleFilter) params.append('role', roleFilter)
-
-            const response = await fetch(`${API_BASE}/students.php?${params}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            })
-
-            const data = await response.json()
-
-            if (data.success) {
-                setStudents(data.data)
-                setPagination(data.pagination)
+            if (data) {
+                setStudents(data)
+                setPagination(pag || { total: 0, totalPages: 1 })
             } else {
-                setError(data.error || 'Failed to fetch students')
+                setError(err || 'Failed to fetch students')
             }
         } catch (err) {
             setError('Network error. Please try again.')
         } finally {
             setLoading(false)
         }
-    }, [token, page, debouncedSearch, roleFilter])
+    }, [page, debouncedSearch, roleFilter])
 
-    useEffect(() => {
-        fetchStudents()
-        fetchPrograms() // Fetch programs when component mounts
-    }, [fetchStudents])
-
-    const fetchPrograms = async () => {
+    const fetchPrograms = useCallback(async () => {
         try {
-            const response = await fetch(`${API_BASE}/programs.php?active=true`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            })
-            const data = await response.json()
-            if (data.success) {
-                setPrograms(data.data)
+            const { data } = await programService.fetchPrograms()
+            if (data) {
+                setPrograms(data)
             }
         } catch (err) {
             console.error('Failed to fetch programs:', err)
         }
-    }
+    }, [])
+
+    useEffect(() => {
+        fetchStudents()
+        fetchPrograms()
+    }, [fetchStudents, fetchPrograms])
 
 
 
@@ -432,21 +295,11 @@ function StudentManagement() {
         setSaving(true)
 
         try {
-            const response = await fetch(`${API_BASE}/students.php`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    id: statusTogglingStudent.id,
-                    is_active: newStatus
-                })
+            const { data, error: err } = await studentService.updateStudent(statusTogglingStudent.id, {
+                is_active: newStatus
             })
 
-            const data = await response.json()
-
-            if (data.success) {
+            if (data?.success) {
                 // Update local state optimistically
                 setStudents(prev => prev.map(s =>
                     s.id === statusTogglingStudent.id ? { ...s, is_active: newStatus } : s
@@ -468,33 +321,18 @@ function StudentManagement() {
         setSaving(true)
 
         try {
-            const url = `${API_BASE}/students.php`
-            const method = modalMode === 'add' ? 'POST' : 'PUT'
-            const body = modalMode === 'add'
-                ? formData
-                : { ...formData, id: editingStudent.id }
-
-            // Only include password if it's provided
-            if (!body.password) {
-                delete body.password
+            let res;
+            if (modalMode === 'add') {
+                res = await studentService.createStudent(formData)
+            } else {
+                res = await studentService.updateStudent(editingStudent.id, formData)
             }
 
-            const response = await fetch(url, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(body)
-            })
-
-            const data = await response.json()
-
-            if (data.success) {
+            if (res.data?.success) {
                 setShowModal(false)
                 fetchStudents()
             } else {
-                setError(data.error || 'Failed to save student')
+                setError(res.error || 'Failed to save student')
             }
         } catch (err) {
             setError('Network error. Please try again.')
@@ -503,25 +341,19 @@ function StudentManagement() {
         }
     }
 
-    const handleDelete = async () => {
+    const handleConfirmDelete = async () => {
+        if (!deletingStudent) return
         setSaving(true)
 
         try {
-            const response = await fetch(`${API_BASE}/students.php?id=${deletingStudent.id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            })
+            const { data, error: err } = await studentService.deleteStudent(deletingStudent.id)
 
-            const data = await response.json()
-
-            if (data.success) {
+            if (data?.success) {
                 setShowDeleteModal(false)
                 setDeletingStudent(null)
                 fetchStudents()
             } else {
-                setError(data.error || 'Failed to delete student')
+                setError(err || 'Failed to delete student')
             }
         } catch (err) {
             setError('Network error. Please try again.')
@@ -536,7 +368,7 @@ function StudentManagement() {
             <div className="student-management-header">
                 <h2 className="student-management-title">Student Management</h2>
                 <button className="btn-add" onClick={openAddModal}>
-                    <PlusIcon />
+                    <Plus size={18} />
                     Add Student
                 </button>
             </div>
@@ -544,7 +376,7 @@ function StudentManagement() {
             {/* Filters */}
             <div className="student-filters">
                 <div className="search-input-wrapper">
-                    <SearchIcon />
+                    <Search size={18} />
                     <input
                         type="text"
                         className="search-input"
@@ -585,7 +417,7 @@ function StudentManagement() {
                     <SkeletonTable rows={10} columns={7} />
                 ) : students.length === 0 ? (
                     <EmptyState
-                        icon={UsersIcon}
+                        icon={Users}
                         title="No Students Found"
                         description="We couldn't find any students matching your current search or filters. Try adjusting your criteria or adding a new student."
                         actionText="Add New Student"
@@ -681,14 +513,14 @@ function StudentManagement() {
                                                         onClick={() => openEditModal(student)}
                                                         title="Edit student"
                                                     >
-                                                        <EditIcon />
+                                                        <Edit2 size={16} />
                                                     </button>
                                                     <button
                                                         className="btn-action-modern delete"
                                                         onClick={() => openDeleteModal(student)}
                                                         title="Delete student"
                                                     >
-                                                        <TrashIcon />
+                                                        <Trash2 size={16} />
                                                     </button>
                                                 </div>
                                             </td>
@@ -709,14 +541,14 @@ function StudentManagement() {
                                     disabled={page === 1}
                                     onClick={() => setPage(p => p - 1)}
                                 >
-                                    Previous
+                                    <ChevronLeft size={18} />
                                 </button>
                                 <button
                                     className="btn-page"
                                     disabled={page >= pagination.totalPages}
                                     onClick={() => setPage(p => p + 1)}
                                 >
-                                    Next
+                                    <ChevronRight size={18} />
                                 </button>
                             </div>
                         </div>
@@ -733,7 +565,7 @@ function StudentManagement() {
                                 {modalMode === 'add' ? 'Add New Student' : 'Edit Student'}
                             </h3>
                             <button className="modal-close" onClick={() => setShowModal(false)}>
-                                <CloseIcon />
+                                <X size={20} />
                             </button>
                         </div>
                         <form onSubmit={handleSubmit} className="modal-form">
@@ -743,7 +575,7 @@ function StudentManagement() {
                                     <label className="form-label">Full Name <span className="required">*</span></label>
                                     <div className="input-group">
                                         <div className="input-icon">
-                                            <UserIcon />
+                                            <Users size={18} />
                                         </div>
                                         <input
                                             type="text"
@@ -761,7 +593,7 @@ function StudentManagement() {
                                     <label className="form-label">Email Address <span className="required">*</span></label>
                                     <div className="input-group">
                                         <div className="input-icon">
-                                            <MailIcon />
+                                            <Mail size={18} />
                                         </div>
                                         <input
                                             type="email"
@@ -780,7 +612,7 @@ function StudentManagement() {
                                         <label className="form-label">Student ID</label>
                                         <div className="input-group">
                                             <div className="input-icon">
-                                                <IdCardIcon />
+                                                <IdCard size={18} />
                                             </div>
                                             <input
                                                 type="text"
@@ -797,7 +629,7 @@ function StudentManagement() {
                                         <label className="form-label">Role</label>
                                         <div className="input-group">
                                             <div className="input-icon">
-                                                <AwardIcon />
+                                                <UserCheck size={18} />
                                             </div>
                                             <select
                                                 className="form-select with-icon"
@@ -817,7 +649,7 @@ function StudentManagement() {
                                         <label className="form-label">Department</label>
                                         <div className="input-group">
                                             <div className="input-icon">
-                                                <GraduationCapIcon />
+                                                <GraduationCap size={18} />
                                             </div>
                                             <select
                                                 className="form-select with-icon"
@@ -841,7 +673,7 @@ function StudentManagement() {
                                         </label>
                                         <div className="input-group">
                                             <div className="input-icon">
-                                                <LockIcon />
+                                                <Lock size={18} />
                                             </div>
                                             <input
                                                 type="password"
@@ -874,13 +706,13 @@ function StudentManagement() {
                         <div className="modal-header">
                             <h3 className="modal-title">Confirm Deactivation</h3>
                             <button className="modal-close" onClick={() => setShowDeleteModal(false)}>
-                                <CloseIcon />
+                                <X size={20} />
                             </button>
                         </div>
                         <div className="modal-body">
                             <div className="delete-confirmation">
                                 <div className="delete-confirmation-icon">
-                                    <AlertIcon />
+                                    <AlertCircle size={48} />
                                 </div>
                                 <h3>Deactivate this user</h3>
                                 <p>
@@ -893,7 +725,7 @@ function StudentManagement() {
                             <button className="btn-secondary" onClick={() => setShowDeleteModal(false)}>
                                 Cancel
                             </button>
-                            <button className="btn-danger" onClick={handleDelete} disabled={saving}>
+                            <button className="btn-danger" onClick={handleConfirmDelete} disabled={saving}>
                                 {saving ? 'Deactivating...' : 'Deactivate'}
                             </button>
                         </div>
@@ -908,14 +740,14 @@ function StudentManagement() {
                         <div className="modal-header">
                             <h3 className="modal-title">Batch Import Students</h3>
                             <button className="modal-close" onClick={() => setShowImportModal(false)}>
-                                <CloseIcon />
+                                <X />
                             </button>
                         </div>
                         <div className="modal-body">
                             {!importStats ? (
                                 <div className="import-area" style={{ textAlign: 'center', padding: '2rem' }}>
                                     <div style={{ marginBottom: '1.5rem', color: 'var(--primary)', transform: 'scale(1.5)', display: 'inline-block' }}>
-                                        <UploadIcon />
+                                        <Upload />
                                     </div>
                                     <h3 style={{ marginBottom: '1rem' }}>Upload Excel/CSV File</h3>
                                     <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
@@ -939,7 +771,7 @@ function StudentManagement() {
                                         {importing ? (
                                             <>Converting & Uploading...</>
                                         ) : (
-                                            <><span style={{ display: 'inline-block', width: '18px' }}><UploadIcon /></span> Select File</>
+                                            <><span style={{ display: 'inline-block', width: '18px' }}><Upload /></span> Select File</>
                                         )}
                                     </label>
                                 </div>
@@ -947,7 +779,7 @@ function StudentManagement() {
                                 <div className="import-success">
                                     <div className="status-confirmation activate">
                                         <div className="status-confirmation-icon">
-                                            <CheckCircleIcon />
+                                            <CheckCircle />
                                         </div>
                                         <h3>Import Complete!</h3>
                                         <p>Successfully processed {importStats.total} records.</p>
@@ -977,13 +809,13 @@ function StudentManagement() {
                                 {statusTogglingStudent.is_active ? 'Deactivate User' : 'Activate User'}
                             </h3>
                             <button className="modal-close" onClick={() => { setShowStatusModal(false); setStatusTogglingStudent(null); }}>
-                                <CloseIcon />
+                                <X />
                             </button>
                         </div>
                         <div className="modal-body">
                             <div className={`status-confirmation ${statusTogglingStudent.is_active ? 'deactivate' : 'activate'}`}>
                                 <div className="status-confirmation-icon">
-                                    {statusTogglingStudent.is_active ? <AlertIcon /> : <CheckCircleIcon />}
+                                    {statusTogglingStudent.is_active ? <AlertCircle /> : <CheckCircle />}
                                 </div>
                                 <h3>
                                     {statusTogglingStudent.is_active

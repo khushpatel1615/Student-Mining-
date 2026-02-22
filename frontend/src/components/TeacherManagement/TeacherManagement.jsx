@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-import { API_BASE } from '../../config';
+
 import { useAuth } from '../../context/AuthContext'
 import EmptyState from '../EmptyState/EmptyState'
 import './TeacherManagement.css'
@@ -80,14 +80,11 @@ function TeacherManagement() {
     const fetchTeachers = async () => {
         try {
             setError(null)
-            const response = await fetch(`${API_BASE}/teachers.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
-            if (data.success) {
-                setTeachers(data.data)
+            const { data, error: err } = await teacherService.fetchTeachers()
+            if (data) {
+                setTeachers(data)
             } else {
-                setError(data.error || 'Failed to load teachers')
+                setError(err || 'Failed to load teachers')
             }
         } catch (err) {
             setError('Failed to load teachers. Please check your connection.')
@@ -98,12 +95,9 @@ function TeacherManagement() {
 
     const fetchSubjects = async () => {
         try {
-            const response = await fetch(`${API_BASE}/subjects.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
-            if (data.success) {
-                setSubjects(data.data || [])
+            const { data } = await subjectService.fetchSubjects()
+            if (data) {
+                setSubjects(data || [])
             }
         } catch (err) {
             console.error('Failed to load subjects')
@@ -116,27 +110,15 @@ function TeacherManagement() {
 
         setAddingTeacher(true)
         try {
-            const response = await fetch(`${API_BASE}/teachers.php`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    action: 'create',
-                    email: newTeacher.email,
-                    full_name: newTeacher.full_name
-                })
-            })
-            const data = await response.json()
+            const { data, error: err } = await teacherService.createTeacher(newTeacher)
 
-            if (data.success) {
+            if (data?.success) {
                 setSuccessMessage(`Teacher "${newTeacher.full_name}" created successfully! Default password: teacher1234`)
                 setShowAddTeacherModal(false)
                 setNewTeacher({ email: '', full_name: '' })
                 fetchTeachers()
             } else {
-                setError(data.error || 'Failed to create teacher')
+                setError(err || 'Failed to create teacher')
             }
         } catch (err) {
             setError('Failed to create teacher')
@@ -148,24 +130,13 @@ function TeacherManagement() {
     const handleDeleteTeacher = async (id) => {
         if (window.confirm('Are you sure you want to delete this teacher?')) {
             try {
-                const response = await fetch(`${API_BASE}/teachers.php?id=${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        action: 'delete',
-                        teacher_id: id
-                    })
-                })
-                const data = await response.json()
+                const { data, error: err } = await teacherService.deleteTeacher(id)
 
-                if (data.success) {
+                if (data?.success) {
                     setSuccessMessage('Teacher deleted successfully!')
                     fetchTeachers()
                 } else {
-                    setError(data.error || 'Failed to delete teacher')
+                    setError(err || 'Failed to delete teacher')
                 }
             } catch (err) {
                 setError('Failed to delete teacher')
@@ -177,27 +148,16 @@ function TeacherManagement() {
         if (!selectedTeacher || !selectedSubject) return
 
         try {
-            const response = await fetch(`${API_BASE}/teachers.php`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    teacher_id: selectedTeacher.id,
-                    subject_id: parseInt(selectedSubject)
-                })
-            })
-            const data = await response.json()
+            const { data, error: err } = await teacherService.assignSubject(selectedTeacher.id, parseInt(selectedSubject))
 
-            if (data.success) {
+            if (data?.success) {
                 setSuccessMessage('Subject assigned successfully!')
                 setShowAssignModal(false)
                 setSelectedSubject('')
                 setSelectedSemester('')
                 fetchTeachers()
             } else {
-                setError(data.error || 'Failed to assign subject')
+                setError(err || 'Failed to assign subject')
             }
         } catch (err) {
             setError('Failed to assign subject')
@@ -208,29 +168,13 @@ function TeacherManagement() {
         if (!window.confirm('Remove this subject assignment?')) return
 
         try {
-            // We need to find the assignment ID from teacher_subjects table
-            // For now, we'll use a workaround by fetching teacher details and matching
-            const response = await fetch(`${API_BASE}/teachers.php?id=${teacherId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const teacherData = await response.json()
+            const { data, error: err } = await teacherService.deleteTeacherSubject(teacherId, subjectId)
 
-            if (teacherData.success) {
-                // Find the assignment - the subject.id in assigned_subjects might be the assignment ID
-                // Actually looking at the API, we need the teacher_subjects.id, not subject.id
-                // Let's use a direct delete that takes teacher_id and subject_id
-                const deleteRes = await fetch(`${API_BASE}/teachers.php?teacher_id=${teacherId}&subject_id=${subjectId}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                })
-                const deleteData = await deleteRes.json()
-
-                if (deleteData.success) {
-                    setSuccessMessage('Assignment removed successfully!')
-                    fetchTeachers()
-                } else {
-                    setError(deleteData.error || 'Failed to remove assignment')
-                }
+            if (data?.success) {
+                setSuccessMessage('Assignment removed successfully!')
+                fetchTeachers()
+            } else {
+                setError(err || 'Failed to remove assignment')
             }
         } catch (err) {
             setError('Failed to remove assignment')

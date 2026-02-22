@@ -31,12 +31,42 @@ export const updateTeacher = async (id, teacherData) => {
     }
 };
 
+export const createTeacher = async (teacherData) => {
+    try {
+        const data = await apiClient.post('/teachers.php', { action: 'create', ...teacherData });
+        return { data, error: null };
+    } catch (error) {
+        return { data: null, error: error.message };
+    }
+};
+
+export const assignSubject = async (teacherId, subjectId) => {
+    try {
+        const data = await apiClient.post('/teachers.php', {
+            teacher_id: teacherId,
+            subject_id: subjectId
+        });
+        return { data, error: null };
+    } catch (error) {
+        return { data: null, error: error.message };
+    }
+};
+
 export const deleteTeacherSubject = async (teacherId, subjectId) => {
     try {
         const data = await apiClient.delete('/teachers.php', {
             teacher_id: teacherId,
             subject_id: subjectId
         });
+        return { data, error: null };
+    } catch (error) {
+        return { data: null, error: error.message };
+    }
+};
+
+export const deleteTeacher = async (id) => {
+    try {
+        const data = await apiClient.delete('/teachers.php', { action: 'delete', teacher_id: id });
         return { data, error: null };
     } catch (error) {
         return { data: null, error: error.message };

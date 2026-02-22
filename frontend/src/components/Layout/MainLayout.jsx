@@ -10,6 +10,7 @@ import './MainLayout.css';
 const MainLayout = ({
     children,
     role = 'student',
+    systemHealthStatus,
     lastUpdated,
     onRefresh,
     refreshing,
@@ -35,6 +36,7 @@ const MainLayout = ({
         <div className={`main-layout ${collapsed ? 'collapsed' : ''}`}>
             <Sidebar
                 role={role}
+                systemHealthStatus={systemHealthStatus}
                 onLogout={onLogout}
                 mobileMenuOpen={mobileMenuOpen}
                 setMobileMenuOpen={setMobileMenuOpen}

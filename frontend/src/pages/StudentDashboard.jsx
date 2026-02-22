@@ -20,6 +20,7 @@ import { useAuth } from '../context/AuthContext'
 import CalendarManagement from '../components/CalendarManagement/CalendarManagement'
 import { CircularProgress } from '../components/CircularProgress'
 import GradesTab from '../components/student/Grades/GradesTab'
+import DegreeAudit from '../components/student/DegreeAudit/DegreeAudit'
 import StudentProfile from '../components/student/Profile/StudentProfile'
 import StudentAssignments from '../components/student/Assignments/StudentAssignments'
 import StudentExams from '../components/student/Exams/StudentExams'
@@ -471,6 +472,12 @@ const StudentDashboard = () => {
                     {activeTab === 'grades' && (
                         <div className="card">
                             <GradesTab selectedSemester={selectedSemester} />
+                        </div>
+                    )}
+
+                    {activeTab === 'degree-audit' && (
+                        <div className="card">
+                            <DegreeAudit />
                         </div>
                     )}
 

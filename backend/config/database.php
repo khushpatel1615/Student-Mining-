@@ -3,6 +3,7 @@
  * Database Configuration
  * StudentDataMining - Unified Login System
  */
+define('REQUEST_ID', uniqid('req_', true));
 
 // Error reporting for development
 error_reporting(E_ALL);
@@ -11,13 +12,24 @@ ini_set('display_errors', 0);
 // Load EnvLoader
 require_once __DIR__ . '/EnvLoader.php';
 
+// Load Logger and Cache
+require_once __DIR__ . '/../includes/logger.php';
+Logger::init(getenv('APP_ENV') ?: 'production');
+require_once __DIR__ . '/../includes/cache.php';
+Cache::init();
+
 // Global Exception Handler
 set_exception_handler(function ($e) {
     if (php_sapi_name() === 'cli') {
         echo "Uncaught Exception: " . $e->getMessage() . "\n";
         exit(1);
     }
-    error_log("Uncaught Exception: " . $e->getMessage());
+    Logger::fatal('Uncaught Exception', [
+        'message' => $e->getMessage(),
+        'file' => $e->getFile(),
+        'line' => $e->getLine(),
+        'trace' => $e->getTraceAsString(),
+    ]);
     if (!headers_sent()) {
         header('Content-Type: application/json');
         http_response_code(500);
@@ -106,7 +118,11 @@ function getDBConnection()
             $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
         } catch (PDOException $e) {
             // Log full error for admin
-            error_log("Database Connection Failed: " . $e->getMessage());
+            Logger::fatal('Database Connection Failed', [
+                'error' => $e->getMessage(),
+                'host' => DB_HOST,
+                'db' => DB_NAME,
+            ]);
 
             // Return safe generic error to user
             if (function_exists('sendError')) {

@@ -26,13 +26,14 @@ import {
     Download,
     Bell,
     Video,
-    Mail
+    Mail,
+    Activity
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
 import './Sidebar.css';
 
-const Sidebar = ({ role = 'student', onLogout, collapsed, mobileMenuOpen, onToggle = () => { } }) => {
+const Sidebar = ({ role = 'student', onLogout, collapsed, mobileMenuOpen, systemHealthStatus, onToggle = () => { } }) => {
     const { user } = useAuth();
     const location = useLocation();
     const [searchParams] = useSearchParams();
@@ -46,6 +47,7 @@ const Sidebar = ({ role = 'student', onLogout, collapsed, mobileMenuOpen, onTogg
         { id: 'course-picks', label: 'Course Picks', icon: BookOpen, tab: 'course-picks' },
         { id: 'study-planner', label: 'Study Planner', icon: Calendar, tab: 'study-planner' },
         { id: 'grades', label: 'Grades', icon: GraduationCap, tab: 'grades' },
+        { id: 'degree-audit', label: 'Degree Audit', icon: GraduationCap, tab: 'degree-audit' },
         { id: 'performance', label: 'Performance', icon: BarChart3, tab: 'performance' },
         { id: 'assignments', label: 'Assignments', icon: FileText, tab: 'assignments' },
         { id: 'submissions', label: 'Submissions', icon: ClipboardList, tab: 'submissions' },
@@ -65,6 +67,7 @@ const Sidebar = ({ role = 'student', onLogout, collapsed, mobileMenuOpen, onTogg
         { id: 'risk-center', label: 'Risk Center', icon: Brain, tab: 'risk-center' },
         { id: 'behavior-analysis', label: 'Behavior Analysis', icon: BarChart3, tab: 'behavior-analysis' },
         { id: 'insights', label: 'Insights', icon: Briefcase, tab: 'insights' },
+        { id: 'grade-integrity', label: 'Grade Integrity', icon: CheckSquare, tab: 'grade-integrity' },
         { id: 'students', label: 'Students', icon: Users, tab: 'students' },
         { id: 'programs', label: 'Programs', icon: Layers, tab: 'programs' },
         { id: 'subjects', label: 'Subjects', icon: BookOpen, tab: 'subjects' },
@@ -77,7 +80,8 @@ const Sidebar = ({ role = 'student', onLogout, collapsed, mobileMenuOpen, onTogg
         { id: 'announcements', label: 'Announcements', icon: Bell, tab: 'announcements' },
         { id: 'videos', label: 'Videos', icon: Video, tab: 'videos' },
         { id: 'calendar', label: 'Calendar', icon: CalendarDays, tab: 'calendar' },
-        { id: 'risk-alerts', label: 'Risk Alerts', icon: Mail, tab: 'risk-alerts' }
+        { id: 'risk-alerts', label: 'Risk Alerts', icon: Mail, tab: 'risk-alerts' },
+        { id: 'system-health', label: 'System Health', icon: Activity, tab: 'system-health' }
     ];
 
     const menuItems = role === 'admin' ? adminMenuItems : studentMenuItems;
@@ -143,6 +147,9 @@ const Sidebar = ({ role = 'student', onLogout, collapsed, mobileMenuOpen, onTogg
                                         <Icon size={20} className="nav-icon" />
                                         {!collapsed && <span className="nav-label">{item.label}</span>}
                                         {!collapsed && isActive && <ChevronRight size={16} className="nav-indicator" />}
+                                        {item.id === 'system-health' && systemHealthStatus && systemHealthStatus !== 'ok' && (
+                                            <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'red', marginLeft: 'auto', marginRight: 10 }} />
+                                        )}
                                     </Link>
                                 </li>
                             );

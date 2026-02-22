@@ -73,8 +73,9 @@ class ApiClient {
             ...customHeaders
         };
 
-        if (this.token) {
-            headers['Authorization'] = `Bearer ${this.token}`;
+        const currentToken = this.getTokenFromStorage();
+        if (currentToken) {
+            headers['Authorization'] = `Bearer ${currentToken}`;
         }
 
         return headers;
