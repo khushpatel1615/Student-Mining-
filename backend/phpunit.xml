@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="tests/bootstrap.php"
+         colors="true"
+         stopOnFailure="false"
+         displayDetailsOnTestsThatTriggerWarnings="true">
+
+    <testsuites>
+        <testsuite name="Helpers">
+            <directory>tests/Helpers</directory>
+        </testsuite>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Integration">
+            <directory>tests/Integration</directory>
+        </testsuite>
+    </testsuites>
+
+    <coverage>
+        <include>
+            <directory suffix=".php">api</directory>
+            <directory suffix=".php">includes</directory>
+        </include>
+    </coverage>
+
+    <php>
+        <!-- Override these in your local .env or CI environment -->
+        <env name="TEST_BASE_URL"      value="http://localhost/backend/api/"/>
+        <env name="TEST_DB_HOST"       value="127.0.0.1"/>
+        <env name="TEST_DB_NAME"       value="student_dm_test"/>
+        <env name="TEST_DB_USER"       value="root"/>
+        <env name="TEST_DB_PASS"       value=""/>
+        <env name="TEST_ADMIN_TOKEN"   value=""/>
+        <env name="TEST_TEACHER_TOKEN" value=""/>
+        <env name="TEST_STUDENT_TOKEN" value=""/>
+    </php>
+</phpunit>

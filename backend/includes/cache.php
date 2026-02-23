@@ -30,6 +30,17 @@ class Cache
         return $data['value'];
     }
 
+    public static function gc(): void
+    {
+        $files = glob(self::$cacheDir . '/*.cache') ?: [];
+        foreach ($files as $file) {
+            $data = json_decode(@file_get_contents($file), true);
+            if ($data && time() > $data['expires_at']) {
+                @unlink($file);
+            }
+        }
+    }
+
     public static function set(
         string $key,
         mixed $value,
@@ -44,6 +55,10 @@ class Cache
             'value' => $value,
             'key' => $key
         ]), LOCK_EX);
+
+        if (rand(1, 100) <= 5) {
+            self::gc();
+        }
     }
 
     public static function forget(string $key): void

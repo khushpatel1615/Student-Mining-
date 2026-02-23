@@ -7,6 +7,9 @@ import './TeacherManagement.css'
 
 
 
+import * as teacherService from '../../services/teacherService'
+import * as subjectService from '../../services/subjectService'
+
 // Icons
 const UserIcon = () => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20">

@@ -20,6 +20,9 @@ function sendEmail($to, $subject, $body)
 }
 
 try {
+    $heartbeatFile = __DIR__ . '/../../cache/cron_last_run.txt';
+    @file_put_contents($heartbeatFile, time());
+
     $pdo = getDBConnection();
 
     $stmt = $pdo->prepare("

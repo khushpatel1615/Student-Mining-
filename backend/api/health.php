@@ -79,25 +79,43 @@ if ($method === 'GET') {
             $status = 'critical';
         }
 
-        try {
-            $totalStudents = $pdo->query("SELECT COUNT(*) FROM users WHERE role='student'")->fetchColumn();
-            $totalEnrollments = $pdo->query("SELECT COUNT(*) FROM student_enrollments")->fetchColumn();
-            $totalGradesEntered = $pdo->query("SELECT COUNT(*) FROM student_grades WHERE marks_obtained IS NOT NULL")->fetchColumn();
-            $finalizedSubjects = $pdo->query("SELECT COUNT(*) FROM student_enrollments WHERE is_finalized=1")->fetchColumn();
-            $atRiskStudents = $pdo->query("SELECT COUNT(*) FROM student_risk_scores WHERE risk_level='at_risk' OR risk_level='Warning'")->fetchColumn();
+        $systemErrors = [];
 
-            $emailPending = $pdo->query("SELECT COUNT(*) FROM email_queue WHERE status='pending'")->fetchColumn();
-            $emailSentToday = $pdo->query("SELECT COUNT(*) FROM email_queue WHERE status='sent' AND DATE(sent_at) = CURDATE()")->fetchColumn();
-            $emailFailed = $pdo->query("SELECT COUNT(*) FROM email_queue WHERE status='failed'")->fetchColumn();
-            $oldestPendingMinutes = (int) $pdo->query("SELECT TIMESTAMPDIFF(MINUTE, MIN(created_at), NOW()) FROM email_queue WHERE status='pending'")->fetchColumn();
-
-            $jobsPending = $pdo->query("SELECT COUNT(*) FROM grade_import_jobs WHERE status='pending'")->fetchColumn();
-            $jobsAppliedToday = $pdo->query("SELECT COUNT(*) FROM grade_import_jobs WHERE status='completed' AND DATE(completed_at) = CURDATE()")->fetchColumn();
-            $jobsFailed = $pdo->query("SELECT COUNT(*) FROM grade_import_jobs WHERE status='failed'")->fetchColumn();
-        } catch (Exception $e) {
-            if ($status !== 'critical') {
-                $status = 'critical';
+        $safeQuery = function ($queryCallback) use (&$systemErrors) {
+            try {
+                return $queryCallback();
+            } catch (Exception $e) {
+                $systemErrors[] = $e->getMessage();
+                error_log("Health check error: " . $e->getMessage());
+                return 0;
             }
+        };
+
+        $totalStudents = $safeQuery(fn() => $pdo->query("SELECT COUNT(*) FROM users WHERE role='student'")->fetchColumn());
+        $totalEnrollments = $safeQuery(fn() => $pdo->query("SELECT COUNT(*) FROM student_enrollments")->fetchColumn());
+        $totalGradesEntered = $safeQuery(fn() => $pdo->query("SELECT COUNT(*) FROM student_grades WHERE marks_obtained IS NOT NULL")->fetchColumn());
+        $finalizedSubjects = $safeQuery(fn() => $pdo->query("SELECT COUNT(*) FROM student_enrollments WHERE is_finalized=1")->fetchColumn());
+        $readyToFinalize = $safeQuery(fn() => $pdo->query("SELECT COUNT(*) FROM vw_ready_to_finalize")->fetchColumn());
+        $atRiskStudents = $safeQuery(fn() => $pdo->query("SELECT COUNT(*) FROM student_risk_scores WHERE risk_level='at_risk' OR risk_level='Warning'")->fetchColumn());
+
+        $emailPending = $safeQuery(fn() => $pdo->query("SELECT COUNT(*) FROM email_queue WHERE status='pending'")->fetchColumn());
+        $emailSentToday = $safeQuery(fn() => $pdo->query("SELECT COUNT(*) FROM email_queue WHERE status='sent' AND DATE(sent_at) = CURDATE()")->fetchColumn());
+        $emailFailed = $safeQuery(fn() => $pdo->query("SELECT COUNT(*) FROM email_queue WHERE status='failed'")->fetchColumn());
+        $oldestPendingMinutes = $safeQuery(fn() => (int) $pdo->query("SELECT TIMESTAMPDIFF(MINUTE, MIN(created_at), NOW()) FROM email_queue WHERE status='pending'")->fetchColumn());
+
+        $jobsPending = $safeQuery(fn() => $pdo->query("SELECT COUNT(*) FROM grade_import_jobs WHERE status='pending'")->fetchColumn());
+        $jobsAppliedToday = $safeQuery(fn() => $pdo->query("SELECT COUNT(*) FROM grade_import_jobs WHERE status='completed' AND DATE(completed_at) = CURDATE()")->fetchColumn());
+        $jobsFailed = $safeQuery(fn() => $pdo->query("SELECT COUNT(*) FROM grade_import_jobs WHERE status='failed'")->fetchColumn());
+
+        if (!empty($systemErrors)) {
+            $status = 'critical';
+        }
+
+        $cronLastRunMsg = 'Never run';
+        $heartbeatFile = __DIR__ . '/../../cache/cron_last_run.txt';
+        if (file_exists($heartbeatFile)) {
+            $lastRunUnix = (int) file_get_contents($heartbeatFile);
+            $cronLastRunMsg = date('c', $lastRunUnix);
         }
 
         $slowRequests = Logger::getSlowRequests(20);
@@ -108,6 +126,8 @@ if ($method === 'GET') {
             }
         }
 
+        Cache::gc();
+
         echo json_encode([
             'status' => $status,
             'timestamp' => date('c'),
@@ -115,17 +135,19 @@ if ($method === 'GET') {
             'performance' => [
                 'slow_requests_today' => $slowRequests,
                 'avg_response_ms' => $dbResponseMs,
-                'peak_memory_mb' => round(memory_get_peak_usage(true) / 1048576, 2)
+                'api_script_memory_mb' => round(memory_get_peak_usage(true) / 1048576, 2)
             ],
             'errors' => [
                 'errors_today' => $errorsTodayCount,
-                'recent_errors' => array_slice($errorsToday, 0, 10)
+                'recent_errors' => array_slice($errorsToday, 0, 10),
+                'system_errors' => $systemErrors
             ],
             'email_queue' => [
                 'pending' => $emailPending ?? 0,
                 'sent_today' => $emailSentToday ?? 0,
                 'failed' => $emailFailed ?? 0,
-                'oldest_pending_minutes' => $oldestPendingMinutes ?? 0
+                'oldest_pending_minutes' => $oldestPendingMinutes ?? 0,
+                'cron_last_run' => $cronLastRunMsg
             ],
             'grade_imports' => [
                 'pending_jobs' => $jobsPending ?? 0,
@@ -138,6 +160,7 @@ if ($method === 'GET') {
                 'total_enrollments' => $totalEnrollments ?? 0,
                 'total_grades_entered' => $totalGradesEntered ?? 0,
                 'finalized_subjects' => $finalizedSubjects ?? 0,
+                'ready_to_finalize' => $readyToFinalize ?? 0,
                 'at_risk_students' => $atRiskStudents ?? 0
             ]
         ], JSON_PRETTY_PRINT);

@@ -62,9 +62,13 @@ global.Response = class Response {
         this.headers = new Headers(init?.headers);
     }
     json() {
-        return Promise.resolve(this.body); // Assume body is already object/array for mocked responses, or parse if string
+        if (typeof this.body === 'string') {
+            try { return Promise.resolve(JSON.parse(this.body)); } catch (e) { return Promise.resolve(this.body); }
+        }
+        return Promise.resolve(this.body);
     }
     text() {
+        if (typeof this.body === 'string') return Promise.resolve(this.body);
         return Promise.resolve(JSON.stringify(this.body));
     }
     clone() {

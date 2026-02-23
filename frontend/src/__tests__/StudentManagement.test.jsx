@@ -22,6 +22,7 @@ describe('Student Management Feature', () => {
     beforeEach(() => {
         global.fetch = vi.fn();
         vi.clearAllMocks();
+        localStorage.setItem('token', 'mock-token');
     });
 
     const mockStudents = [
