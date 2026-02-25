@@ -3,8 +3,8 @@ import { motion } from 'framer-motion';
 import { Activity, Users, Award, Zap, AlertTriangle, Bot } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-import { API_BASE } from '../../../config';
 import { useAuth } from '../../../context/AuthContext';
+import { fetchStudentLiveAnalytics } from '../../../services/studentService';
 
 import { KPICard, LineChartCard, GaugeCard } from './ChartComponents';
 import './Analytics.css';
@@ -32,20 +32,17 @@ const Analytics = () => {
         if (!user?.id) return;
         try {
             if (!isPolling) setLoading(true);
-            const response = await fetch(`${API_BASE}/student_live_analytics.php?user_id=${user.id}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (!response.ok) throw new Error('Failed to connect to live stream');
-            const json = await response.json();
-            if (json.success) {
-                setData(json.data);
-                setLastUpdated(new Date());
-                setError(null);
-            } else {
-                throw new Error(json.error || 'API Error');
+            const { data: analyticsData, error: analyticsError } = await fetchStudentLiveAnalytics(user.id);
+            if (analyticsError) {
+                throw new Error(analyticsError);
             }
+
+            setData(analyticsData || {});
+            setLastUpdated(new Date());
+            setError(null);
         } catch (err) {
-            if (!isPolling) setError(err.message);
+            const message = err?.message || 'Failed to connect to live analytics';
+            if (!isPolling) setError(message);
         } finally {
             if (!isPolling) setLoading(false);
         }

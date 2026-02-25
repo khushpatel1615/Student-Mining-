@@ -21,6 +21,7 @@ function ReportGenerator() {
 
     const generateReport = async (type) => {
         setLoading(type)
+        setReportData(null)
         setActiveReport(type)
         try {
             const response = await fetch(`${API_BASE}/reports.php?action=${type}`, {
@@ -34,6 +35,7 @@ function ReportGenerator() {
                 toast.error(data.error || 'Failed to generate report')
             }
         } catch (err) {
+            console.error('Report Error:', err)
             toast.error('Error generating report')
         } finally {
             setLoading(null)

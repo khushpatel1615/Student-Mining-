@@ -211,7 +211,8 @@ function StudentProfilePage() {
                 const enrollData = await enrollRes.json()
 
                 if (enrollData.success) {
-                    setEnrollments(enrollData.data?.enrollments || [])
+                    const payload = enrollData.data
+                    setEnrollments(Array.isArray(payload) ? payload : (payload?.enrollments || []))
                 }
 
             } catch (err) {

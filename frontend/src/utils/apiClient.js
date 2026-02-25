@@ -192,8 +192,9 @@ class ApiClient {
     async upload(endpoint, formData, options = {}) {
         try {
             const headers = { ...options.headers };
-            if (this.token) {
-                headers['Authorization'] = `Bearer ${this.token}`;
+            const currentToken = this.getTokenFromStorage();
+            if (currentToken) {
+                headers['Authorization'] = `Bearer ${currentToken}`;
             }
             // Note: Don't set Content-Type, browser will handle it for FormData
 

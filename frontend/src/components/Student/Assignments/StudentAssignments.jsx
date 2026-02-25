@@ -3,7 +3,10 @@ import { Upload, FileText, CheckCircle, Clock, AlertCircle, X } from 'lucide-rea
 import toast from 'react-hot-toast'
 
 import { useAuth } from '../../../context/AuthContext'
-import { API_BASE } from '../../../config';
+import {
+    fetchAssignments,
+    submitStudentAssignment
+} from '../../../services/studentService'
 import './StudentAssignments.css'
 
 
@@ -12,27 +15,33 @@ function StudentAssignments() {
     const { token } = useAuth()
     const [assignments, setAssignments] = useState([])
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState('')
     const [filter, setFilter] = useState('all') // all, pending, submitted, graded
     const [uploadingId, setUploadingId] = useState(null)
     const [selectedFile, setSelectedFile] = useState({})
 
     useEffect(() => {
-        fetchAssignments()
-    }, [])
+        if (token) {
+            loadAssignments()
+        }
+    }, [token])
 
-    const fetchAssignments = async () => {
+    const loadAssignments = async () => {
         try {
             setLoading(true)
-            const response = await fetch(`${API_BASE}/assignments.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
-            if (data.success) {
-                setAssignments(data.data)
+            setError('')
+            const { data, error: fetchError } = await fetchAssignments()
+            if (fetchError) {
+                throw new Error(fetchError)
             }
+
+            setAssignments(Array.isArray(data) ? data : [])
         } catch (err) {
             console.error('Failed to fetch assignments:', err)
-            toast.error('Failed to load assignments')
+            const message = err.message || 'Failed to load assignments'
+            setError(message)
+            toast.error(message)
+            setAssignments([])
         } finally {
             setLoading(false)
         }
@@ -68,20 +77,10 @@ function StudentAssignments() {
 
         try {
             setUploadingId(assignmentId)
-
-            const formData = new FormData()
-            formData.append('assignment_id', assignmentId)
-            formData.append('file', file)
-
-            const response = await fetch(`${API_BASE}/submissions.php`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
-                body: formData
-            })
-
-            const data = await response.json()
+            const { data, error: submitError } = await submitStudentAssignment(assignmentId, file)
+            if (submitError) {
+                throw new Error(submitError)
+            }
 
             if (data.success) {
                 toast.success(data.status === 'late' ? 'Submitted (Late)' : 'Assignment submitted successfully!')
@@ -92,7 +91,7 @@ function StudentAssignments() {
             }
         } catch (err) {
             console.error('Submission error:', err)
-            toast.error('Failed to submit assignment')
+            toast.error(err.message || 'Failed to submit assignment')
         } finally {
             setUploadingId(null)
         }
@@ -185,6 +184,12 @@ function StudentAssignments() {
                     </button>
                 </div>
             </div>
+
+            {error && (
+                <div className="empty-state" style={{ marginBottom: '1rem', border: '1px solid #fecaca', background: '#fef2f2' }}>
+                    <p style={{ color: '#991b1b' }}>{error}</p>
+                </div>
+            )}
 
             {loading ? (
                 <div className="loading">Loading assignments...</div>
@@ -325,6 +330,4 @@ function StudentAssignments() {
 }
 
 export default StudentAssignments
-
-
 

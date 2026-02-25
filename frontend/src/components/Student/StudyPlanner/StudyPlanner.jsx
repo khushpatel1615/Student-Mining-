@@ -2,7 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, AlertCircle, CheckCircle2, BookOpen } from 'lucide-react';
 
 import { useAuth } from '../../../context/AuthContext';
-import { API_BASE } from '../../../config';
+import {
+    fetchStudentAssignments,
+    fetchStudentExams,
+    fetchStudyPlannerData
+} from '../../../services/studentService';
 
 const StudyPlanner = () => {
     const { token } = useAuth();
@@ -11,6 +15,7 @@ const StudyPlanner = () => {
     const [exams, setExams] = useState([]);
     const [recommendation, setRecommendation] = useState('');
     const [recommendations, setRecommendations] = useState([]);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         if (token) {
@@ -20,34 +25,37 @@ const StudyPlanner = () => {
 
     const fetchPlannerData = async () => {
         try {
-            // Fetch assignments
-            const assignmentResponse = await fetch(`${API_BASE}/assignments.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const assignmentData = await assignmentResponse.json();
-            if (assignmentData.success) {
-                setAssignments(assignmentData.data || []);
+            setError('');
+
+            const [assignmentResult, examResult, plannerResult] = await Promise.all([
+                fetchStudentAssignments(),
+                fetchStudentExams(),
+                fetchStudyPlannerData()
+            ]);
+
+            if (assignmentResult.error) {
+                throw new Error(assignmentResult.error);
+            }
+            if (examResult.error) {
+                throw new Error(examResult.error);
+            }
+            if (plannerResult.error) {
+                throw new Error(plannerResult.error);
             }
 
-            // Fetch exams
-            const examResponse = await fetch(`${API_BASE}/exams.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const examData = await examResponse.json();
-            if (examData.success) {
-                setExams(examData.data || []);
-            }
+            setAssignments(Array.isArray(assignmentResult.data) ? assignmentResult.data : []);
+            setExams(Array.isArray(examResult.data) ? examResult.data : []);
 
-            const recommendationResponse = await fetch(`${API_BASE}/study_planner.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const recommendationData = await recommendationResponse.json();
-            if (recommendationData.success) {
-                setRecommendation(recommendationData.recommendation || '');
-                setRecommendations(recommendationData.recommendations || []);
-            }
+            const recommendationData = plannerResult.data || {};
+            setRecommendation(recommendationData.recommendation || '');
+            setRecommendations(recommendationData.recommendations || []);
         } catch (err) {
             console.error(err);
+            setError(err.message || 'Failed to load study planner');
+            setAssignments([]);
+            setExams([]);
+            setRecommendation('');
+            setRecommendations([]);
         } finally {
             setLoading(false);
         }
@@ -89,6 +97,12 @@ const StudyPlanner = () => {
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Plan your study sessions around upcoming deadlines</p>
             </div>
 
+            {error && (
+                <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', borderRadius: '10px', background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', fontWeight: 500 }}>
+                    {error}
+                </div>
+            )}
+
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
                 <div style={{ background: '#dbeafe', padding: '1.5rem', borderRadius: '12px' }}>
                     <div style={{ fontSize: '2.5rem', fontWeight: 700, color: '#1e40af' }}>{assignments.length}</div>
@@ -120,7 +134,7 @@ const StudyPlanner = () => {
                             return (
                                 <div key={index} style={{ background: 'var(--bg-secondary)', padding: '1rem 1.25rem', borderRadius: '10px', border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                        <div style={{ width: '48px', height: '48px', borderRadius: '10px', background: item.type === 'exam' ? '#fef3c7' : '#eef2ff', color: item.type === 'exam' ? '#92400e' : '#4338ca', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
+                                        <div style={{ width: '48px', height: '48px', borderRadius: '10px', background: item.type === 'exam' ? '#fef3c7' : '#dbeafe', color: item.type === 'exam' ? '#92400e' : '#1e40af', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
                                             {item.type === 'exam' ? 'EX' : 'AS'}
                                         </div>
                                         <div>

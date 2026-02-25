@@ -2,215 +2,275 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
-header('Content-Type: application/json');
-$headers = getallheaders();
-$token = isset($headers['Authorization']) ? str_replace('Bearer ', '', $headers['Authorization']) : null;
-if (!$token) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'No token provided']);
-    exit();
-}
+require_once __DIR__ . '/../includes/api_helpers.php';
 
-$result = verifyToken($token);
-if (!$result['valid']) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'error' => $result['error']]);
-    exit();
-}
+handleCORS();
 
-$pdo = getDBConnection();
 $method = $_SERVER['REQUEST_METHOD'];
-$decoded = (object) $result['payload'];
-$user_id = $decoded->user_id;
-$user_role = $decoded->role;
+$pdo = getDBConnection();
+$user = requireAuth();
+
 try {
     switch ($method) {
         case 'GET':
-            // Get assignments
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               $subject_id = $_GET['subject_id'] ?? null;
-            $student_id = $_GET['student_id'] ?? null;
-            $assignment_id = $_GET['id'] ?? null;
-            if ($assignment_id) {
-                // Get single assignment
-                $stmt = $pdo->prepare("
-                    SELECT a.*, s.name as subject_name, s.code as subject_code,
-                           u.full_name as teacher_name
-                    FROM assignments a
-                    LEFT JOIN subjects s ON a.subject_id = s.id
-                    LEFT JOIN users u ON a.teacher_id = u.id
-                    WHERE a.id = ?
-                ");
-                $stmt->execute([$assignment_id]);
-                $assignment = $stmt->fetch(PDO::FETCH_ASSOC);
-                if ($assignment) {
-                    if (!isset($assignment['max_marks']) || $assignment['max_marks'] === null) {
-                        $assignment['max_marks'] = $assignment['total_points'] ?? null;
-                    }
-                        // Get submissions for this assignment
-                                    $stmt = $pdo->prepare("
-                        SELECT sub.*, u.full_name as student_name, u.student_id
-                        FROM assignment_submissions sub
-                        JOIN users u ON sub.student_id = u.id
-                        WHERE sub.assignment_id = ?
-                        ORDER BY sub.submitted_at DESC
-                    ");
-                            $stmt->execute([$assignment_id]);
-                            $assignment['submissions'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                }
-
-                echo json_encode(['success' => true, 'data' => $assignment]);
-            } else {
-            // Get all assignments
-                $query = "
-                    SELECT DISTINCT a.*, s.name as subject_name, s.code as subject_code,
-                           u.full_name as teacher_name
-                    FROM assignments a
-                    LEFT JOIN subjects s ON a.subject_id = s.id
-                    LEFT JOIN users u ON a.teacher_id = u.id
-                ";
-                $conditions = [];
-                $params = [];
-                if ($subject_id) {
-                    $conditions[] = "a.subject_id = ?";
-                    $params[] = $subject_id;
-                }
-
-                if ($user_role === 'student') {
-        // Students see assignments for their enrolled subjects
-                    $query .= " JOIN student_enrollments se ON a.subject_id = se.subject_id";
-                    $conditions[] = "se.user_id = ?";
-                    $params[] = $user_id;
-                }
-
-                if (!empty($conditions)) {
-                    $query .= " WHERE " . implode(" AND ", $conditions);
-                }
-
-                $query .= " ORDER BY a.due_date DESC";
-                $stmt = $pdo->prepare($query);
-                $stmt->execute($params);
-                $assignments = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                foreach ($assignments as &$assignment) {
-                    if (!isset($assignment['max_marks']) || $assignment['max_marks'] === null) {
-                        $assignment['max_marks'] = $assignment['total_points'] ?? null;
-                    }
-                }
-            // If student, fetch their submissions
-                if ($user_role === 'student') {
-                    foreach ($assignments as &$assignment) {
-                        $stmt = $pdo->prepare("
-                            SELECT * FROM assignment_submissions
-                            WHERE assignment_id = ? AND student_id = ?
-                        ");
-                        $stmt->execute([$assignment['id'], $user_id]);
-                        $submission = $stmt->fetch(PDO::FETCH_ASSOC);
-                        $assignment['my_submission'] = $submission ?: null;
-                    }
-                }
-
-                echo json_encode(['success' => true, 'data' => $assignments]);
-            }
-
+            handleGet($pdo, $user);
             break;
         case 'POST':
-            // Create assignment (Admin/Teacher only)
-
-            if ($user_role !== 'admin' && $user_role !== 'teacher') {
-                http_response_code(403);
-                echo json_encode(['success' => false, 'error' => 'Unauthorized']);
-                exit();
-            }
-
-            $data = json_decode(file_get_contents('php://input'), true);
-            $stmt = $pdo->prepare("
-                INSERT INTO assignments (subject_id, title, description, due_date, total_points, teacher_id, status)
-                VALUES (?, ?, ?, ?, ?, ?, 'published')
-            ");
-            $stmt->execute([
-                $data['subject_id'],
-                $data['title'],
-                $data['description'] ?? '',
-                $data['due_date'],
-                $data['max_marks'] ?? 100,
-                $user_id
-            ]);
-            echo json_encode(['success' => true, 'id' => $pdo->lastInsertId()]);
-
+            handlePost($pdo, $user);
             break;
         case 'PUT':
-            // Update assignment or grade submission
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               $data = json_decode(file_get_contents('php://input'), true);
-            if (isset($data['submission_id'])) {
-            // Grade a submission (Admin/Teacher only)
-                if ($user_role !== 'admin' && $user_role !== 'teacher') {
-                    http_response_code(403);
-                    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
-                    exit();
-                }
-
-                $stmt = $pdo->prepare("
-                    UPDATE assignment_submissions
-                    SET marks_obtained = ?, feedback = ?, status = 'graded', graded_at = NOW()
-                    WHERE id = ?
-                ");
-                $stmt->execute([
-                    $data['marks_obtained'],
-                    $data['feedback'] ?? null,
-                    $data['submission_id']
-                ]);
-            } else {
-            // Update assignment (Admin/Teacher only)
-                if ($user_role !== 'admin' && $user_role !== 'teacher') {
-                    http_response_code(403);
-                    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
-                    exit();
-                }
-
-                $stmt = $pdo->prepare("
-                    UPDATE assignments
-                    SET title = ?, description = ?, due_date = ?, total_points = ?
-                    WHERE id = ?
-                ");
-                $stmt->execute([
-                    $data['title'],
-                    $data['description'],
-                    $data['due_date'],
-                    $data['max_marks'],
-                    $data['id']
-                ]);
-            }
-
-            echo json_encode(['success' => true]);
-
+            handlePut($pdo, $user);
             break;
         case 'DELETE':
-            // Delete assignment (Admin only)
-
-            if ($user_role !== 'admin') {
-                http_response_code(403);
-                echo json_encode(['success' => false, 'error' => 'Unauthorized']);
-                exit();
-            }
-
-            $id = $_GET['id'] ?? null;
-            if (!$id) {
-                http_response_code(400);
-                echo json_encode(['success' => false, 'error' => 'Assignment ID required']);
-                exit();
-            }
-
-            $stmt = $pdo->prepare("DELETE FROM assignments WHERE id = ?");
-            $stmt->execute([$id]);
-            echo json_encode(['success' => true]);
-
+            handleDelete($pdo, $user);
             break;
+        case 'OPTIONS':
+            exit(0);
         default:
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               http_response_code(405);
-            echo json_encode(['success' => false, 'error' => 'Method not allowed']);
+            sendError('Method not allowed', 405);
     }
-} catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+} catch (Exception $e) {
+    sendError('Internal Server Error', 500, $e->getMessage());
+}
+
+function handleGet(PDO $pdo, array $user)
+{
+    $assignmentId = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);
+    $subjectId = filter_input(INPUT_GET, 'subject_id', FILTER_SANITIZE_NUMBER_INT);
+    $studentIdParam = filter_input(INPUT_GET, 'student_id', FILTER_SANITIZE_NUMBER_INT)
+        ?: filter_input(INPUT_GET, 'user_id', FILTER_SANITIZE_NUMBER_INT)
+        ?: filter_input(INPUT_GET, 'studentId', FILTER_SANITIZE_NUMBER_INT);
+
+    $authUserId = (int) $user['user_id'];
+    $role = $user['role'];
+
+    if ($studentIdParam && !in_array($role, ['admin', 'teacher']) && (int) $studentIdParam !== $authUserId) {
+        sendError('Access denied', 403);
+    }
+
+    $targetStudentId = null;
+    if ($role === 'student') {
+        $targetStudentId = $authUserId;
+    } elseif ($studentIdParam) {
+        $targetStudentId = (int) $studentIdParam;
+    }
+
+    if ($assignmentId) {
+        $sql = "
+            SELECT a.*, s.name as subject_name, s.code as subject_code, u.full_name as teacher_name
+            FROM assignments a
+            LEFT JOIN subjects s ON a.subject_id = s.id
+            LEFT JOIN users u ON a.teacher_id = u.id
+        ";
+        $params = [];
+
+        if ($role === 'student') {
+            $sql .= " JOIN student_enrollments se ON se.subject_id = a.subject_id";
+            $sql .= " WHERE a.id = ? AND se.user_id = ? AND se.status IN ('active', 'completed')";
+            $params = [$assignmentId, $authUserId];
+        } else {
+            $sql .= " WHERE a.id = ?";
+            $params = [$assignmentId];
+        }
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $assignment = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$assignment) {
+            sendError('Assignment not found', 404);
+        }
+
+        if (!isset($assignment['max_marks']) || $assignment['max_marks'] === null) {
+            $assignment['max_marks'] = $assignment['total_points'] ?? null;
+        }
+
+        if ($targetStudentId) {
+            $submissionStmt = $pdo->prepare("
+                SELECT *
+                FROM assignment_submissions
+                WHERE assignment_id = ? AND student_id = ?
+                LIMIT 1
+            ");
+            $submissionStmt->execute([$assignmentId, $targetStudentId]);
+            $assignment['my_submission'] = $submissionStmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        } else {
+            $submissionsStmt = $pdo->prepare("
+                SELECT sub.*, u.full_name as student_name, u.student_id
+                FROM assignment_submissions sub
+                JOIN users u ON sub.student_id = u.id
+                WHERE sub.assignment_id = ?
+                ORDER BY sub.submitted_at DESC
+            ");
+            $submissionsStmt->execute([$assignmentId]);
+            $assignment['submissions'] = $submissionsStmt->fetchAll(PDO::FETCH_ASSOC);
+        }
+
+        sendResponse(['success' => true, 'data' => $assignment]);
+    }
+
+    $query = "
+        SELECT DISTINCT a.*, s.name as subject_name, s.code as subject_code, u.full_name as teacher_name
+        FROM assignments a
+        LEFT JOIN subjects s ON a.subject_id = s.id
+        LEFT JOIN users u ON a.teacher_id = u.id
+    ";
+    $joins = [];
+    $conditions = [];
+    $params = [];
+
+    if ($targetStudentId) {
+        $joins[] = "JOIN student_enrollments se ON se.subject_id = a.subject_id";
+        $conditions[] = "se.user_id = ?";
+        $params[] = $targetStudentId;
+        $conditions[] = "se.status IN ('active', 'completed')";
+    }
+
+    if ($subjectId) {
+        $conditions[] = "a.subject_id = ?";
+        $params[] = $subjectId;
+    }
+
+    if (!empty($joins)) {
+        $query .= " " . implode(' ', $joins);
+    }
+
+    if (!empty($conditions)) {
+        $query .= " WHERE " . implode(' AND ', $conditions);
+    }
+
+    $query .= " ORDER BY a.due_date DESC";
+    $stmt = $pdo->prepare($query);
+    $stmt->execute($params);
+    $assignments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($assignments as &$assignment) {
+        if (!isset($assignment['max_marks']) || $assignment['max_marks'] === null) {
+            $assignment['max_marks'] = $assignment['total_points'] ?? null;
+        }
+    }
+
+    if ($targetStudentId && !empty($assignments)) {
+        $assignmentIds = array_column($assignments, 'id');
+        $placeholders = implode(',', array_fill(0, count($assignmentIds), '?'));
+        $submissionSql = "
+            SELECT *
+            FROM assignment_submissions
+            WHERE student_id = ? AND assignment_id IN ($placeholders)
+        ";
+        $submissionStmt = $pdo->prepare($submissionSql);
+        $submissionStmt->execute(array_merge([$targetStudentId], $assignmentIds));
+        $rows = $submissionStmt->fetchAll(PDO::FETCH_ASSOC);
+        $submissionsByAssignment = [];
+        foreach ($rows as $row) {
+            $submissionsByAssignment[(int) $row['assignment_id']] = $row;
+        }
+
+        foreach ($assignments as &$assignment) {
+            $assignment['my_submission'] = $submissionsByAssignment[(int) $assignment['id']] ?? null;
+        }
+    }
+
+    sendResponse(['success' => true, 'data' => $assignments]);
+}
+
+function handlePost(PDO $pdo, array $user)
+{
+    if (!in_array($user['role'], ['admin', 'teacher'])) {
+        sendError('Unauthorized', 403);
+    }
+
+    $data = getJsonInput();
+    if (
+        empty($data['subject_id']) ||
+        empty($data['title']) ||
+        empty($data['due_date'])
+    ) {
+        sendError('subject_id, title, and due_date are required', 400);
+    }
+
+    $stmt = $pdo->prepare("
+        INSERT INTO assignments (subject_id, title, description, due_date, total_points, teacher_id, status)
+        VALUES (?, ?, ?, ?, ?, ?, 'published')
+    ");
+    $stmt->execute([
+        $data['subject_id'],
+        $data['title'],
+        $data['description'] ?? '',
+        $data['due_date'],
+        $data['max_marks'] ?? $data['total_points'] ?? 100,
+        $user['user_id']
+    ]);
+
+    sendResponse([
+        'success' => true,
+        'data' => [
+            'id' => (int) $pdo->lastInsertId(),
+            'message' => 'Assignment created successfully'
+        ]
+    ], 201);
+}
+
+function handlePut(PDO $pdo, array $user)
+{
+    if (!in_array($user['role'], ['admin', 'teacher'])) {
+        sendError('Unauthorized', 403);
+    }
+
+    $data = getJsonInput();
+    if (!$data) {
+        sendError('Invalid payload', 400);
+    }
+
+    if (!empty($data['submission_id'])) {
+        $stmt = $pdo->prepare("
+            UPDATE assignment_submissions
+            SET marks_obtained = ?, feedback = ?, status = 'graded', graded_at = NOW(), graded_by = ?
+            WHERE id = ?
+        ");
+        $stmt->execute([
+            $data['marks_obtained'] ?? null,
+            $data['feedback'] ?? null,
+            $user['user_id'],
+            $data['submission_id']
+        ]);
+
+        sendResponse(['success' => true, 'data' => ['message' => 'Submission graded successfully']]);
+    }
+
+    if (empty($data['id'])) {
+        sendError('Assignment id is required', 400);
+    }
+
+    $stmt = $pdo->prepare("
+        UPDATE assignments
+        SET title = ?, description = ?, due_date = ?, total_points = ?
+        WHERE id = ?
+    ");
+    $stmt->execute([
+        $data['title'] ?? '',
+        $data['description'] ?? '',
+        $data['due_date'] ?? null,
+        $data['max_marks'] ?? $data['total_points'] ?? 100,
+        $data['id']
+    ]);
+
+    sendResponse(['success' => true, 'data' => ['message' => 'Assignment updated successfully']]);
+}
+
+function handleDelete(PDO $pdo, array $user)
+{
+    if ($user['role'] !== 'admin') {
+        sendError('Unauthorized', 403);
+    }
+
+    $id = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);
+    if (!$id) {
+        sendError('Assignment ID required', 400);
+    }
+
+    $stmt = $pdo->prepare("DELETE FROM assignments WHERE id = ?");
+    $stmt->execute([$id]);
+
+    sendResponse(['success' => true, 'data' => ['message' => 'Assignment deleted']]);
 }

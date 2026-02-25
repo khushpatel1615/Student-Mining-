@@ -16,7 +16,7 @@ const QuickActions = ({ setActiveTab }) => {
             color: 'bg-purple-100 text-purple-600',
             title: 'Contact Advisor',
             desc: 'Send Email',
-            action: () => window.location.href = 'mailto:advisor@university.edu'
+            action: () => window.location.href = 'mailto:patel.khush1615.gnu@gmail.com'
         },
         {
             icon: Calendar,

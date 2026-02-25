@@ -186,20 +186,51 @@ function detectAssignmentType($title)
     return 'assignment';
 }
 
+function tableExists($pdo, $tableName)
+{
+    static $cache = [];
+    if (array_key_exists($tableName, $cache)) {
+        return $cache[$tableName];
+    }
+
+    try {
+        $stmt = $pdo->prepare("
+            SELECT 1
+            FROM information_schema.tables
+            WHERE table_schema = DATABASE()
+              AND table_name = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$tableName]);
+        $cache[$tableName] = (bool) $stmt->fetchColumn();
+    } catch (Exception $e) {
+        $cache[$tableName] = false;
+    }
+
+    return $cache[$tableName];
+}
+
 function getTopicsForSubject($pdo, $subjectId, $subjectName)
 {
     $topicsText = null;
 
-    if ($subjectId) {
-        $stmt = $pdo->prepare("SELECT topics FROM subject_topics WHERE subject_id = ? LIMIT 1");
-        $stmt->execute([$subjectId]);
-        $topicsText = $stmt->fetchColumn();
-    }
+    // subject_topics is optional in some installations.
+    if (tableExists($pdo, 'subject_topics')) {
+        try {
+            if ($subjectId) {
+                $stmt = $pdo->prepare("SELECT topics FROM subject_topics WHERE subject_id = ? LIMIT 1");
+                $stmt->execute([$subjectId]);
+                $topicsText = $stmt->fetchColumn();
+            }
 
-    if (!$topicsText && $subjectName) {
-        $stmt = $pdo->prepare("SELECT topics FROM subject_topics WHERE subject_name = ? LIMIT 1");
-        $stmt->execute([$subjectName]);
-        $topicsText = $stmt->fetchColumn();
+            if (!$topicsText && $subjectName) {
+                $stmt = $pdo->prepare("SELECT topics FROM subject_topics WHERE subject_name = ? LIMIT 1");
+                $stmt->execute([$subjectName]);
+                $topicsText = $stmt->fetchColumn();
+            }
+        } catch (Exception $e) {
+            error_log('Study planner subject_topics lookup skipped: ' . $e->getMessage());
+        }
     }
 
     if ($topicsText) {

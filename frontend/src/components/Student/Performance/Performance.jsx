@@ -2,44 +2,40 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { TrendingUp, Award, BarChart3, Target, AlertTriangle } from 'lucide-react';
 
 import { useAuth } from '../../../context/AuthContext';
-import { API_BASE } from '../../../config';
+import { fetchPerformance as fetchStudentPerformance } from '../../../services/studentService';
 
 const Performance = () => {
     const { token, user } = useAuth();
     const [loading, setLoading] = useState(true);
     const [grades, setGrades] = useState([]);
     const [summary, setSummary] = useState({ gpa: 0, attendance: 0 });
+    const [error, setError] = useState('');
 
     useEffect(() => {
-        if (token) {
+        if (token && user?.id) {
             fetchPerformance();
         }
-    }, [token]);
+    }, [token, user?.id]);
 
     const fetchPerformance = async () => {
         try {
-            // Fetch grades
-            const gradesResponse = await fetch(`${API_BASE}/grades.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const gradesData = await gradesResponse.json();
-            if (gradesData.success) {
-                setGrades(gradesData.data || []);
+            setError('');
+            const { data, error: fetchError } = await fetchStudentPerformance(user?.id);
+            if (fetchError) {
+                throw new Error(fetchError);
             }
 
-            // Fetch dashboard summary
-            const summaryResponse = await fetch(`${API_BASE}/student_dashboard.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+            const payload = data || {};
+            setGrades(Array.isArray(payload.subjects) ? payload.subjects : []);
+            setSummary({
+                gpa: payload.summary?.gpa_4 || 0,
+                attendance: payload.summary?.attendance || 0
             });
-            const summaryData = await summaryResponse.json();
-            if (summaryData.success && summaryData.data?.summary) {
-                setSummary({
-                    gpa: summaryData.data.summary.gpa_4 || summaryData.data.summary.gpa || 0,
-                    attendance: summaryData.data.summary.overall_attendance || 0
-                });
-            }
         } catch (err) {
             console.error(err);
+            setError(err.message || 'Failed to load performance data');
+            setGrades([]);
+            setSummary({ gpa: 0, attendance: 0 });
         } finally {
             setLoading(false);
         }
@@ -88,6 +84,12 @@ const Performance = () => {
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Track your academic progress and achievements</p>
             </div>
 
+            {error && (
+                <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', borderRadius: '10px', background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', fontWeight: 500 }}>
+                    {error}
+                </div>
+            )}
+
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
                 <div style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', padding: '1.5rem', borderRadius: '12px', color: 'white' }}>
                     <div style={{ fontSize: '0.85rem', opacity: 0.9, marginBottom: '0.5rem' }}>Cumulative GPA</div>
@@ -120,8 +122,8 @@ const Performance = () => {
                     </div>
                 ) : (
                     <div style={{ display: 'grid', gap: '0.75rem' }}>
-                        {currentSemesterGrades.map(grade => (
-                            <div key={grade.id} style={{ background: 'var(--bg-secondary)', padding: '1.25rem', borderRadius: '10px', border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        {currentSemesterGrades.map((grade, index) => (
+                            <div key={grade.enrollment_id || grade.subject_id || grade.id || index} style={{ background: 'var(--bg-secondary)', padding: '1.25rem', borderRadius: '10px', border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ fontWeight: 600, fontSize: '1rem', marginBottom: '0.25rem' }}>{grade.subject_name}</div>
                                     <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{grade.subject_code}</div>

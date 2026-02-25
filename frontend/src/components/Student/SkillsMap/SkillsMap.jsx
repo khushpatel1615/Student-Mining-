@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Brain, TrendingUp, Award, Code, Database, Globe, Palette } from 'lucide-react';
 
 import { useAuth } from '../../../context/AuthContext';
-import { API_BASE } from '../../../config';
+import { fetchDashboardData as fetchStudentDashboardData } from '../../../services/studentService';
 import './SkillsMap.css';
 
 const SkillsMap = () => {
     const { token, user } = useAuth();
     const [loading, setLoading] = useState(true);
     const [courses, setCourses] = useState([]);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         if (user && token) {
@@ -18,15 +19,17 @@ const SkillsMap = () => {
 
     const fetchCourses = async () => {
         try {
-            const response = await fetch(`${API_BASE}/student_dashboard.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
-            if (data.success) {
-                setCourses(data.data.subjects || []);
+            setError('');
+            const { data, error: fetchError } = await fetchStudentDashboardData();
+            if (fetchError) {
+                throw new Error(fetchError);
             }
+
+            setCourses(Array.isArray(data?.subjects) ? data.subjects : []);
         } catch (err) {
             console.error(err);
+            setError(err.message || 'Failed to load skills data');
+            setCourses([]);
         } finally {
             setLoading(false);
         }
@@ -67,7 +70,7 @@ const SkillsMap = () => {
         if (!acc[category]) acc[category] = [];
 
         acc[category].push({
-            id: course.subject?.id || Math.random(),
+            id: course.subject?.id || `${subjectName}-${category}`,
             name: subjectName,
             grade: course.grade_letter,
             status: course.status || (course.grade_letter ? 'Completed' : 'In Progress')
@@ -92,6 +95,12 @@ const SkillsMap = () => {
                 </h2>
                 <p>Track your technical competency growth across specialized domains.</p>
             </div>
+
+            {error && (
+                <div className="empty-state" style={{ marginBottom: '1rem', border: '1px solid #fecaca', background: '#fef2f2' }}>
+                    <p style={{ color: '#991b1b' }}>{error}</p>
+                </div>
+            )}
 
             {Object.keys(skillsMap).length === 0 ? (
                 <div className="empty-state">

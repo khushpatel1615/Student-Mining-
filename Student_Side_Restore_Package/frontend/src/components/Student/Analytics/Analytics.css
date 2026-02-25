@@ -1,0 +1,394 @@
+/* Analytics Dashboard Styles - Premium Polished Version (Upscaled) */
+
+.analytics-dashboard {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    width: 100%;
+    /* Ensure full width */
+    color: #1f2937;
+    padding: 1.25rem 1.5rem 2rem;
+    background: #f8fafc;
+    border-radius: 1rem;
+}
+
+/* Big Dashboard Mode */
+@media (min-width: 1400px) {
+    .analytics-dashboard {
+        transform: scale(1.02);
+        /* Subtle scale up for huge screens */
+        transform-origin: top center;
+    }
+}
+
+/* --- Header Section --- */
+.analytics-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Align text baseline with badge */
+    margin-bottom: 1.5rem;
+    gap: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+    /* Subtle visual separator */
+}
+
+/* --- Grid Layouts --- */
+.analytics-dashboard .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    /* Force 4 columns on desktop */
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 1200px) {
+    .analytics-dashboard .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+        /* 2 columns on tablet */
+    }
+}
+
+@media (max-width: 640px) {
+    .analytics-dashboard .kpi-grid {
+        grid-template-columns: 1fr;
+        /* 1 column on mobile */
+    }
+}
+
+.analytics-dashboard .chart-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+@media (min-width: 1024px) {
+    .analytics-dashboard .chart-grid-2 {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* --- Card Components --- */
+.analytics-dashboard .analytics-card {
+    background: #ffffff;
+    border-radius: 0.9rem;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    padding: 1.5rem;
+    /* Consistent padding */
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    /* Fill grid cell */
+    position: relative;
+    overflow: hidden;
+}
+
+.analytics-dashboard .analytics-card:hover {
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+    border-color: #dbeafe;
+    transform: translateY(-2px);
+}
+
+/* Header Text Fixes */
+.header-title h2 {
+    font-size: 1.35rem;
+    /* Reduced from 2rem to match hierarchy */
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.header-title p {
+    color: #64748b;
+    margin-top: 0.25rem;
+    font-size: 0.9rem;
+}
+
+/* Live Indicator Fix */
+.live-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 0.4rem 0.85rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+/* KPI Card Specifics */
+.analytics-dashboard .kpi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+
+.analytics-dashboard .kpi-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6b7280;
+}
+
+.analytics-dashboard .kpi-icon-wrapper {
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.analytics-dashboard .kpi-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.analytics-dashboard .kpi-value-group h3 {
+    font-size: 1.85rem;
+    /* Adjusted for better fit */
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+
+.analytics-dashboard .kpi-chart-mini {
+    height: 48px;
+    /* Fixed height */
+    width: 90px;
+    margin-left: auto;
+    /* Push to right */
+}
+
+.analytics-dashboard .kpi-chart-empty {
+    width: 100%;
+    height: 100%;
+    border-radius: 0.5rem;
+    border: 1px dashed #e5e7eb;
+    background: #f8fafc;
+}
+
+.analytics-dashboard .kpi-delta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    margin-top: 0.5rem;
+    width: fit-content;
+}
+
+.analytics-dashboard .delta-up {
+    color: #15803d;
+    background-color: #dcfce7;
+}
+
+.analytics-dashboard .delta-down {
+    color: #b91c1c;
+    background-color: #fee2e2;
+}
+
+.analytics-dashboard .delta-neutral {
+    color: #4b5563;
+    background-color: #f3f4f6;
+}
+
+/* Chart Card Specifics */
+.analytics-dashboard .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.25rem;
+    gap: 1rem;
+}
+
+.analytics-dashboard .chart-title-group h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+}
+
+.analytics-dashboard .chart-title-group p {
+    font-size: 0.85rem;
+    color: #9ca3af;
+    margin: 0.25rem 0 0 0;
+}
+
+.analytics-dashboard .chart-select {
+    padding: 0.35rem 0.85rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background-color: white;
+    color: #374151;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.analytics-dashboard .chart-select:hover {
+    border-color: #d1d5db;
+    background-color: #f9fafb;
+}
+
+.analytics-dashboard .chart-container-medium {
+    height: 300px;
+    /* Increased height */
+    width: 100%;
+}
+
+.analytics-dashboard .chart-container-large {
+    height: 340px;
+    /* Increased height */
+    width: 100%;
+}
+
+/* --- Gauge Specific --- */
+.analytics-dashboard .gauge-container {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.analytics-dashboard .gauge-chart-wrapper {
+    height: 160px;
+    /* Bigger gauge */
+    width: 100%;
+    position: relative;
+}
+
+.analytics-dashboard .gauge-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.analytics-dashboard .gauge-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+}
+
+.analytics-dashboard .gauge-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-top: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    background: #f3f4f6;
+}
+
+/* --- Colors --- */
+.analytics-dashboard .text-purple {
+    color: #8b5cf6;
+}
+
+.analytics-dashboard .bg-purple-light {
+    background-color: #f3e8ff;
+}
+
+.analytics-dashboard .text-blue {
+    color: #3b82f6;
+}
+
+.analytics-dashboard .bg-blue-light {
+    background-color: #eff6ff;
+}
+
+.analytics-dashboard .text-green {
+    color: #22c55e;
+}
+
+.analytics-dashboard .bg-green-light {
+    background-color: #dcfce7;
+}
+
+.analytics-dashboard .text-orange {
+    color: #f97316;
+}
+
+.analytics-dashboard .bg-orange-light {
+    background-color: #ffedd5;
+}
+
+.analytics-dashboard .text-red {
+    color: #ef4444;
+}
+
+.analytics-dashboard .bg-red-light {
+    background-color: #fee2e2;
+}
+
+/* Loading / Error */
+.analytics-dashboard .status-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    text-align: center;
+    color: #9ca3af;
+}
+
+.analytics-dashboard .skeleton-box {
+    background-color: #f3f4f6;
+    border-radius: 0.5rem;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: .5;
+    }
+}
+
+.analytics-dashboard .custom-tooltip {
+    background-color: white;
+    border: 1px solid #f3f4f6;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.analytics-dashboard .tooltip-label {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+}
+
+.analytics-dashboard .tooltip-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #111827;
+}

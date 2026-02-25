@@ -8,7 +8,9 @@ export function ThemeProvider({ children }) {
 
     useEffect(() => {
         // Force light theme, clear any stored dark preference
+        document.documentElement.classList.remove('dark');
         document.documentElement.setAttribute('data-theme', 'light');
+        document.documentElement.style.colorScheme = 'light';
         localStorage.removeItem('theme');
     }, []);
 

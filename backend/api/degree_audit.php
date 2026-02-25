@@ -18,7 +18,7 @@ try {
         sendError('Method not allowed', 405);
 
     $user = requireAuth();
-    $studentIdParam = $_GET['student_id'] ?? null;
+    $studentIdParam = $_GET['student_id'] ?? $_GET['user_id'] ?? $_GET['studentId'] ?? null;
 
     // Auth Check
     if (!$studentIdParam && $user['role'] === 'student') {
@@ -33,7 +33,7 @@ try {
 
     $cacheKey = "degree_audit_{$studentIdParam}";
     if ($cached = Cache::get($cacheKey)) {
-        sendResponse($cached);
+        sendResponse(['success' => true, 'data' => $cached]);
     }
 
     // Get user's active program_id
@@ -167,7 +167,7 @@ try {
     ];
 
     Cache::set($cacheKey, $response, 1800);
-    sendResponse($response);
+    sendResponse(['success' => true, 'data' => $response]);
 
 } catch (Exception $e) {
     error_log("Degree Audit API Error: " . $e->getMessage());

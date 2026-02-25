@@ -41,6 +41,13 @@ function handleGet($pdo, $userId, $userRole)
     $subject_id = filter_input(INPUT_GET, 'subject_id', FILTER_SANITIZE_NUMBER_INT);
     $semester = filter_input(INPUT_GET, 'semester', FILTER_SANITIZE_NUMBER_INT);
     $exam_id = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);
+    $requestedStudentId = filter_input(INPUT_GET, 'student_id', FILTER_SANITIZE_NUMBER_INT)
+        ?: filter_input(INPUT_GET, 'user_id', FILTER_SANITIZE_NUMBER_INT)
+        ?: filter_input(INPUT_GET, 'studentId', FILTER_SANITIZE_NUMBER_INT);
+
+    if ($requestedStudentId && $userRole === 'student' && (int) $requestedStudentId !== (int) $userId) {
+        sendError('Access denied', 403);
+    }
 
     if ($exam_id) {
         $stmt = $pdo->prepare("
@@ -130,6 +137,11 @@ function handleGet($pdo, $userId, $userRole)
             } else {
                 $conditions[] = $enrolledClause;
             }
+        } elseif ($requestedStudentId && in_array($userRole, ['admin', 'teacher'])) {
+            $query .= " JOIN student_enrollments se_filter ON e.subject_id = se_filter.subject_id";
+            $conditions[] = "se_filter.user_id = ?";
+            $conditions[] = "se_filter.status IN ('active', 'completed')";
+            $params[] = (int) $requestedStudentId;
         }
 
         if (!empty($conditions)) {

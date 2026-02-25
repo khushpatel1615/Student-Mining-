@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Briefcase, Target, TrendingUp, MapPin, DollarSign } from 'lucide-react';
+import { Briefcase, Target, TrendingUp } from 'lucide-react';
 
 import { useAuth } from '../../../context/AuthContext';
-import { API_BASE } from '../../../config';
+import {
+    fetchCareerProfile,
+    fetchDashboardData as fetchStudentDashboardData
+} from '../../../services/studentService';
 
 const CareerFit = () => {
     const { token, user } = useAuth();
     const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState(null);
     const [careers, setCareers] = useState([]);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         if (user && token) {
@@ -18,76 +22,86 @@ const CareerFit = () => {
 
     const fetchProfile = async () => {
         try {
-            const response = await fetch(`${API_BASE}/analytics/features.php?action=profile`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
-            if (data.success && data.data && data.data.grade_avg !== null) {
-                setProfile(data.data);
-                generateCareerRecommendations(data.data);
-            } else {
-                // If analytics data is missing, try fallback
-                fetchFallbackData();
+            setError('');
+
+            const [profileResult, dashboardResult] = await Promise.all([
+                fetchCareerProfile(),
+                fetchStudentDashboardData()
+            ]);
+
+            if (profileResult.error && dashboardResult.error) {
+                throw new Error(profileResult.error || dashboardResult.error);
             }
+
+            const profileData = profileResult.data || null;
+            const subjectRows = Array.isArray(dashboardResult.data?.subjects)
+                ? dashboardResult.data.subjects
+                : [];
+
+            setProfile(profileData);
+            setCareers(generateCareerRecommendations(profileData, subjectRows));
         } catch (err) {
             console.error(err);
+            setError(err.message || 'Failed to load career fit analysis');
+            setCareers([]);
         } finally {
             setLoading(false);
         }
     };
 
-    // Fallback: Fetch basic gpa if analytics profile is incomplete
-    const fetchFallbackData = async () => {
-        try {
-            const response = await fetch(`${API_BASE}/student_dashboard.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
-            if (data.success && data.data.summary) {
-                const gpa = data.data.summary.gpa_4 || (data.data.summary.gpa ? data.data.summary.gpa / 2.5 : 0);
-                generateCareerRecommendations({ grade_avg: gpa });
-            }
-        } catch (e) { console.error(e); }
-    };
+    const generateCareerRecommendations = (profileData, subjectRows = []) => {
+        const riskScore = Number(profileData?.risk_score || 0);
 
-    const generateCareerRecommendations = (profileData) => {
-        // Simplified career recommendations based on grade average
-        const gradeAvg = profileData?.grade_avg || 0;
-        const recommendations = [
-            {
-                title: 'Software Developer',
-                fitScore: Math.min(95, Math.round((gradeAvg / 4.0) * 100)),
-                description: 'Build applications and systems using programming languages',
-                avgSalary: '$85,000 - $120,000',
-                demand: 'High',
-                icon: 'DEV'
-            },
-            {
-                title: 'Data Analyst',
-                fitScore: Math.min(90, Math.round((gradeAvg / 4.0) * 95)),
-                description: 'Analyze data to help organizations make better decisions',
-                avgSalary: '$70,000 - $95,000',
-                demand: 'Very High',
-                icon: 'DATA'
-            },
-            {
-                title: 'Web Developer',
-                fitScore: Math.min(88, Math.round((gradeAvg / 4.0) * 90)),
-                description: 'Create and maintain websites and web applications',
-                avgSalary: '$75,000 - $105,000',
-                demand: 'High',
-                icon: 'WEB'
-            },
-            {
-                title: 'Systems Administrator',
-                fitScore: Math.min(85, Math.round((gradeAvg / 4.0) * 88)),
-                description: 'Manage and maintain IT infrastructure and systems',
-                avgSalary: '$70,000 - $95,000',
-                demand: 'Moderate',
-                icon: 'SYS'
-            }
-        ];
-        setCareers(recommendations.sort((a, b) => b.fitScore - a.fitScore));
+        const normalizedSubjects = (subjectRows || [])
+            .map((subjectRow) => {
+                const name = subjectRow?.subject?.name || subjectRow?.subject_name || 'Academic Track';
+                const courseScore = Number(subjectRow?.overall_grade || subjectRow?.final_percentage || 0);
+                const attendanceScore = Number(subjectRow?.attendance?.percentage || 0);
+                const fitScore = Math.max(
+                    0,
+                    Math.min(100, Math.round((courseScore * 0.7) + (attendanceScore * 0.2) + ((100 - riskScore) * 0.1)))
+                );
+
+                const demand = fitScore >= 85 ? 'Very High' : fitScore >= 70 ? 'High' : 'Moderate';
+                const shortCode = name
+                    .split(' ')
+                    .filter(Boolean)
+                    .slice(0, 3)
+                    .map((word) => word[0])
+                    .join('')
+                    .toUpperCase() || 'TRK';
+
+                return {
+                    title: `${name} Track`,
+                    fitScore,
+                    description: `Career pathways aligned with your performance in ${name}.`,
+                    demand,
+                    icon: shortCode,
+                    courseScore: Math.round(courseScore),
+                    attendanceScore: Math.round(attendanceScore)
+                };
+            })
+            .filter((item) => item.fitScore > 0)
+            .sort((a, b) => b.fitScore - a.fitScore);
+
+        if (normalizedSubjects.length > 0) {
+            return normalizedSubjects.slice(0, 4);
+        }
+
+        const baseScore = Number(profileData?.grade_avg || 0);
+        if (baseScore > 0) {
+            return [{
+                title: 'Academic Growth Track',
+                fitScore: Math.min(100, Math.round(baseScore)),
+                description: 'Career readiness derived from your current academic performance.',
+                demand: baseScore >= 75 ? 'High' : 'Moderate',
+                icon: 'AGT',
+                courseScore: Math.round(baseScore),
+                attendanceScore: Number(profileData?.attendance_score || 0)
+            }];
+        }
+
+        return [];
     };
 
     if (loading) {
@@ -102,6 +116,12 @@ const CareerFit = () => {
                 </h2>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Recommended careers based on your academic performance</p>
             </div>
+
+            {error && (
+                <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', borderRadius: '10px', background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', fontWeight: 500 }}>
+                    {error}
+                </div>
+            )}
 
             <div style={{ display: 'grid', gap: '1.25rem' }}>
                 {careers.map((career, index) => (
@@ -123,12 +143,20 @@ const CareerFit = () => {
                         </div>
                         <div style={{ display: 'flex', gap: '2rem', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <DollarSign size={16} style={{ color: 'var(--text-muted)' }} />
-                                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{career.avgSalary}</span>
+                                <Target size={16} style={{ color: 'var(--text-muted)' }} />
+                                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                    Course Score: {career.courseScore}%
+                                </span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 <TrendingUp size={16} style={{ color: career.demand === 'Very High' ? '#16a34a' : career.demand === 'High' ? '#2563eb' : '#ea580c' }} />
                                 <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{career.demand} Demand</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <Target size={16} style={{ color: 'var(--text-muted)' }} />
+                                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                    Attendance: {career.attendanceScore}%
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -138,8 +166,8 @@ const CareerFit = () => {
             <div style={{ marginTop: '2rem', padding: '1.5rem', background: '#dbeafe', borderRadius: '12px' }}>
                 <h3 style={{ fontSize: '1.1rem', color: '#1e40af', margin: '0 0 0.5rem' }}>Tip</h3>
                 <p style={{ color: '#1e3a8a', fontSize: '0.9rem', margin: 0 }}>
-                    Career fit scores are calculated based on your academic performance, skills, and course selections.
-                    Continue improving your grades and building relevant skills to increase your fit for top careers!
+                    Career fit scores are calculated using your latest course performance, attendance, and risk profile
+                    {profile?.risk_level ? ` (${profile.risk_level})` : ''}. Keep improving consistency to raise your fit scores.
                 </p>
             </div>
         </div>

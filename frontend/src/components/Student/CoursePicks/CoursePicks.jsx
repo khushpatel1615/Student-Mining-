@@ -2,13 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { BookOpen, Star, TrendingUp, CheckCircle } from 'lucide-react';
 
 import { useAuth } from '../../../context/AuthContext';
-import { API_BASE } from '../../../config';
+import {
+    fetchDashboardData as fetchStudentDashboardData,
+    fetchStudentSubjects
+} from '../../../services/studentService';
 
 const CoursePicks = () => {
     const { token } = useAuth();
     const [loading, setLoading] = useState(true);
     const [enrolledSubjects, setEnrolledSubjects] = useState([]);
     const [availableSubjects, setAvailableSubjects] = useState([]);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         if (token) {
@@ -18,15 +22,23 @@ const CoursePicks = () => {
 
     const fetchCourses = async () => {
         try {
-            // Fetch enrolled courses
-            const dashResponse = await fetch(`${API_BASE}/student_dashboard.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const dashData = await dashResponse.json();
-            // Transform subjects data for display
+            setError('');
+
+            const [dashboardResult, subjectsResult] = await Promise.all([
+                fetchStudentDashboardData(),
+                fetchStudentSubjects()
+            ]);
+
+            if (dashboardResult.error) {
+                throw new Error(dashboardResult.error);
+            }
+            if (subjectsResult.error) {
+                throw new Error(subjectsResult.error);
+            }
+
             let enrolledCourses = [];
-            if (dashData.success && dashData.data.subjects) {
-                enrolledCourses = dashData.data.subjects.map(s => ({
+            if (Array.isArray(dashboardResult.data?.subjects)) {
+                enrolledCourses = dashboardResult.data.subjects.map(s => ({
                     id: s.subject?.id,
                     name: s.subject?.name,
                     code: s.subject?.code,
@@ -36,18 +48,16 @@ const CoursePicks = () => {
                 setEnrolledSubjects(enrolledCourses);
             }
 
-            // Fetch all available subjects
-            const subjectsResponse = await fetch(`${API_BASE}/subjects.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const subjectsData = await subjectsResponse.json();
-            if (subjectsData.success) {
-                const enrolledIds = enrolledCourses.map(c => c.id) || [];
-                const available = subjectsData.data.filter(s => !enrolledIds.includes(s.id)).slice(0, 6);
-                setAvailableSubjects(available);
-            }
+            const enrolledIds = enrolledCourses.map(c => c.id) || [];
+            const available = (subjectsResult.data || [])
+                .filter((subject) => !enrolledIds.includes(subject.id))
+                .slice(0, 6);
+            setAvailableSubjects(available);
         } catch (err) {
             console.error(err);
+            setError(err.message || 'Failed to load course recommendations');
+            setEnrolledSubjects([]);
+            setAvailableSubjects([]);
         } finally {
             setLoading(false);
         }
@@ -65,6 +75,12 @@ const CoursePicks = () => {
                 </h2>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Suggested courses to enhance your learning path</p>
             </div>
+
+            {error && (
+                <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', borderRadius: '10px', background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', fontWeight: 500 }}>
+                    {error}
+                </div>
+            )}
 
             <div style={{ marginBottom: '2rem' }}>
                 <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { ClipboardList, CheckCircle, XCircle, Clock, FileText } from 'lucide-react';
 
 import { useAuth } from '../../../context/AuthContext';
-import { API_BASE } from '../../../config';
+import { fetchAssignments } from '../../../services/studentService';
 
 const Submissions = () => {
     const { token } = useAuth();
     const [loading, setLoading] = useState(true);
     const [assignments, setAssignments] = useState([]);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         if (token) {
@@ -17,15 +18,17 @@ const Submissions = () => {
 
     const fetchSubmissions = async () => {
         try {
-            const response = await fetch(`${API_BASE}/assignments.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
-            if (data.success) {
-                setAssignments(data.data || []);
+            setError('');
+            const { data, error: fetchError } = await fetchAssignments();
+            if (fetchError) {
+                throw new Error(fetchError);
             }
+
+            setAssignments(Array.isArray(data) ? data : []);
         } catch (err) {
             console.error(err);
+            setError(err.message || 'Failed to load submissions');
+            setAssignments([]);
         } finally {
             setLoading(false);
         }
@@ -76,6 +79,12 @@ const Submissions = () => {
                 </h2>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Track all your assignment submissions in one place</p>
             </div>
+
+            {error && (
+                <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', borderRadius: '10px', background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', fontWeight: 500 }}>
+                    {error}
+                </div>
+            )}
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
                 <div style={{ background: '#dcfce7', padding: '1.25rem', borderRadius: '10px', border: '2px solid #86efac' }}>

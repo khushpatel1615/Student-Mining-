@@ -61,7 +61,7 @@ function handleGet($pdo)
     // Authenticate
     $user = requireAuth();
 
-    $userId = $_GET['user_id'] ?? null;
+    $userId = $_GET['user_id'] ?? $_GET['student_id'] ?? $_GET['studentId'] ?? null;
     $enrollmentId = $_GET['enrollment_id'] ?? null;
     $subjectId = $_GET['subject_id'] ?? null;
     $programId = $_GET['program_id'] ?? null;
@@ -93,9 +93,12 @@ function handleGet($pdo)
 
         if (empty($subjects)) {
             sendResponse([
-                'criteria' => [],
-                'enrollments' => [],
-                'subjects' => []
+                'success' => true,
+                'data' => [
+                    'criteria' => [],
+                    'enrollments' => [],
+                    'subjects' => []
+                ]
             ]);
         }
 
@@ -174,9 +177,12 @@ function handleGet($pdo)
         }
 
         sendResponse([
-            'criteria' => $criteria,
-            'enrollments' => $enrollments,
-            'subjects' => $subjects
+            'success' => true,
+            'data' => [
+                'criteria' => $criteria,
+                'enrollments' => $enrollments,
+                'subjects' => $subjects
+            ]
         ]);
     }
 
@@ -288,13 +294,16 @@ function handleGet($pdo)
         }
 
         sendResponse([
-            'criteria' => $criteria,
-            'enrollments' => $enrollments,
-            'pagination' => [
-                'page' => $page,
-                'limit' => $limit,
-                'total' => (int) $total,
-                'totalPages' => (int) $totalPages
+            'success' => true,
+            'data' => [
+                'criteria' => $criteria,
+                'enrollments' => $enrollments,
+                'pagination' => [
+                    'page' => $page,
+                    'limit' => $limit,
+                    'total' => (int) $total,
+                    'totalPages' => (int) $totalPages
+                ]
             ]
         ]);
     }
@@ -331,11 +340,14 @@ function handleGet($pdo)
         $percentage = clampPercentage($percentage);
 
         sendResponse([
-            'grades' => $grades,
-            'summary' => [
-                'total_obtained' => $totalObtained,
-                'total_max' => $totalMax,
-                'percentage' => $percentage
+            'success' => true,
+            'data' => [
+                'grades' => $grades,
+                'summary' => [
+                    'total_obtained' => $totalObtained,
+                    'total_max' => $totalMax,
+                    'percentage' => $percentage
+                ]
             ]
         ]);
     }
@@ -413,7 +425,7 @@ function handleGet($pdo)
         }
     }
 
-    sendResponse($results);
+    sendResponse(['success' => true, 'data' => $results]);
 }
 
 /**
@@ -448,7 +460,7 @@ function handlePut($pdo)
                 Cache::forgetPattern("dashboard_summary_{$userId}");
             }
             $pdo->commit();
-            sendResponse(['message' => 'Grades recalculated successfully']);
+            sendResponse(['success' => true, 'data' => ['message' => 'Grades recalculated successfully']]);
         } catch (Exception $e) {
             $pdo->rollBack();
             sendError('Failed to recalculate grades', 500);
@@ -730,7 +742,7 @@ function handlePut($pdo)
         }
 
         $pdo->commit();
-        sendResponse(['message' => 'Grades updated successfully']);
+        sendResponse(['success' => true, 'data' => ['message' => 'Grades updated successfully']]);
     } catch (Exception $e) {
         $pdo->rollBack();
         throw $e;
@@ -802,7 +814,7 @@ function handlePost($pdo)
         }
 
         $pdo->commit();
-        sendResponse(['message' => "Grades updated for $updateCount students"]);
+        sendResponse(['success' => true, 'data' => ['message' => "Grades updated for $updateCount students"]]);
     } catch (Exception $e) {
         $pdo->rollBack();
         throw $e;

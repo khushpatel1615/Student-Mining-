@@ -3,7 +3,7 @@ import { Toaster } from 'react-hot-toast'
 
 import { useAuth } from './context/AuthContext'
 import LoginPage from './pages/LoginPage'
-import StudentDashboard from './pages/StudentDashboard'
+import StudentDashboardRedesigned from './pages/StudentDashboardRedesigned'
 import SubjectDetailPage from './pages/SubjectDetailPage'
 import AdminDashboard from './pages/AdminDashboard'
 import StudentProfilePage from './pages/StudentProfilePage'
@@ -115,7 +115,7 @@ function App() {
                     path="/student/dashboard"
                     element={
                         <ProtectedRoute allowedRoles={['student']}>
-                            <StudentDashboard />
+                            <StudentDashboardRedesigned />
                         </ProtectedRoute>
                     }
                 />

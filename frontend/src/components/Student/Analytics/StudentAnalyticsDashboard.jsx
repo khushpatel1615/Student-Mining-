@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 import { useAuth } from '../../../context/AuthContext';
-import { API_BASE } from '../../../config';
+import { fetchStudentAnalytics } from '../../../services/studentService';
 
 // Widgets
 import {
@@ -39,98 +39,62 @@ const StudentAnalyticsDashboard = () => {
     const [riskTrends, setRiskTrends] = useState([]);
     const [insights, setInsights] = useState([]);
     const [updatedAt, setUpdatedAt] = useState(null);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         if (!token) return;
 
-        let gradesSource = null;
-        let attendanceSource = null;
         let aborted = false;
+        let intervalId = null;
 
-        const fetchAnalyticsOnce = async (range) => {
-            const params = new URLSearchParams({
-                action: 'analytics',
-                range,
-                semester: String(user?.current_semester || 1)
-            });
-            const res = await fetch(`${API_BASE}/student_dashboard.php?${params.toString()}`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            const data = await res.json();
-            if (!data?.success) throw new Error(data?.error || 'Failed to load analytics');
-            return data.data;
-        };
+        const loadAnalytics = async () => {
+            if (!aborted) {
+                setLoading(true);
+                setError('');
+            }
 
-        const setupEventSource = (range, onData) => {
-            const params = new URLSearchParams({
-                action: 'analytics_stream',
-                range,
-                semester: String(user?.current_semester || 1),
-                token
-            });
-            const url = `${API_BASE}/student_dashboard.php?${params.toString()}`;
-            const source = new window.EventSource(url);
-            source.addEventListener('analytics', (event) => {
-                try {
-                    const payload = JSON.parse(event.data);
-                    if (payload?.success && payload?.data) {
-                        onData(payload.data);
-                    }
-                } catch (e) {
-                    console.error('Failed to parse analytics stream:', e);
-                }
-            });
-            source.onerror = () => {
-                // Let browser retry; if it keeps failing we will keep last known data
-            };
-            return source;
-        };
-
-        const init = async () => {
-            setLoading(true);
             try {
-                const [gradesPayload, attendancePayload] = await Promise.all([
-                    fetchAnalyticsOnce(timeRange),
-                    fetchAnalyticsOnce(attendanceTimeRange)
+                const semester = user?.current_semester || 1;
+                const [gradesResult, attendanceResult] = await Promise.all([
+                    fetchStudentAnalytics({ range: timeRange, semester }),
+                    fetchStudentAnalytics({ range: attendanceTimeRange, semester })
                 ]);
+
+                if (gradesResult.error) {
+                    throw new Error(gradesResult.error);
+                }
+                if (attendanceResult.error) {
+                    throw new Error(attendanceResult.error);
+                }
+
+                const gradesPayload = gradesResult.data || {};
+                const attendancePayload = attendanceResult.data || {};
+
                 if (aborted) return;
+
                 setSummary(gradesPayload.summary || null);
                 setGradeTrends(gradesPayload.trends?.grades || []);
                 setRiskTrends(gradesPayload.trends?.risk || []);
                 setInsights(gradesPayload.insights || []);
                 setAttendanceTrends(attendancePayload.trends?.attendance || []);
                 setUpdatedAt(gradesPayload.summary?.updated_at || null);
+                setError('');
             } catch (err) {
                 if (!aborted) {
                     console.error('Failed to load analytics:', err);
+                    setError(err.message || 'Failed to load analytics');
                 }
             } finally {
                 if (!aborted) setLoading(false);
             }
-
-            if (typeof EventSource !== 'undefined') {
-                gradesSource = setupEventSource(timeRange, (data) => {
-                    setSummary(data.summary || null);
-                    setGradeTrends(data.trends?.grades || []);
-                    setRiskTrends(data.trends?.risk || []);
-                    setInsights(data.insights || []);
-                    setUpdatedAt(data.summary?.updated_at || null);
-                });
-                attendanceSource = setupEventSource(attendanceTimeRange, (data) => {
-                    setAttendanceTrends(data.trends?.attendance || []);
-                });
-            }
         };
 
-        init();
+        loadAnalytics();
+        intervalId = window.setInterval(loadAnalytics, 15000);
 
         return () => {
             aborted = true;
-            if (gradesSource) gradesSource.close();
-            if (attendanceSource) attendanceSource.close();
+            if (intervalId) window.clearInterval(intervalId);
         };
     }, [token, timeRange, attendanceTimeRange, user?.current_semester]);
 
@@ -145,6 +109,25 @@ const StudentAnalyticsDashboard = () => {
 
     const displayGrades = getFilteredGrades();
     const displayAttendance = attendanceData;
+    const gradeChartData = useMemo(() => {
+        if (!Array.isArray(displayGrades)) return [];
+        if (displayGrades.length !== 1) return displayGrades;
+
+        const onlyPoint = displayGrades[0];
+        let baselineLabel = 'Baseline';
+        const parsed = new Date(onlyPoint.t);
+        if (!Number.isNaN(parsed.getTime())) {
+            parsed.setDate(parsed.getDate() - 1);
+            baselineLabel = parsed.toISOString().slice(0, 10);
+        } else if (onlyPoint.t) {
+            baselineLabel = `${onlyPoint.t} (start)`;
+        }
+
+        return [
+            { ...onlyPoint, t: baselineLabel },
+            onlyPoint
+        ];
+    }, [displayGrades]);
 
     const getTrendValue = (series) => {
         if (!series || series.length < 2) return null;
@@ -158,6 +141,36 @@ const StudentAnalyticsDashboard = () => {
     const gradeTrendValue = getTrendValue(displayGrades);
     const attendanceTrendValue = getTrendValue(displayAttendance);
     const riskTrendValue = getTrendValue(riskTrends);
+
+    const isStableDelta = (value) => value === null || value === undefined || Math.abs(Number(value)) < 0.05;
+    const formatDeltaText = (value) => {
+        if (isStableDelta(value)) return 'Stable';
+        const numeric = Number(value);
+        return `${numeric > 0 ? '+' : ''}${numeric}%`;
+    };
+
+    const attendanceTrendState = isStableDelta(attendanceTrendValue)
+        ? 'neutral'
+        : Number(attendanceTrendValue) > 0
+            ? 'up'
+            : 'down';
+
+    const gradeTrendState = isStableDelta(gradeTrendValue)
+        ? 'neutral'
+        : Number(gradeTrendValue) > 0
+            ? 'up'
+            : 'down';
+
+    // Risk metric is inverse: lower risk is better.
+    const riskTrendState = isStableDelta(riskTrendValue)
+        ? 'neutral'
+        : Number(riskTrendValue) < 0
+            ? 'up'
+            : 'down';
+
+    const riskTrendText = isStableDelta(riskTrendValue)
+        ? 'Stable'
+        : `${Math.abs(Number(riskTrendValue))}% ${Number(riskTrendValue) < 0 ? 'improved' : 'worse'}`;
     // 4. Functional Branching (Actions)
     const handleChartAction = (action, context) => {
         console.log(`Action triggered: ${action} for ${context}`);
@@ -311,6 +324,12 @@ const StudentAnalyticsDashboard = () => {
                 </div>
             </header>
 
+            {error && (
+                <div className="analytics-card" style={{ borderLeft: '4px solid #ef4444', marginBottom: '1rem' }}>
+                    <p style={{ margin: 0, color: '#991b1b', fontWeight: 500 }}>{error}</p>
+                </div>
+            )}
+
             {/* 2. KPI Row */}
             <motion.div className="analytics-kpi-grid" variants={containerVariants}>
                 <motion.div variants={itemVariants}>
@@ -318,8 +337,8 @@ const StudentAnalyticsDashboard = () => {
                         title="Risk Analysis"
                         value={summary?.risk_label || "N/A"}
                         subValue={summary ? `Risk Score: ${summary.risk_score}/100` : "No data"}
-                        trend={riskTrendValue === null ? "neutral" : riskTrendValue <= 0 ? "down" : "up"}
-                        trendValue={riskTrendValue === null ? "-" : `${riskTrendValue > 0 ? '+' : ''}${riskTrendValue}%`}
+                        trend={riskTrendState}
+                        trendValue={riskTrendText}
                         color="green"
                         icon={Activity}
                         data={(riskTrends || []).map(d => ({ v: d.value }))}
@@ -331,8 +350,8 @@ const StudentAnalyticsDashboard = () => {
                         title="Attendance"
                         value={summary ? `${summary.attendance_rate}%` : "0%"}
                         subValue="Present Rate"
-                        trend={attendanceTrendValue === null ? "neutral" : attendanceTrendValue >= 0 ? "up" : "down"}
-                        trendValue={attendanceTrendValue === null ? "Stable" : `${attendanceTrendValue > 0 ? '+' : ''}${attendanceTrendValue}%`}
+                        trend={attendanceTrendState}
+                        trendValue={formatDeltaText(attendanceTrendValue)}
                         color="blue"
                         icon={Users}
                         data={(displayAttendance || []).map(d => ({ v: d.value }))}
@@ -344,8 +363,8 @@ const StudentAnalyticsDashboard = () => {
                         title="Average Grade"
                         value={summary ? `${summary.average_grade}` : "0.0"}
                         subValue={summary ? "Based on latest assessments" : "No data"}
-                        trend={gradeTrendValue === null ? "neutral" : gradeTrendValue >= 0 ? "up" : "down"}
-                        trendValue={gradeTrendValue === null ? "-" : `${gradeTrendValue > 0 ? '+' : ''}${gradeTrendValue}%`}
+                        trend={gradeTrendState}
+                        trendValue={formatDeltaText(gradeTrendValue)}
                         color="purple"
                         icon={BookOpen}
                         data={(displayGrades || []).map(d => ({ v: d.value }))}
@@ -392,11 +411,18 @@ const StudentAnalyticsDashboard = () => {
                                 <p>Data will appear once your first grade is uploaded</p>
                             </div>
                         ) : (
-                            <AreaChartWidget
-                                data={displayGrades}
-                                color="#8b5cf6"
-                                height={320}
-                            />
+                            <>
+                                <AreaChartWidget
+                                    data={gradeChartData}
+                                    color="#8b5cf6"
+                                    height={320}
+                                />
+                                {displayGrades.length === 1 && (
+                                    <p style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: '#64748b' }}>
+                                        One graded datapoint found. The trend line will become fully representative after the next graded update.
+                                    </p>
+                                )}
+                            </>
                         )}
                     </ChartCard>
                 </motion.div>

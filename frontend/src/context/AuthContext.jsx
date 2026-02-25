@@ -29,7 +29,13 @@ export function AuthProvider({ children }) {
                     setUser(data.user);
                     setToken(apiClient.token);
                 } else {
-                    logout();
+                    console.error('Auth verification failed during initAuth:', verifyError, data);
+                    // Only forcefully logout if it's a 401 error, don't logout on network errors
+                    if (verifyError && verifyError.includes('401')) {
+                        logout();
+                    } else if (data?.error && String(data.error).includes('401')) {
+                        logout();
+                    }
                 }
             }
             setLoading(false);

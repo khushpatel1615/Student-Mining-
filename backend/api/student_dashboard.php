@@ -16,9 +16,15 @@ ini_set('display_errors', 0);
 
 handleCORS();
 
-// Enforce Student Role & Get User
-$user = requireRole('student');
-$userId = $user['user_id'];
+// Authenticate and resolve target student context
+$authUser = requireAuth();
+$requestedUserId = isset($_GET['user_id']) ? (int) $_GET['user_id'] : null;
+
+if ($requestedUserId && !in_array($authUser['role'], ['admin', 'teacher']) && $requestedUserId !== (int) $authUser['user_id']) {
+    sendError('Access denied', 403);
+}
+
+$userId = $requestedUserId ?: (int) $authUser['user_id'];
 
 $method = $_SERVER['REQUEST_METHOD'];
 $pdo = getDBConnection();
@@ -50,7 +56,7 @@ function handleGet($pdo, $dataDir, $userId)
     $semester = isset($_GET['semester']) ? intval($_GET['semester']) : 'current';
     $cacheKey = "dashboard_summary_{$userId}_{$semester}";
     if ($cached = Cache::get($cacheKey)) {
-        sendResponse($cached);
+        sendResponse(['success' => true, 'data' => $cached]);
     }
 
     // 1. Get Complete Student Profile
@@ -72,6 +78,8 @@ function handleGet($pdo, $dataDir, $userId)
 
     if (!$student['program_id']) {
         sendResponse([
+            'success' => true,
+            'data' => [
             'enrolled' => false,
             'student' => [
                 'name' => $student['full_name'],
@@ -79,7 +87,7 @@ function handleGet($pdo, $dataDir, $userId)
                 'student_id' => $student['student_id'],
                 'enrollment_date' => $student['enrollment_date']
             ]
-        ]);
+        ]]);
         return;
     }
 
@@ -212,7 +220,7 @@ function handleGet($pdo, $dataDir, $userId)
     ];
 
     Cache::set($cacheKey, $response, 300);
-    sendResponse($response);
+    sendResponse(['success' => true, 'data' => $response]);
 }
 
 function handleAnalytics($pdo, $dataDir, $userId)
@@ -220,7 +228,7 @@ function handleAnalytics($pdo, $dataDir, $userId)
     $range = isset($_GET['range']) ? $_GET['range'] : '30d';
     $requestedSemester = isset($_GET['semester']) ? intval($_GET['semester']) : null;
     $data = buildAnalyticsData($pdo, $dataDir, $userId, $range, $requestedSemester);
-    sendResponse($data);
+    sendResponse(['success' => true, 'data' => $data]);
 }
 
 function handleAnalyticsStream($pdo, $dataDir, $userId)
@@ -309,11 +317,11 @@ function buildAnalyticsData($pdo, $dataDir, $userId, $range, $requestedSemester)
     // Grade Trend
     $gradeByDate = [];
     $stmt = $pdo->prepare("
-        SELECT sg.graded_at, sg.marks_obtained, ec.max_marks
+        SELECT COALESCE(sg.graded_at, sg.updated_at, sg.created_at) as graded_at, sg.marks_obtained, ec.max_marks
         FROM student_enrollments se
         JOIN student_grades sg ON sg.enrollment_id = se.id
         JOIN evaluation_criteria ec ON ec.id = sg.criteria_id
-        WHERE se.user_id = ? AND sg.graded_at IS NOT NULL
+        WHERE se.user_id = ? AND sg.marks_obtained IS NOT NULL
     ");
     $stmt->execute([$userId]);
     $grades = $stmt->fetchAll(PDO::FETCH_ASSOC);

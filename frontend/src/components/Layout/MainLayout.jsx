@@ -1,3 +1,7 @@
+// NOTE: The floating avatar/presence widget visible in the top-right during development
+// is injected by the IDE's multiplayer preview feature. It is NOT part of this app.
+// To hide it, disable "Multiplayer Presence" or "Live Preview Collaboration" in your
+// IDE/platform settings. Do not attempt to z-index override it from this codebase.
 import React, { useState } from 'react';
 
 import NotificationCenter from '../Notifications/NotificationCenter';

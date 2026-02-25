@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 
-import { API_BASE } from '../../../config';
 import { useAuth } from '../../../context/AuthContext'
+import { fetchExams } from '../../../services/studentService'
 import './StudentExams.css'
 
 
@@ -10,24 +10,29 @@ function StudentExams() {
     const { token } = useAuth()
     const [exams, setExams] = useState([])
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState('')
     const [filter, setFilter] = useState('all') // all, upcoming, completed
 
     useEffect(() => {
-        fetchExams()
-    }, [])
+        if (token) {
+            loadExams()
+        }
+    }, [token])
 
-    const fetchExams = async () => {
+    const loadExams = async () => {
         try {
             setLoading(true)
-            const response = await fetch(`${API_BASE}/exams.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
-            if (data.success) {
-                setExams(data.data)
+            setError('')
+            const { data, error: fetchError } = await fetchExams()
+            if (fetchError) {
+                throw new Error(fetchError)
             }
+
+            setExams(Array.isArray(data) ? data : [])
         } catch (err) {
             console.error('Failed to fetch exams:', err)
+            setError(err.message || 'Failed to load exams')
+            setExams([])
         } finally {
             setLoading(false)
         }
@@ -111,6 +116,12 @@ function StudentExams() {
                 </div>
             </div>
 
+            {error && (
+                <div className="empty-state" style={{ marginBottom: '1rem', border: '1px solid #fecaca', background: '#fef2f2' }}>
+                    <p style={{ color: '#991b1b' }}>{error}</p>
+                </div>
+            )}
+
             {loading ? (
                 <div className="loading">Loading exams...</div>
             ) : filteredExams.length === 0 ? (
@@ -175,6 +186,4 @@ function StudentExams() {
 }
 
 export default StudentExams
-
-
 

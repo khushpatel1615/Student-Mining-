@@ -82,6 +82,12 @@ const StudentAttendance = () => {
         }));
     };
 
+    const getPercentageColor = (pct) => {
+        if (pct < 75) return 'danger';
+        if (pct < 85) return 'warning';
+        return 'success';
+    };
+
     const getStats = (records) => {
         if (!records || records.length === 0) return { present: 0, total: 0, percentage: 0 };
         const total = records.filter(r => r.status && r.status !== '-').length;
@@ -128,13 +134,13 @@ const StudentAttendance = () => {
                                         <div className="progress-container">
                                             <div className="progress-labels">
                                                 <span className="progress-text">Attendance</span>
-                                                <span className={`progress-percentage ${stats.percentage < 75 ? 'danger' : 'success'}`}>
+                                                <span className={`progress-percentage ${getPercentageColor(stats.percentage)}`}>
                                                     {stats.percentage}%
                                                 </span>
                                             </div>
                                             <div className="progress-bar-bg">
                                                 <div
-                                                    className={`progress-bar-fill ${stats.percentage < 75 ? 'danger' : 'success'}`}
+                                                    className={`progress-bar-fill ${getPercentageColor(stats.percentage)}`}
                                                     style={{ width: `${stats.percentage}%` }}
                                                 ></div>
                                             </div>
@@ -182,9 +188,9 @@ const StudentAttendance = () => {
                                                         <div key={idx} className="history-item">
                                                             <span className="history-date">{rec.date}</span>
                                                             <span className={`status-badge ${rec.status === 'P' ? 'present' :
-                                                                    rec.status === 'A' ? 'absent' :
-                                                                        rec.status === 'L' ? 'late' :
-                                                                            rec.status === 'E' ? 'exception' : 'unmarked'
+                                                                rec.status === 'A' ? 'absent' :
+                                                                    rec.status === 'L' ? 'late' :
+                                                                        rec.status === 'E' ? 'exception' : 'unmarked'
                                                                 }`}>
                                                                 {rec.status === 'P' ? 'Present' :
                                                                     rec.status === 'A' ? 'Absent' :

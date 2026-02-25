@@ -16,35 +16,36 @@ import {
     ChevronDown
 } from 'lucide-react'
 
+import MainLayout from '../components/Layout/MainLayout'
 import { useAuth } from '../context/AuthContext'
 import CalendarManagement from '../components/CalendarManagement/CalendarManagement'
 import { CircularProgress } from '../components/CircularProgress'
-import GradesTab from '../components/student/Grades/GradesTab'
-import DegreeAudit from '../components/student/DegreeAudit/DegreeAudit'
-import StudentProfile from '../components/student/Profile/StudentProfile'
-import StudentAssignments from '../components/student/Assignments/StudentAssignments'
-import StudentExams from '../components/student/Exams/StudentExams'
-import Analytics from '../components/student/Analytics/StudentAnalyticsDashboard'
-import SkillsMap from '../components/student/SkillsMap/SkillsMap'
-import CareerFit from '../components/student/CareerFit/CareerFit'
-import CoursePicks from '../components/student/CoursePicks/CoursePicks'
-import StudyPlanner from '../components/student/StudyPlanner/StudyPlanner'
-import Performance from '../components/student/Performance/Performance'
-import Submissions from '../components/student/Submissions/Submissions'
-import Difficulty from '../components/student/Difficulty/Difficulty'
-import Badges from '../components/student/Badges/Badges'
+import GradesTab from '../components/Student/Grades/GradesTab'
+import StudentProfile from '../components/Student/Profile/StudentProfile'
+import StudentAssignments from '../components/Student/Assignments/StudentAssignments'
+import StudentExams from '../components/Student/Exams/StudentExams'
+import Analytics from '../components/Student/Analytics/StudentAnalyticsDashboard'
+import SkillsMap from '../components/Student/SkillsMap/SkillsMap'
+import CareerFit from '../components/Student/CareerFit/CareerFit'
+import CoursePicks from '../components/Student/CoursePicks/CoursePicks'
+import StudyPlanner from '../components/Student/StudyPlanner/StudyPlanner'
+import Performance from '../components/Student/Performance/Performance'
+import Submissions from '../components/Student/Submissions/Submissions'
+import Difficulty from '../components/Student/Difficulty/Difficulty'
+import Badges from '../components/Student/Badges/Badges'
 import ReportGenerator from '../components/Reports/ReportGenerator'
 import AnnouncementsPage from '../components/Discussions/AnnouncementsPage'
-import StudentAttendance from '../components/student/Attendance/StudentAttendance'
-import QuickActions from '../components/student/Overview/QuickActions'
-import ActivityFeed from '../components/student/Overview/ActivityFeed'
-import MainLayout from '../components/layout/MainLayout'
-import LogoutModal from '../components/ui/LogoutModal'
+import StudentAttendance from '../components/Student/Attendance/StudentAttendance'
+import QuickActions from '../components/Student/Overview/QuickActions'
+import ActivityFeed from '../components/Student/Overview/ActivityFeed'
 import './StudentDashboard.css'
 
-import * as notificationService from '../services/notificationService'
-import * as calendarService from '../services/calendarService'
-import * as studentService from '../services/studentService'
+import {
+    fetchDashboardData as fetchStudentDashboardData,
+    fetchStudentCalendarEvents,
+    fetchStudentNotifications,
+    markStudentNotificationAsRead
+} from '../services/studentService'
 
 const StudentDashboard = () => {
     const { user, token, logout } = useAuth()
@@ -66,6 +67,10 @@ const StudentDashboard = () => {
     const [notifications, setNotifications] = useState([])
     const [unreadCount, setUnreadCount] = useState(0)
     const [showNotifications, setShowNotifications] = useState(false)
+    const [dashboardError, setDashboardError] = useState('')
+
+
+
 
     // Dashboard Data
     const [dashboardData, setDashboardData] = useState({
@@ -78,108 +83,126 @@ const StudentDashboard = () => {
 
     // Fetch Notifications
     const fetchNotifications = useCallback(async () => {
-        const { data, error } = await notificationService.fetchNotifications(10);
-        if (data) {
-            setNotifications(data.notifications || []);
-            setUnreadCount(data.unread_count || 0);
-        } else if (error) {
-            console.error('Failed to fetch notifications:', error);
+        const { data, error } = await fetchStudentNotifications(10)
+        if (error) {
+            console.error('Failed to fetch notifications:', error)
+            return
         }
+
+        setNotifications(data?.notifications || [])
+        setUnreadCount(data?.unread_count || 0)
     }, [])
 
     // Mark as read
     const markAsRead = async (id = null) => {
-        const { error } = await notificationService.markAsRead(id);
-        if (!error) {
-            fetchNotifications();
-        } else {
-            console.error('Failed to mark notifications read:', error);
+        const { error } = await markStudentNotificationAsRead(id)
+        if (error) {
+            console.error('Failed to mark notifications read:', error)
+            return
         }
+
+        fetchNotifications()
     }
 
-    const fetchDashboardStats = useCallback(async () => {
+    const fetchDashboardData = useCallback(async () => {
+        if (!token || !user) return
+
         setRefreshing(true)
-        const params = selectedSemester ? { semester: selectedSemester } : {}
+        setDashboardError('')
 
-        const [dashRes, calRes] = await Promise.all([
-            studentService.fetchDashboardData(params),
-            calendarService.fetchCalendarEvents()
-        ]);
+        try {
+            const params = selectedSemester ? { semester: selectedSemester } : {}
 
-        if (dashRes.data) {
-            const summary = dashRes.data.summary;
-            const subjects = dashRes.data.subjects;
+            const [dashboardResult, calendarResult] = await Promise.all([
+                fetchStudentDashboardData(params),
+                fetchStudentCalendarEvents()
+            ])
+
+            if (dashboardResult.error) {
+                throw new Error(dashboardResult.error)
+            }
+
+            const dashboardPayload = dashboardResult.data || {}
+            const summary = dashboardPayload.summary || {}
+            const subjects = Array.isArray(dashboardPayload.subjects) ? dashboardPayload.subjects : []
 
             const semesters = [...new Set(
                 subjects
-                    .map(s => s.subject?.semester)
-                    .filter(sem => sem != null)
-            )].sort((a, b) => a - b);
+                    .map((subjectEntry) => subjectEntry?.subject?.semester)
+                    .filter((semesterValue) => semesterValue !== null && semesterValue !== undefined)
+            )].sort((a, b) => a - b)
 
-            setAvailableSemesters(semesters);
+            setAvailableSemesters(semesters)
 
             if (semesters.length > 0 && !selectedSemester) {
-                setSelectedSemester(dashRes.data.semester || 1);
+                const defaultSem = dashboardPayload.semester || semesters[0]
+                setSelectedSemester(defaultSem)
             }
 
-            let upcoming = [];
-            if (calRes.data) {
-                const today = new Date();
-                upcoming = calRes.data.filter(ev => {
-                    const evDate = new Date(ev.event_date);
-                    const diffTime = evDate - today;
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    return diffDays >= 0 && diffDays <= 14;
-                }).sort((a, b) => new Date(a.event_date) - new Date(b.event_date))
-                    .slice(0, 5);
+            let upcoming = []
+            if (!calendarResult.error && Array.isArray(calendarResult.data)) {
+                const today = new Date()
+                upcoming = calendarResult.data
+                    .filter((event) => {
+                        const eventDate = new Date(event.event_date)
+                        const diffTime = eventDate - today
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+                        return diffDays >= 0 && diffDays <= 14
+                    })
+                    .sort((a, b) => new Date(a.event_date) - new Date(b.event_date))
+                    .slice(0, 5)
             }
 
             const courses = subjects
-                .filter(sub => sub && sub.subject)
-                .map(sub => ({
-                    id: sub.subject.id,
-                    name: sub.subject.name,
-                    code: sub.subject.code,
-                    grade: sub.grade_letter || 'N/A',
-                    progress: sub.attendance?.percentage || 0,
-                    attendance: sub.attendance,
-                    overall_score: sub.overall_grade,
-                    credits: sub.subject.credits,
-                    components: sub.components,
-                    semester: sub.subject.semester
-                }));
+                .filter((subjectEntry) => subjectEntry && subjectEntry.subject)
+                .map((subjectEntry) => ({
+                    id: subjectEntry.subject.id,
+                    name: subjectEntry.subject.name,
+                    code: subjectEntry.subject.code,
+                    grade: subjectEntry.grade_letter || 'N/A',
+                    progress: subjectEntry.attendance?.percentage || 0,
+                    attendance: subjectEntry.attendance,
+                    overall_score: subjectEntry.overall_grade,
+                    credits: subjectEntry.subject.credits,
+                    components: subjectEntry.components,
+                    semester: subjectEntry.subject.semester
+                }))
 
             setDashboardData({
-                gpa: summary.gpa,
-                gpa_4: summary.gpa_4,
-                gpa_text: summary.gpa_text,
-                attendance: summary.overall_attendance,
-                credits: summary.earned_credits,
-                total_credits: summary.total_credits,
-                courses: courses,
-                upcoming_assignments: upcoming.map(ev => ({
-                    id: ev.id,
-                    title: ev.title,
-                    due: new Date(ev.event_date).toLocaleDateString(),
-                    status: ev.type,
-                    days_left: Math.ceil((new Date(ev.event_date) - new Date()) / (1000 * 60 * 60 * 24))
+                gpa: summary.gpa || 0,
+                gpa_4: summary.gpa_4 || 0,
+                gpa_text: summary.gpa_text || 'N/A',
+                attendance: summary.overall_attendance || 0,
+                credits: summary.earned_credits || 0,
+                total_credits: summary.total_credits || 0,
+                courses,
+                upcoming_assignments: upcoming.map((event) => ({
+                    id: event.id,
+                    title: event.title,
+                    due: new Date(event.event_date).toLocaleDateString(),
+                    status: event.type,
+                    days_left: Math.ceil((new Date(event.event_date) - new Date()) / (1000 * 60 * 60 * 24))
                 }))
             })
-        } else if (dashRes.error) {
-            console.error('Error fetching dashboard data:', dashRes.error);
-        }
 
-        await fetchNotifications()
-        setLastUpdated(new Date())
-        setRefreshing(false)
-    }, [fetchNotifications, selectedSemester])
+            await fetchNotifications()
+            setLastUpdated(new Date())
+        } catch (error) {
+            console.error('Error fetching dashboard data:', error)
+            setDashboardError(error.message || 'Failed to load dashboard data')
+        } finally {
+            setRefreshing(false)
+        }
+    }, [token, user, selectedSemester, fetchNotifications])
 
     // Fetch dashboard data on mount and when token/user become available
     useEffect(() => {
         if (token && user) {
-            fetchDashboardStats()
+            fetchDashboardData()
         }
-    }, [token, user, selectedSemester, fetchDashboardStats])
+    }, [token, user, fetchDashboardData])
+
+
 
     const getProgressColor = (gradient) => {
         switch (gradient) {
@@ -190,6 +213,8 @@ const StudentDashboard = () => {
             default: return '#6366f1'
         }
     }
+
+    // Stats Cards Logic has been moved inline into the main render for better semester integration
 
     const getGreeting = () => {
         const hour = new Date().getHours()
@@ -227,7 +252,7 @@ const StudentDashboard = () => {
         <MainLayout
             role="student"
             lastUpdated={lastUpdated}
-            onRefresh={fetchDashboardStats}
+            onRefresh={fetchDashboardData}
             refreshing={refreshing}
             notifications={notifications}
             unreadCount={unreadCount}
@@ -274,6 +299,14 @@ const StudentDashboard = () => {
 
                 {/* Tab Content */}
                 <div className="tab-content">
+                    {dashboardError && (
+                        <div className="card" style={{ borderLeft: '4px solid #ef4444', marginBottom: '1rem' }}>
+                            <p style={{ margin: 0, color: '#991b1b', fontWeight: 500 }}>
+                                {dashboardError}
+                            </p>
+                        </div>
+                    )}
+
                     {activeTab === 'overview' && (
                         <>
                             <div className="top-row-flex" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '2rem', marginBottom: '2rem' }}>
@@ -370,7 +403,10 @@ const StudentDashboard = () => {
                                         )
                                     })}
                                 </motion.div>
+
+
                             </div>
+
 
                             {/* Quick Actions & Activity Feed Row */}
                             <div className="content-grid" style={{ marginBottom: '1.5rem', gridTemplateColumns: '2fr 1fr' }}>
@@ -459,11 +495,15 @@ const StudentDashboard = () => {
                         </>
                     )}
 
+
+
                     {activeTab === 'attendance' && (
                         <div className="card card-padded-lg">
                             <StudentAttendance />
                         </div>
                     )}
+
+
 
                     {activeTab === 'profile' && (
                         <StudentProfile />
@@ -472,12 +512,6 @@ const StudentDashboard = () => {
                     {activeTab === 'grades' && (
                         <div className="card">
                             <GradesTab selectedSemester={selectedSemester} />
-                        </div>
-                    )}
-
-                    {activeTab === 'degree-audit' && (
-                        <div className="card">
-                            <DegreeAudit />
                         </div>
                     )}
 
@@ -504,6 +538,8 @@ const StudentDashboard = () => {
                             <AnnouncementsPage />
                         </div>
                     )}
+
+
 
                     {(activeTab === 'schedule' || activeTab === 'calendar') && (
                         <div className="card">
