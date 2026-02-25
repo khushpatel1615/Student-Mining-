@@ -3,7 +3,7 @@ import { Megaphone, Plus, Trash2, Pin, Eye, Clock, X, Edit } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 import { useAuth } from '../../context/AuthContext'
-import { API_BASE } from '../../config';
+import apiClient from '../../utils/apiClient';
 import './DiscussionForum.css'
 
 
@@ -33,10 +33,7 @@ function AdminAnnouncements() {
     const fetchAnnouncements = async () => {
         setLoading(true)
         try {
-            const res = await fetch(`${API_BASE}/discussions.php?action=list`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await res.json()
+            const data = await apiClient.get('/discussions.php', { action: 'list' })
             if (data.success) {
                 // Backend already filters by category='announcement' for list action
                 setAnnouncements(data.data)
@@ -50,10 +47,7 @@ function AdminAnnouncements() {
 
     const fetchPrograms = async () => {
         try {
-            const res = await fetch(`${API_BASE}/programs.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await res.json()
+            const data = await apiClient.get('/programs.php')
             if (data.success) setPrograms(data.data)
         } catch (err) {
             console.error('Failed to load programs')
@@ -76,12 +70,7 @@ function AdminAnnouncements() {
             }
             if (isEditing) body.id = editingId
 
-            const res = await fetch(`${API_BASE}/discussions.php`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            })
-            const data = await res.json()
+            const data = await apiClient.post('/discussions.php', body)
             if (data.success) {
                 toast.success(isEditing ? 'Announcement updated!' : 'Announcement published!')
                 setShowNewForm(false)
@@ -115,11 +104,7 @@ function AdminAnnouncements() {
 
     const togglePin = async (id) => {
         try {
-            await fetch(`${API_BASE}/discussions.php`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'pin', id })
-            })
+            await apiClient.post('/discussions.php', { action: 'pin', id })
             fetchAnnouncements()
         } catch (err) { /* ignore */ }
     }
@@ -127,11 +112,7 @@ function AdminAnnouncements() {
     const deleteAnnouncement = async (id) => {
         if (!window.confirm('Delete this announcement?')) return
         try {
-            await fetch(`${API_BASE}/discussions.php`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id })
-            })
+            await apiClient.delete('/discussions.php', { id })
             toast.success('Deleted')
             fetchAnnouncements()
         } catch (err) { /* ignore */ }

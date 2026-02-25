@@ -3,7 +3,7 @@ import { FileText, Download, Loader, GraduationCap, Calendar, TrendingUp, Award 
 import toast from 'react-hot-toast'
 
 import { useAuth } from '../../context/AuthContext'
-import { API_BASE } from '../../config';
+import apiClient from '../../utils/apiClient';
 import './ReportGenerator.css'
 
 function ReportGenerator() {
@@ -24,18 +24,14 @@ function ReportGenerator() {
         setReportData(null)
         setActiveReport(type)
         try {
-            const response = await fetch(`${API_BASE}/reports.php?action=${type}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
+            const data = await apiClient.get('/reports.php', { action: type });
             if (data.success) {
                 setReportData(data.data)
                 toast.success('Report generated!')
             } else {
                 toast.error(data.error || 'Failed to generate report')
             }
-        } catch (err) {
-            console.error('Report Error:', err)
+        } catch {
             toast.error('Error generating report')
         } finally {
             setLoading(null)

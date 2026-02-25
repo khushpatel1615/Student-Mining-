@@ -101,7 +101,7 @@ try {
             throw new Exception("Unknown action: $action");
     }
 } catch (Throwable $e) {
-    file_put_contents(__DIR__ . '/debug_error.log', date('Y-m-d H:i:s') . " ERROR: " . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n", FILE_APPEND);
+    Logger::error('Risk alerts error', ['message' => $e->getMessage()]);
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
@@ -113,7 +113,7 @@ try {
 function handleSettings($pdo, $method)
 {
     if ($method === 'GET') {
-// Get current settings
+        // Get current settings
         $stmt = $pdo->query("SELECT setting_key, setting_value FROM risk_alert_settings");
         $rows = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
         echo json_encode([
@@ -128,7 +128,7 @@ function handleSettings($pdo, $method)
             ]
         ]);
     } elseif ($method === 'PUT' || $method === 'POST') {
-    // Update settings (accept POST for hosts that don't pass PUT through to PHP)
+        // Update settings (accept POST for hosts that don't pass PUT through to PHP)
         $rawInput = file_get_contents('php://input');
         $data = json_decode($rawInput, true);
         if (!is_array($data) || empty($data)) {
@@ -226,7 +226,7 @@ function handlePreview($pdo)
         FROM users u
         LEFT JOIN programs p ON u.program_id = p.id
         JOIN student_risk_scores srs ON u.id = srs.user_id
-        WHERE u.role = 'student'
+        WHERE u.role = 'student' AND u.is_active = 1
           AND srs.risk_level = 'At Risk'
         ORDER BY srs.risk_score ASC
         LIMIT 10

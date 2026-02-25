@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 
-import { API_BASE } from '../../config';
+import apiClient from '../../utils/apiClient';
 import { useAuth } from '../../context/AuthContext'
 import './ExamManagement.css'
 
@@ -53,36 +53,27 @@ function ExamManagement() {
 
     const fetchSubjects = async () => {
         try {
-            const response = await fetch(`${API_BASE}/subjects.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
+            const data = await apiClient.get('/subjects.php');
             if (data.success) {
                 setSubjects(data.data)
             }
-        } catch (err) {
-            console.error('Failed to fetch subjects:', err)
+        } catch {
+            // Failed to fetch subjects
         }
     }
 
     const fetchExams = async () => {
         try {
             setLoading(true)
-            const params = new URLSearchParams()
-            if (selectedSubject) params.append('subject_id', selectedSubject)
-            if (selectedSemester) params.append('semester', selectedSemester)
-            const url = params.toString()
-                ? `${API_BASE}/exams.php?${params.toString()}`
-                : `${API_BASE}/exams.php`
+            const params = {}
+            if (selectedSubject) params.subject_id = selectedSubject
+            if (selectedSemester) params.semester = selectedSemester
 
-            const response = await fetch(url, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
+            const data = await apiClient.get('/exams.php', params);
             if (data.success) {
                 setExams(data.data)
             }
-        } catch (err) {
+        } catch {
             setError('Failed to fetch exams')
         } finally {
             setLoading(false)
@@ -110,20 +101,10 @@ function ExamManagement() {
     const handleSubmit = async (e) => {
         e.preventDefault()
         try {
-            const url = `${API_BASE}/exams.php`
-            const method = editingId ? 'PUT' : 'POST'
+            const method = editingId ? 'put' : 'post'
             const body = editingId ? { ...formData, id: editingId } : formData
 
-            const response = await fetch(url, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(body)
-            })
-
-            const data = await response.json()
+            const data = await apiClient[method]('/exams.php', body);
             if (data.success) {
                 setShowModal(false)
                 setEditingId(null)
@@ -140,7 +121,7 @@ function ExamManagement() {
             } else {
                 setError(data.error || 'Failed to save exam')
             }
-        } catch (err) {
+        } catch {
             setError('Failed to save exam')
         }
     }
@@ -169,18 +150,14 @@ function ExamManagement() {
         if (!deleteConfirmation) return
 
         try {
-            const response = await fetch(`${API_BASE}/exams.php?id=${deleteConfirmation.id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
+            const data = await apiClient.delete('/exams.php', { id: deleteConfirmation.id });
             if (data.success) {
                 setDeleteConfirmation(null)
                 fetchExams()
             } else {
                 setError(data.error || 'Failed to delete exam')
             }
-        } catch (err) {
+        } catch {
             setError('Failed to delete exam')
         }
     }
@@ -261,8 +238,8 @@ function ExamManagement() {
                         {subjects
                             .filter(s => !selectedSemester || String(s.semester) === String(selectedSemester))
                             .map(s => (
-                            <option key={s.id} value={s.id}>{s.name} ({s.code})</option>
-                        ))}
+                                <option key={s.id} value={s.id}>{s.name} ({s.code})</option>
+                            ))}
                     </select>
                     <input
                         className="search-input"
@@ -305,59 +282,59 @@ function ExamManagement() {
                     </div>
                     <div className="exams-grid">
                         {filteredExams.map(exam => (
-                        <div key={exam.id} className="exam-card">
-                            <div className="exam-card-header">
-                                <div>
-                                    <h3>{exam.title}</h3>
-                                    <div className="exam-badges">
-                                        <span className="subject-badge">{exam.subject_code}</span>
-                                        {exam.subject_semester && (
-                                            <span className="semester-badge">{exam.subject_semester}</span>
-                                        )}
-                                        {exam.exam_type && (
-                                            <span
-                                                className="exam-type-badge"
-                                                style={{ backgroundColor: getExamTypeColor(exam.exam_type) }}
-                                            >
-                                                {exam.exam_type}
-                                            </span>
-                                        )}
+                            <div key={exam.id} className="exam-card">
+                                <div className="exam-card-header">
+                                    <div>
+                                        <h3>{exam.title}</h3>
+                                        <div className="exam-badges">
+                                            <span className="subject-badge">{exam.subject_code}</span>
+                                            {exam.subject_semester && (
+                                                <span className="semester-badge">{exam.subject_semester}</span>
+                                            )}
+                                            {exam.exam_type && (
+                                                <span
+                                                    className="exam-type-badge"
+                                                    style={{ backgroundColor: getExamTypeColor(exam.exam_type) }}
+                                                >
+                                                    {exam.exam_type}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="card-actions">
+                                        <button onClick={() => handleEdit(exam)} title="Edit">
+                                            <EditIcon />
+                                        </button>
+                                        <button onClick={() => handleDelete(exam)} title="Delete" className="delete-btn">
+                                            <TrashIcon />
+                                        </button>
                                     </div>
                                 </div>
-                                <div className="card-actions">
-                                    <button onClick={() => handleEdit(exam)} title="Edit">
-                                        <EditIcon />
-                                    </button>
-                                    <button onClick={() => handleDelete(exam)} title="Delete" className="delete-btn">
-                                        <TrashIcon />
-                                    </button>
-                                </div>
-                            </div>
-                            <div className="exam-meta">
-                                <div className="meta-item">
-                                    <span className="meta-label">Date:</span>
-                                    <span className="meta-value">{formatDate(exam.start_datetime)}</span>
-                                </div>
-                                <div className="meta-item">
-                                    <span className="meta-label">Duration:</span>
-                                    <span className="meta-value">{exam.duration_minutes} min</span>
-                                </div>
-                                <div className="meta-item">
-                                    <span className="meta-label">Max Marks:</span>
-                                    <span className="meta-value">{exam.total_marks ?? exam.max_marks}</span>
-                                </div>
-                                <div className="meta-item">
-                                    <span className="meta-label">Submitted Results:</span>
-                                    <span className="meta-value">{exam.result_count || 0}</span>
-                                </div>
-                                {exam.average_marks && (
+                                <div className="exam-meta">
                                     <div className="meta-item">
-                                        <span className="meta-label">Average:</span>
-                                        <span className="meta-value">{parseFloat(exam.average_marks).toFixed(1)}</span>
+                                        <span className="meta-label">Date:</span>
+                                        <span className="meta-value">{formatDate(exam.start_datetime)}</span>
                                     </div>
-                                )}
+                                    <div className="meta-item">
+                                        <span className="meta-label">Duration:</span>
+                                        <span className="meta-value">{exam.duration_minutes} min</span>
+                                    </div>
+                                    <div className="meta-item">
+                                        <span className="meta-label">Max Marks:</span>
+                                        <span className="meta-value">{exam.total_marks ?? exam.max_marks}</span>
+                                    </div>
+                                    <div className="meta-item">
+                                        <span className="meta-label">Submitted Results:</span>
+                                        <span className="meta-value">{exam.result_count || 0}</span>
+                                    </div>
+                                    {exam.average_marks && (
+                                        <div className="meta-item">
+                                            <span className="meta-label">Average:</span>
+                                            <span className="meta-value">{parseFloat(exam.average_marks).toFixed(1)}</span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
                         ))}
                     </div>
                 </>
@@ -424,8 +401,8 @@ function ExamManagement() {
                                     {subjects
                                         .filter(s => !formData.semester || String(s.semester) === String(formData.semester))
                                         .map(s => (
-                                        <option key={s.id} value={s.id}>{s.name} ({s.code})</option>
-                                    ))}
+                                            <option key={s.id} value={s.id}>{s.name} ({s.code})</option>
+                                        ))}
                                 </select>
                             </div>
                             <div className="form-group">

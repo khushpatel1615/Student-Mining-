@@ -21,23 +21,23 @@ if (!$authUser) {
 try {
     switch ($method) {
         case 'GET':
-                                                                                                                                                                                                                                                                              handleGet($pdo);
+            handleGet($pdo);
 
             break;
         case 'POST':
-                handlePost($pdo);
+            handlePost($pdo);
 
             break;
         case 'PUT':
-                handlePut($pdo);
+            handlePut($pdo);
 
             break;
         case 'DELETE':
-                handleDelete($pdo);
+            handleDelete($pdo);
 
             break;
         default:
-                http_response_code(405);
+            http_response_code(405);
             echo json_encode(['error' => 'Method not allowed']);
     }
 } catch (Exception $e) {
@@ -52,7 +52,7 @@ function handleGet($pdo)
 {
     $programId = $_GET['id'] ?? null;
     if ($programId) {
-    // Get single program with subject count
+        // Get single program with subject count
         $stmt = $pdo->prepare("
             SELECT p.*, 
                    COUNT(DISTINCT s.id) as total_subjects,
@@ -73,12 +73,12 @@ function handleGet($pdo)
 
         echo json_encode(['success' => true, 'data' => $program]);
     } else {
-    // List all programs
+        // List all programs
         $activeOnly = isset($_GET['active']) ? filter_var($_GET['active'], FILTER_VALIDATE_BOOLEAN) : true;
         $sql = "
             SELECT p.*, 
                    COUNT(DISTINCT s.id) as total_subjects,
-                   (SELECT COUNT(*) FROM users u WHERE u.program_id = p.id AND u.role = 'student') as total_students
+                   (SELECT COUNT(*) FROM users u WHERE u.program_id = p.id AND u.role = 'student' AND u.is_active = 1) as total_students
             FROM programs p
             LEFT JOIN subjects s ON p.id = s.program_id AND s.is_active = TRUE
         ";
@@ -107,7 +107,7 @@ function handlePost($pdo)
     }
 
     $data = json_decode(file_get_contents('php://input'), true);
-// Validate required fields
+    // Validate required fields
     if (empty($data['name']) || empty($data['code'])) {
         http_response_code(400);
         echo json_encode(['error' => 'Name and code are required']);

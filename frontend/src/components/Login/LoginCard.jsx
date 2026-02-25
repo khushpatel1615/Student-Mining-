@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useGoogleLogin } from '@react-oauth/google'
 import { useAuth } from '../../context/AuthContext'
-import { API_BASE } from '../../config'
+import apiClient from '../../utils/apiClient'
 import './LoginCard.css'
 
 // SVGs from the user's design
@@ -88,12 +88,7 @@ function LoginCard() {
         setResetMessage('')
 
         try {
-            const response = await fetch(`${API_BASE}/forgot_password.php`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: forgotEmail })
-            })
-            const data = await response.json()
+            const data = await apiClient.post('/forgot_password.php', { email: forgotEmail })
 
             if (data.success) {
                 setResetMessage(data.message)
@@ -116,12 +111,7 @@ function LoginCard() {
         setLocalError('')
 
         try {
-            const response = await fetch(`${API_BASE}/verify_otp.php`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: forgotEmail, otp })
-            })
-            const data = await response.json()
+            const data = await apiClient.post('/verify_otp.php', { email: forgotEmail, otp })
 
             if (data.success) {
                 setResetMessage('')
@@ -147,12 +137,7 @@ function LoginCard() {
         setLocalError('')
 
         try {
-            const response = await fetch(`${API_BASE}/reset_password.php`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: forgotEmail, otp, password: newPassword })
-            })
-            const data = await response.json()
+            const data = await apiClient.post('/reset_password.php', { email: forgotEmail, otp, password: newPassword })
 
             if (data.success) {
                 setResetMessage('Password reset successfully! Please login.')

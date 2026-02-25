@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Calendar, Flag, Loader2 } from 'lucide-react';
 import CircularProgress from './CircularProgress';
-import { API_BASE } from '../../../config';
+import apiClient from '../../../utils/apiClient';
 
 const RiskProfileModal = ({ student, token, onClose, onIntervene }) => {
     const [patterns, setPatterns] = useState([]);
@@ -12,11 +12,7 @@ const RiskProfileModal = ({ student, token, onClose, onIntervene }) => {
 
         const fetchPatterns = async () => {
             try {
-                const response = await fetch(
-                    `${API_BASE}/behavior/patterns.php?user_id=${student.id}&weeks=8`,
-                    { headers: { 'Authorization': `Bearer ${token}` } }
-                );
-                const data = await response.json();
+                const data = await apiClient.get('/behavior/patterns.php', { user_id: student.id, weeks: 8 });
                 if (data.success) setPatterns(data.patterns || []);
             } catch (err) {
                 console.error('Error fetching patterns:', err);

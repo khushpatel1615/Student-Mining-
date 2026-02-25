@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 
-import { API_BASE } from '../config';
+import apiClient from '../utils/apiClient';
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import './SubjectDetailPage.css'
@@ -86,17 +86,14 @@ function SubjectDetailPage() {
         const fetchSubjectDetails = async () => {
             try {
                 setLoading(true)
-                const response = await fetch(`${API_BASE}/subject_details.php?subject_id=${subjectId}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                })
-                const result = await response.json()
+                const result = await apiClient.get('/subject_details.php', { subject_id: subjectId });
 
                 if (result.success) {
                     setData(result.data)
                 } else {
                     setError(result.error || 'Failed to load subject details')
                 }
-            } catch (err) {
+            } catch {
                 setError('Network error. Please try again.')
             } finally {
                 setLoading(false)
@@ -111,15 +108,12 @@ function SubjectDetailPage() {
 
     const fetchAnnouncements = async () => {
         try {
-            const response = await fetch(`${API_BASE}/announcements.php?subject_id=${subjectId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const result = await response.json()
+            const result = await apiClient.get('/announcements.php', { subject_id: subjectId });
             if (result.success) {
                 setAnnouncements(result.data || [])
             }
-        } catch (err) {
-            console.error('Failed to fetch announcements:', err)
+        } catch {
+            // Failed to fetch announcements
         }
     }
 

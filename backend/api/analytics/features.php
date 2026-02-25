@@ -91,7 +91,7 @@ try {
                 srs.risk_factors
             FROM users u
             JOIN student_risk_scores srs ON u.id = srs.user_id
-            WHERE u.role = 'student'
+            WHERE u.role = 'student' AND u.is_active = 1
         ";
         if ($filter === 'at_risk') {
             $sql .= " AND srs.risk_level = 'At Risk'";
@@ -132,7 +132,7 @@ try {
                 SELECT u.current_semester, AVG(srs.grade_avg) as avg_grade
                 FROM users u 
                 JOIN student_risk_scores srs ON u.id = srs.user_id
-                WHERE u.role = 'student'
+                WHERE u.role = 'student' AND u.is_active = 1
                 GROUP BY u.current_semester
                 ORDER BY u.current_semester ASC
             ");

@@ -16,7 +16,7 @@ import {
     TrendingUp
 } from 'lucide-react';
 
-import { API_BASE } from '../../config';
+import apiClient from '../../utils/apiClient';
 import { useAuth } from '../../context/AuthContext';
 
 import './RiskAlertSettings.css';
@@ -42,59 +42,47 @@ const RiskAlertSettings = () => {
 
     const fetchSettings = useCallback(async () => {
         try {
-            const response = await fetch(`${API_BASE}/risk_alerts.php?action=settings`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
+            const data = await apiClient.get('/risk_alerts.php', { action: 'settings' });
             if (data.success) {
                 setSettings(data.data);
             }
         } catch (error) {
             console.error('Failed to fetch settings:', error);
         }
-    }, [token]);
+    }, []);
 
     const fetchHistory = useCallback(async () => {
         try {
-            const response = await fetch(`${API_BASE}/risk_alerts.php?action=history&limit=20`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
+            const data = await apiClient.get('/risk_alerts.php', { action: 'history', limit: 20 });
             if (data.success) {
                 setHistory(data.data);
             }
         } catch (error) {
             console.error('Failed to fetch history:', error);
         }
-    }, [token]);
+    }, []);
 
     const fetchStats = useCallback(async () => {
         try {
-            const response = await fetch(`${API_BASE}/risk_alerts.php?action=stats`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
+            const data = await apiClient.get('/risk_alerts.php', { action: 'stats' });
             if (data.success) {
                 setStats(data.data);
             }
         } catch (error) {
             console.error('Failed to fetch stats:', error);
         }
-    }, [token]);
+    }, []);
 
     const fetchPreview = useCallback(async () => {
         try {
-            const response = await fetch(`${API_BASE}/risk_alerts.php?action=preview`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
+            const data = await apiClient.get('/risk_alerts.php', { action: 'preview' });
             if (data.success) {
                 setPreview(data.data);
             }
         } catch (error) {
             console.error('Failed to fetch preview:', error);
         }
-    }, [token]);
+    }, []);
 
     useEffect(() => {
         const loadData = async () => {
@@ -109,54 +97,23 @@ const RiskAlertSettings = () => {
         setSaving(true);
         setMessage(null);
         try {
-            const sendRequest = async (method) => {
-                const response = await fetch(`${API_BASE}/risk_alerts.php?action=settings`, {
-                    method,
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(settings)
-                });
-
-                let data = null;
-                let text = null;
+            let data = null;
+            try {
+                data = await apiClient.put('/risk_alerts.php?action=settings', settings);
+            } catch {
                 try {
-                    data = await response.json();
+                    data = await apiClient.post('/risk_alerts.php?action=settings', settings);
                 } catch {
                     data = null;
-                    try {
-                        text = await response.text();
-                    } catch {
-                        text = null;
-                    }
-                }
-
-                return { response, data, text };
-            };
-
-            let result = null;
-            try {
-                result = await sendRequest('PUT');
-            } catch {
-                result = null;
-            }
-
-            if (!result || !result.response.ok) {
-                try {
-                    result = await sendRequest('POST');
-                } catch {
-                    result = null;
                 }
             }
 
-            if (result && result.data && result.data.success) {
+            if (data && data.success) {
                 setMessage({ type: 'success', text: 'Settings saved successfully!' });
             } else {
-                const errorText = result?.data?.error || result?.text;
                 setMessage({
                     type: 'error',
-                    text: errorText ? `Failed to save settings: ${errorText}` : 'Failed to save settings'
+                    text: data?.error ? `Failed to save settings: ${data.error}` : 'Failed to save settings'
                 });
             }
         } catch (error) {
@@ -169,11 +126,7 @@ const RiskAlertSettings = () => {
         setSending(true);
         setMessage(null);
         try {
-            const response = await fetch(`${API_BASE}/risk_alerts.php?action=send`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
+            const data = await apiClient.post('/risk_alerts.php', { action: 'send' });
             if (data.success) {
                 setMessage({
                     type: 'success',

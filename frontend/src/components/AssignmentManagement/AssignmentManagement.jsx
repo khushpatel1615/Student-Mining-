@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-import { API_BASE } from '../../config';
+import apiClient from '../../utils/apiClient';
 import { useAuth } from '../../context/AuthContext'
 import './AssignmentManagement.css'
 
@@ -70,10 +70,7 @@ function AssignmentManagement() {
 
     const fetchSubjects = async () => {
         try {
-            const response = await fetch(`${API_BASE}/subjects.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
+            const data = await apiClient.get('/subjects.php')
             if (data.success) {
                 setSubjects(data.data)
             }
@@ -85,14 +82,8 @@ function AssignmentManagement() {
     const fetchAssignments = async () => {
         try {
             setLoading(true)
-            const url = selectedSubject
-                ? `${API_BASE}/assignments.php?subject_id=${selectedSubject}`
-                : `${API_BASE}/assignments.php`
-
-            const response = await fetch(url, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
+            const params = selectedSubject ? { subject_id: selectedSubject } : {}
+            const data = await apiClient.get('/assignments.php', params)
             if (data.success) {
                 setAssignments(data.data)
             }
@@ -105,10 +96,7 @@ function AssignmentManagement() {
 
     const fetchSubmissions = async (id) => {
         try {
-            const response = await fetch(`${API_BASE}/submissions.php?action=list&assignment_id=${id}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
+            const data = await apiClient.get('/submissions.php', { action: 'list', assignment_id: id })
             if (data.success) {
                 setSubmissions(data.data)
                 setViewingSubmissions(id)
@@ -127,20 +115,11 @@ function AssignmentManagement() {
     const handleSubmit = async (e) => {
         e.preventDefault()
         try {
-            const url = `${API_BASE}/assignments.php`
-            const method = editingId ? 'PUT' : 'POST'
             const body = editingId ? { ...formData, id: editingId } : formData
+            const data = await (editingId
+                ? apiClient.put('/assignments.php', body)
+                : apiClient.post('/assignments.php', body))
 
-            const response = await fetch(url, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(body)
-            })
-
-            const data = await response.json()
             if (data.success) {
                 setShowModal(false)
                 setEditingId(null)
@@ -176,11 +155,7 @@ function AssignmentManagement() {
         if (!window.confirm('Are you sure you want to delete this assignment?')) return
 
         try {
-            const response = await fetch(`${API_BASE}/assignments.php?id=${id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
+            const data = await apiClient.delete('/assignments.php', { id })
             if (data.success) {
                 fetchAssignments()
             }

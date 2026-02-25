@@ -3,7 +3,7 @@ import { Play, CheckCircle, Clock, Video, Plus, Trash2, Edit2, X } from 'lucide-
 import toast from 'react-hot-toast'
 
 import { useAuth } from '../../context/AuthContext'
-import { API_BASE } from '../../config';
+import apiClient from '../../utils/apiClient';
 import './VideoLectures.css'
 
 
@@ -28,12 +28,9 @@ function VideoLectures({ subjectId = null }) {
     const fetchVideos = async () => {
         setLoading(true)
         try {
-            const res = await fetch(`${API_BASE}/video_lectures.php?action=list&subject_id=${subjectId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await res.json()
+            const data = await apiClient.get('/video_lectures.php', { action: 'list', subject_id: subjectId });
             if (data.success) setVideos(data.data)
-        } catch (err) {
+        } catch {
             toast.error('Failed to load videos')
         } finally {
             setLoading(false)
@@ -42,12 +39,9 @@ function VideoLectures({ subjectId = null }) {
 
     const fetchFeatured = async () => {
         try {
-            const res = await fetch(`${API_BASE}/video_lectures.php?action=featured`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await res.json()
+            const data = await apiClient.get('/video_lectures.php', { action: 'featured' });
             if (data.success) setFeatured(data.data)
-        } catch (err) { /* ignore */ } finally { setLoading(false) }
+        } catch { /* ignore */ } finally { setLoading(false) }
     }
 
     const addVideo = async () => {
@@ -56,19 +50,14 @@ function VideoLectures({ subjectId = null }) {
             return
         }
         try {
-            const res = await fetch(`${API_BASE}/video_lectures.php`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'create', subject_id: subjectId, ...newVideo })
-            })
-            const data = await res.json()
+            const data = await apiClient.post('/video_lectures.php', { action: 'create', subject_id: subjectId, ...newVideo });
             if (data.success) {
                 toast.success('Video added!')
                 setShowForm(false)
                 setNewVideo({ title: '', description: '', video_url: '', duration_minutes: 0 })
                 fetchVideos()
             }
-        } catch (err) {
+        } catch {
             toast.error('Failed to add video')
         }
     }
@@ -76,24 +65,16 @@ function VideoLectures({ subjectId = null }) {
     const deleteVideo = async (id) => {
         if (!window.confirm('Delete this video?')) return
         try {
-            await fetch(`${API_BASE}/video_lectures.php`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id })
-            })
+            await apiClient.delete('/video_lectures.php', { id });
             toast.success('Deleted')
             fetchVideos()
-        } catch (err) { /* ignore */ }
+        } catch { /* ignore */ }
     }
 
     const updateProgress = async (videoId, seconds, completed = false) => {
         try {
-            await fetch(`${API_BASE}/video_lectures.php`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'update_progress', video_id: videoId, watched_seconds: seconds, completed })
-            })
-        } catch (err) { /* ignore */ }
+            await apiClient.post('/video_lectures.php', { action: 'update_progress', video_id: videoId, watched_seconds: seconds, completed });
+        } catch { /* ignore */ }
     }
 
     const getYouTubeId = (url) => {

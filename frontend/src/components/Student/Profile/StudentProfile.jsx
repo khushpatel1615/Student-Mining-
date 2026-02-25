@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Camera, Save, Lock, User, Mail, Hash, AlertCircle, CheckCircle } from 'lucide-react';
 
-import { API_BASE } from '../../../config';
+import apiClient from '../../../utils/apiClient';
 import { useAuth } from '../../../context/AuthContext';
 import './StudentProfile.css';
 
@@ -52,24 +52,15 @@ const StudentProfile = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE}/profile.php`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    full_name: formData.full_name
-                })
+            const data = await apiClient.put('/profile.php', {
+                full_name: formData.full_name
             });
-            const data = await res.json();
             if (data.success) {
                 showMessage('success', 'Profile updated successfully');
-                // Ideally refresh user context here, but for now just UI feedback
             } else {
                 showMessage('error', data.error || 'Failed to update profile');
             }
-        } catch (err) {
+        } catch {
             showMessage('error', 'Connection failed');
         } finally {
             setLoading(false);
@@ -90,25 +81,17 @@ const StudentProfile = () => {
 
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE}/profile.php`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    current_password: formData.current_password,
-                    new_password: formData.new_password
-                })
+            const data = await apiClient.put('/profile.php', {
+                current_password: formData.current_password,
+                new_password: formData.new_password
             });
-            const data = await res.json();
             if (data.success) {
                 showMessage('success', 'Password changed successfully');
                 setFormData(prev => ({ ...prev, current_password: '', new_password: '', confirm_password: '' }));
             } else {
                 showMessage('error', data.error || 'Failed to change password');
             }
-        } catch (err) {
+        } catch {
             showMessage('error', 'Connection failed');
         } finally {
             setLoading(false);
@@ -130,22 +113,14 @@ const StudentProfile = () => {
         uploadData.append('avatar', file);
 
         try {
-            const res = await fetch(`${API_BASE}/profile.php`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                    // No Content-Type for FormData, browser sets boundary
-                },
-                body: uploadData
-            });
-            const data = await res.json();
+            const data = await apiClient.upload('/profile.php', uploadData);
             if (data.success) {
                 showMessage('success', 'Avatar updated!');
             } else {
                 showMessage('error', data.error || 'Failed to upload avatar');
-                setAvatarPreview(user?.avatar_url); // Revert
+                setAvatarPreview(user?.avatar_url);
             }
-        } catch (err) {
+        } catch {
             showMessage('error', 'Upload failed');
         }
     };

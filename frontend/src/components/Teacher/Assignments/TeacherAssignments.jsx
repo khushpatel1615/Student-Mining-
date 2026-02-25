@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-import { API_BASE } from '../../../config';
+import apiClient from '../../../utils/apiClient';
 import { useAuth } from '../../../context/AuthContext'
 import './TeacherAssignments.css'
 
@@ -48,30 +48,24 @@ function TeacherAssignments() {
 
     const fetchSubjects = async () => {
         try {
-            const response = await fetch(`${API_BASE}/teachers.phpaction=my_subjects`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
+            const data = await apiClient.get('/teachers.php', { action: 'my_subjects' });
             if (data.success) {
                 setSubjects(data.data)
             }
-        } catch (err) {
-            console.error('Failed to fetch subjects:', err)
+        } catch {
+            // Subject fetch failed
         }
     }
 
     const fetchAssignments = async () => {
         try {
             setLoading(true)
-            const response = await fetch(`${API_BASE}/assignments.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
+            const data = await apiClient.get('/assignments.php');
             if (data.success) {
                 setAssignments(data.data)
             }
-        } catch (err) {
-            console.error('Failed to fetch assignments:', err)
+        } catch {
+            // Assignment fetch failed
         } finally {
             setLoading(false)
         }
@@ -79,30 +73,19 @@ function TeacherAssignments() {
 
     const fetchSubmissions = async (assignmentId) => {
         try {
-            const response = await fetch(`${API_BASE}/assignments.phpid=${assignmentId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
+            const data = await apiClient.get('/assignments.php', { id: assignmentId });
             if (data.success && data.data.submissions) {
                 setSubmissions(data.data.submissions)
             }
-        } catch (err) {
-            console.error('Failed to fetch submissions:', err)
+        } catch {
+            // Submission fetch failed
         }
     }
 
     const handleCreateAssignment = async (e) => {
         e.preventDefault()
         try {
-            const response = await fetch(`${API_BASE}/assignments.php`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(formData)
-            })
-            const data = await response.json()
+            const data = await apiClient.post('/assignments.php', formData);
             if (data.success) {
                 setShowCreateModal(false)
                 setFormData({
@@ -114,23 +97,15 @@ function TeacherAssignments() {
                 })
                 fetchAssignments()
             }
-        } catch (err) {
-            console.error('Failed to create assignment:', err)
+        } catch {
+            // Create assignment failed
         }
     }
 
     const handleGradeSubmission = async (e) => {
         e.preventDefault()
         try {
-            const response = await fetch(`${API_BASE}/assignments.php`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(gradingData)
-            })
-            const data = await response.json()
+            const data = await apiClient.put('/assignments.php', gradingData);
             if (data.success) {
                 setShowGradingModal(false)
                 setGradingData({ submission_id: '', marks_obtained: '', feedback: '' })
@@ -138,8 +113,8 @@ function TeacherAssignments() {
                     fetchSubmissions(selectedAssignment.id)
                 }
             }
-        } catch (err) {
-            console.error('Failed to grade submission:', err)
+        } catch {
+            // Grade submission failed
         }
     }
 

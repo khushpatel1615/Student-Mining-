@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-import { API_BASE } from '../../config';
+import apiClient from '../../utils/apiClient';
 
 import SubjectCard from './SubjectCard'
 import './SemesterRoadmap.css'
@@ -20,8 +20,7 @@ function SemesterRoadmap({ programId = 1 }) {
     const fetchCurriculum = async () => {
         try {
             setLoading(true)
-            const response = await fetch(`${API_BASE}/subjects.php?program_id=${programId}&grouped=true`)
-            const data = await response.json()
+            const data = await apiClient.get('/subjects.php', { program_id: programId, grouped: 'true' })
 
             if (data.success) {
                 setSemesters(data.data)

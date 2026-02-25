@@ -8,30 +8,6 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
-// Ensure CORS function exists to prevent "undefined function" error
-if (!function_exists('setCORSHeaders')) {
-    function setCORSHeaders()
-    {
-        // Allow from any origin
-        if (isset($_SERVER['HTTP_ORIGIN'])) {
-            header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
-            header('Access-Control-Allow-Credentials: true');
-            header('Access-Control-Max-Age: 86400');
-            // cache for 1 day
-        }
-        // Access-Control headers are received during OPTIONS requests
-        if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-            if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'])) {
-                header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-            }
-            if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])) {
-                header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
-            }
-            exit(0);
-        }
-    }
-
-}
 
 header('Content-Type: application/json');
 $method = $_SERVER['REQUEST_METHOD'];
@@ -212,9 +188,11 @@ try {
 
     $trends = [
         'grades' => array_map(function ($row) {
-            return ['t' => $row['t'], 'value' => $row['value']]; }, $gradeTrend),
+            return ['t' => $row['t'], 'value' => $row['value']];
+        }, $gradeTrend),
         'attendance' => array_map(function ($row) {
-            return ['t' => $row['t'], 'value' => $row['value']]; }, $attendanceTrend),
+            return ['t' => $row['t'], 'value' => $row['value']];
+        }, $attendanceTrend),
         'risk' => $riskTrend
     ];
     // 7. Response Construction

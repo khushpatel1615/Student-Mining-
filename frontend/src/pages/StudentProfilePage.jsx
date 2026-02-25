@@ -21,7 +21,7 @@ import {
 } from 'lucide-react'
 
 import { useAuth } from '../context/AuthContext'
-import { API_BASE } from '../config';
+import apiClient from '../utils/apiClient';
 import StudentMiningProfile from '../components/Analytics/StudentMiningProfile'
 import './StudentProfilePage.css'
 
@@ -53,25 +53,18 @@ function StudentProfilePage() {
     const fetchMeetings = async () => {
         if (!student) return
         try {
-            const response = await fetch(`${API_BASE}/calendar.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
+            const data = await apiClient.get('/calendar.php');
             if (data.success) {
-                // Filter for meetings with this student
                 const studentMeetings = data.data.filter(event =>
                     (event.title && event.title.toLowerCase().includes(student.full_name.toLowerCase())) ||
                     (event.description && event.description.toLowerCase().includes(student.full_name.toLowerCase()))
                 )
-                // Filter for future events only
                 const futureMeetings = studentMeetings.filter(m => new Date(m.event_date) >= new Date().setHours(0, 0, 0, 0))
-
-                // Sort by date
                 futureMeetings.sort((a, b) => new Date(a.event_date) - new Date(b.event_date))
                 setMeetings(futureMeetings)
             }
-        } catch (err) {
-            console.error('Error fetching meetings:', err)
+        } catch {
+            // Error fetching meetings
         }
     }
 
@@ -86,36 +79,23 @@ function StudentProfilePage() {
         if (!window.confirm('Are you sure you want to cancel this meeting?')) return
 
         try {
-            const response = await fetch(`${API_BASE}/calendar.php?id=${meetingId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
+            const data = await apiClient.delete('/calendar.php', { id: meetingId });
 
             if (data.success) {
-                // Remove from state
                 setMeetings(prev => prev.filter(m => m.id !== meetingId))
 
                 // Notify student
-                await fetch(`${API_BASE}/notifications.php`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        user_id: student.user_id || student.id,
-                        title: 'Meeting Cancelled',
-                        message: `The meeting request has been cancelled by the admin.`,
-                        type: 'meeting_cancelled'
-                    })
-                })
+                await apiClient.post('/notifications.php', {
+                    user_id: student.user_id || student.id,
+                    title: 'Meeting Cancelled',
+                    message: `The meeting request has been cancelled by the admin.`,
+                    type: 'meeting_cancelled'
+                });
                 window.alert('Meeting cancelled successfully')
             } else {
                 window.alert(data.error || 'Failed to delete meeting')
             }
-        } catch (err) {
-            console.error('Error cancelling meeting:', err)
+        } catch {
             window.alert('Error cancelling meeting')
         }
     }
@@ -128,41 +108,25 @@ function StudentProfilePage() {
         try {
             // Try to create calendar event (optional)
             try {
-                await fetch(`${API_BASE}/calendar.php`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        title: meetingData.title,
-                        description: meetingData.message || `Meeting scheduled with ${student.full_name}`,
-                        event_date: meetingData.date,
-                        type: 'event',
-                        target_audience: 'program_semester',
-                        target_program_id: student.program_id || null,
-                        target_semester: student.current_semester || null
-                    })
-                })
-            } catch (calErr) {
-                console.log('Calendar event creation optional, continuing...', calErr)
+                await apiClient.post('/calendar.php', {
+                    title: meetingData.title,
+                    description: meetingData.message || `Meeting scheduled with ${student.full_name}`,
+                    event_date: meetingData.date,
+                    type: 'event',
+                    target_audience: 'program_semester',
+                    target_program_id: student.program_id || null,
+                    target_semester: student.current_semester || null
+                });
+            } catch {
+                // Calendar event creation optional, continuing...
             }
 
             // Send notification to the student
-            const notifResponse = await fetch(`${API_BASE}/notifications.php`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    user_id: student.user_id || student.id,
-                    title: 'Meeting Request',
-                    message: `Admin has scheduled a meeting: "${meetingData.title}" on ${new Date(meetingData.date).toLocaleDateString()} at ${meetingData.time}. Duration: ${meetingData.duration} mins. ${meetingData.message ? `Note: ${meetingData.message}` : ''} Please confirm.`
-                })
-            })
-
-            const notifData = await notifResponse.json()
+            const notifData = await apiClient.post('/notifications.php', {
+                user_id: student.user_id || student.id,
+                title: 'Meeting Request',
+                message: `Admin has scheduled a meeting: "${meetingData.title}" on ${new Date(meetingData.date).toLocaleDateString()} at ${meetingData.time}. Duration: ${meetingData.duration} mins. ${meetingData.message ? `Note: ${meetingData.message}` : ''} Please confirm.`
+            });
 
             if (notifData.success) {
                 window.alert(`Meeting request sent to ${student.full_name}!`)
@@ -178,8 +142,7 @@ function StudentProfilePage() {
             } else {
                 window.alert(notifData.error || 'Failed to send meeting request')
             }
-        } catch (err) {
-            console.error('Error scheduling meeting:', err)
+        } catch {
             window.alert('Failed to schedule meeting. Network error.')
         } finally {
             setSendingMeeting(false)
@@ -191,11 +154,7 @@ function StudentProfilePage() {
             try {
                 setLoading(true)
 
-                // Fetch student details
-                const studentRes = await fetch(`${API_BASE}/students.php?id=${studentId}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                })
-                const studentData = await studentRes.json()
+                const studentData = await apiClient.get('/students.php', { id: studentId });
 
                 if (studentData.success && studentData.data) {
                     setStudent(studentData.data)
@@ -204,19 +163,14 @@ function StudentProfilePage() {
                     return
                 }
 
-                // Fetch student enrollments/grades
-                const enrollRes = await fetch(`${API_BASE}/grades.php?student_id=${studentId}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                })
-                const enrollData = await enrollRes.json()
+                const enrollData = await apiClient.get('/grades.php', { student_id: studentId });
 
                 if (enrollData.success) {
                     const payload = enrollData.data
                     setEnrollments(Array.isArray(payload) ? payload : (payload?.enrollments || []))
                 }
 
-            } catch (err) {
-                console.error('Error fetching student:', err)
+            } catch {
                 setError('Failed to load student data')
             } finally {
                 setLoading(false)
@@ -226,7 +180,7 @@ function StudentProfilePage() {
         if (studentId) {
             fetchStudentData()
         }
-    }, [studentId, token])
+    }, [studentId])
 
     // Calculate overall stats
     const calculateStats = () => {

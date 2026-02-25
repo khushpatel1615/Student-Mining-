@@ -3,7 +3,7 @@ import { MessageSquare, X, Send, Sparkles, Minimize2, Maximize2, Loader } from '
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import { API_BASE } from '../../../config';
+import apiClient from '../../../utils/apiClient';
 import './AdminAIChat.css';
 
 
@@ -42,26 +42,7 @@ const AdminAIChat = () => {
         const history = messages.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', content: m.content }));
 
         try {
-            const response = await fetch(`${API_BASE}/ai_chat.php`, {
-                method: 'POST',
-                mode: 'cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({ message: userMsg.content, history: history })
-            });
-
-            const text = await response.text();
-            console.log("Raw API Response:", text); // Debugging
-
-            let data;
-            try {
-                data = JSON.parse(text);
-            } catch (e) {
-                throw new Error("Invalid server response (not JSON): " + text.substring(0, 100));
-            }
-
+            const data = await apiClient.post('/ai_chat.php', { message: userMsg.content, history: history });
             if (data.status === 'success') {
                 const aiMsg = { id: Date.now() + 1, role: 'assistant', content: data.reply };
                 setMessages(prev => [...prev, aiMsg]);

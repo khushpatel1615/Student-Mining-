@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { API_BASE } from '../config';
+import apiClient from '../utils/apiClient';
 
 export function useLearningBehaviorData(token) {
     const [students, setStudents] = useState([]);
@@ -36,15 +36,12 @@ export function useLearningBehaviorData(token) {
         const fetchPrograms = async () => {
             if (!token) return;
             try {
-                const response = await fetch(`${API_BASE}/programs.php`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await response.json();
+                const data = await apiClient.get('/programs.php');
                 if (data.success) {
                     setPrograms(data.data || []);
                 }
-            } catch (err) {
-                console.error('Failed to fetch programs:', err);
+            } catch {
+                // Program fetch failed — non-critical
             }
         };
         fetchPrograms();
@@ -77,52 +74,25 @@ export function useLearningBehaviorData(token) {
         setErrorDetails(null);
         setSetupMessage(null);
 
-        const params = new URLSearchParams({
-            limit: pagination.limit.toString(),
-            offset: ((pagination.page - 1) * pagination.limit).toString()
-        });
+        const params = {
+            limit: pagination.limit,
+            offset: (pagination.page - 1) * pagination.limit
+        };
 
         if (filter !== 'all') {
-            params.append('risk_level', filter);
+            params.risk_level = filter;
         }
 
         if (selectedProgram) {
-            params.append('program_id', selectedProgram);
+            params.program_id = selectedProgram;
         }
 
         if (debouncedSearch) {
-            params.append('search', debouncedSearch);
+            params.search = debouncedSearch;
         }
 
-        const url = `${API_BASE}/behavior/at_risk_students.php?${params.toString()}`;
-
         try {
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                }
-            });
-
-            if (!response.ok) {
-                let errorMessage = 'Failed to fetch students';
-                let details = { status: response.status, statusText: response.statusText };
-
-                // Error handling logic specific to LBA
-                // Simplified for brevity, but retaining core logic
-                try {
-                    const errorData = await response.json();
-                    if (errorData.error) errorMessage = errorData.error;
-                } catch (e) { /* ignore */ }
-
-                setError(errorMessage);
-                setErrorDetails(details);
-                return;
-            }
-
-            const data = await response.json();
+            const data = await apiClient.get('/behavior/at_risk_students.php', params);
 
             if (data.success) {
                 setStudents(data.students || []);
@@ -142,7 +112,6 @@ export function useLearningBehaviorData(token) {
             }
 
         } catch (err) {
-            console.error('Fetch error:', err);
             setError(err.message || 'Network Error');
             setErrorDetails({ message: err.message });
         } finally {
@@ -162,7 +131,7 @@ export function useLearningBehaviorData(token) {
             setFilter(autoFilter);
             setPagination(prev => ({ ...prev, page: 1 }));
         }
-    }, [filter, getAutoFilter]); // removed summary dependency to avoid loop if object ref changes
+    }, [filter, getAutoFilter]);
 
     // Trigger Fetch
     useEffect(() => {
@@ -172,14 +141,10 @@ export function useLearningBehaviorData(token) {
     const handleRefresh = async () => {
         setRefreshing(true);
         try {
-            const response = await fetch(`${API_BASE}/behavior/refresh.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
+            const data = await apiClient.get('/behavior/refresh.php');
             if (!data.success) throw new Error(data.error);
             await fetchAtRiskStudents();
         } catch (err) {
-            console.error('Refresh failed:', err);
             setError('Failed to refresh data: ' + err.message);
             setRefreshing(false);
         }

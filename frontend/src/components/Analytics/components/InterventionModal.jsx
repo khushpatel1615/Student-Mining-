@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, XCircle, CheckCircle, Loader2 } from 'lucide-react';
-import { API_BASE } from '../../../config';
+import apiClient from '../../../utils/apiClient';
 
 const InterventionModal = ({ studentId, studentName, riskScore, riskFactors, token, onClose, onSuccess }) => {
     const [formData, setFormData] = useState({
@@ -22,22 +22,13 @@ const InterventionModal = ({ studentId, studentName, riskScore, riskFactors, tok
         setSuccess('');
 
         try {
-            const response = await fetch(`${API_BASE}/behavior/interventions.php`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    ...formData,
-                    triggered_by_risk_score: riskScore,
-                    risk_factors: riskFactors
-                })
+            const data = await apiClient.post('/behavior/interventions.php', {
+                ...formData,
+                triggered_by_risk_score: riskScore,
+                risk_factors: riskFactors
             });
 
-            const data = await response.json();
-
-            if (!response.ok || !data.success) {
+            if (!data.success) {
                 throw new Error(data.error || 'Failed to create intervention');
             }
 

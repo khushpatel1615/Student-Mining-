@@ -6,7 +6,7 @@ import {
     GraduationCap,
     X
 } from 'lucide-react'
-import { API_BASE } from '../../../config'
+import apiClient from '../../../utils/apiClient'
 import { useAuth } from '../../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 
@@ -29,40 +29,24 @@ const StudentProfileModal = ({ student, onClose }) => {
         try {
             // Optional Calendar Event
             try {
-                await fetch(`${API_BASE}/calendar.php`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        title: meetingData.title,
-                        description: meetingData.message || `Meeting scheduled with ${student.name}`,
-                        event_date: meetingData.date,
-                        type: 'event',
-                        target_audience: 'students'
-                    })
-                })
-            } catch (calErr) {
-                console.log('Calendar event creation optional, continuing...', calErr)
+                await apiClient.post('/calendar.php', {
+                    title: meetingData.title,
+                    description: meetingData.message || `Meeting scheduled with ${student.name}`,
+                    event_date: meetingData.date,
+                    type: 'event',
+                    target_audience: 'students'
+                });
+            } catch {
+                // Calendar event creation optional, continuing...
             }
 
             // Send notification
-            const notifResponse = await fetch(`${API_BASE}/notifications.php`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    user_id: student.user_id || student.id,
-                    title: 'Meeting Request',
-                    message: `Admin has scheduled a meeting: "${meetingData.title}" on ${new Date(meetingData.date).toLocaleDateString()} at ${meetingData.time}. Duration: ${meetingData.duration} mins. ${meetingData.message ? `Note: ${meetingData.message}` : ''}`,
-                    type: 'meeting_request'
-                })
-            })
-
-            const notifData = await notifResponse.json()
+            const notifData = await apiClient.post('/notifications.php', {
+                user_id: student.user_id || student.id,
+                title: 'Meeting Request',
+                message: `Admin has scheduled a meeting: "${meetingData.title}" on ${new Date(meetingData.date).toLocaleDateString()} at ${meetingData.time}. Duration: ${meetingData.duration} mins. ${meetingData.message ? `Note: ${meetingData.message}` : ''}`,
+                type: 'meeting_request'
+            });
 
             if (notifData.success) {
                 window.alert(`Meeting request sent to ${student.name}!`)
@@ -70,8 +54,7 @@ const StudentProfileModal = ({ student, onClose }) => {
             } else {
                 window.alert(notifData.error || 'Failed to send meeting request.')
             }
-        } catch (err) {
-            console.error('Error scheduling meeting:', err)
+        } catch {
             window.alert('Failed to schedule meeting. Network error.')
         } finally {
             setSendingMeeting(false)

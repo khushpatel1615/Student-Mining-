@@ -1,6 +1,17 @@
 # Enable CORS for React frontend
 # CORS and OPTIONS handled by PHP (backend/config/cors.php)
 
+# Block direct access to sensitive file types
+<FilesMatch "\.(txt|log|json|md|env|bak|sql)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
 # Security headers
 <IfModule mod_headers.c>
     Header always set X-Content-Type-Options "nosniff"

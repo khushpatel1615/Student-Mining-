@@ -4,7 +4,7 @@ import {
     User, Calendar, Hash, Eye, Edit3, UserMinus, Plus, Check, Users
 } from 'lucide-react'
 
-import { API_BASE } from '../../config'
+import apiClient from '../../utils/apiClient'
 import { useAuth } from '../../context/AuthContext'
 import SkeletonTable from '../ui/SkeletonTable'
 import EmptyState from '../EmptyState/EmptyState'
@@ -273,10 +273,7 @@ function EnrollmentManagement() {
     useEffect(() => {
         const fetchPrograms = async () => {
             try {
-                const res = await fetch(`${API_BASE}/programs.php`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                })
-                const data = await res.json()
+                const data = await apiClient.get('/programs.php');
                 if (data.success) {
                     setPrograms(data.data)
                     if (data.data.length > 0) {
@@ -284,54 +281,50 @@ function EnrollmentManagement() {
                         setBulkProgram(data.data[0].id.toString())
                     }
                 }
-            } catch (err) {
-                console.error('Failed to fetch programs:', err)
+            } catch {
+                // Failed to fetch programs
             }
         }
         fetchPrograms()
-    }, [token])
+    }, [])
 
     // Fetch students for bulk enrollment
     useEffect(() => {
         const fetchStudents = async () => {
             if (!bulkProgram) return
             try {
-                const res = await fetch(`${API_BASE}/students.php?role=student&program_id=${bulkProgram}&limit=100`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                })
-                const data = await res.json()
+                const data = await apiClient.get('/students.php', { role: 'student', program_id: bulkProgram, limit: 100 });
                 if (data.success) {
                     setStudents(data.data)
                     setSelectedStudents([])
                 }
-            } catch (err) {
-                console.error('Failed to fetch students:', err)
+            } catch {
+                // Failed to fetch students
             }
         }
         fetchStudents()
-    }, [token, bulkProgram])
+    }, [bulkProgram])
 
     // Fetch enrollments
     const fetchEnrollments = useCallback(async () => {
         try {
             setLoading(true)
             setError(null)
-            let url = `${API_BASE}/enrollments.php?status=${viewStatus}&`
-            if (selectedProgram) url += `program_id=${selectedProgram}&`
-            if (selectedSemester) url += `semester=${selectedSemester}&`
-            const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } })
-            const data = await res.json()
+            const params = { status: viewStatus }
+            if (selectedProgram) params.program_id = selectedProgram
+            if (selectedSemester) params.semester = selectedSemester
+            const data = await apiClient.get('/enrollments.php', params);
             if (data.success) {
                 setEnrollments(data.data || [])
             } else {
                 setError(data.error || 'Failed to fetch enrollments')
             }
-        } catch (err) {
+        } catch {
             setError('Network error. Please try again.')
         } finally {
             setLoading(false)
         }
-    }, [token, selectedProgram, selectedSemester, viewStatus])
+    }, [selectedProgram, selectedSemester, viewStatus])
 
     useEffect(() => {
         if (selectedProgram) fetchEnrollments()
@@ -354,17 +347,12 @@ function EnrollmentManagement() {
         setSaving(true)
         setError(null)
         try {
-            const res = await fetch(`${API_BASE}/enrollments.php`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({
-                    program_id: parseInt(bulkProgram),
-                    semester: parseInt(bulkSemester),
-                    user_ids: selectedStudents,
-                    academic_year: academicYear
-                })
-            })
-            const data = await res.json()
+            const data = await apiClient.post('/enrollments.php', {
+                program_id: parseInt(bulkProgram),
+                semester: parseInt(bulkSemester),
+                user_ids: selectedStudents,
+                academic_year: academicYear
+            });
             if (data.success) {
                 setShowBulkModal(false)
                 setSelectedStudents([])
@@ -372,7 +360,7 @@ function EnrollmentManagement() {
             } else {
                 setError(data.error || 'Failed to enroll students')
             }
-        } catch (err) {
+        } catch {
             setError('Network error. Please try again.')
         } finally {
             setSaving(false)
@@ -389,17 +377,12 @@ function EnrollmentManagement() {
             )
         )
         try {
-            const res = await fetch(`${API_BASE}/enrollments.php`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ enrollment_id: enrollmentId, status: newStatus })
-            })
-            const data = await res.json()
+            const data = await apiClient.put('/enrollments.php', { enrollment_id: enrollmentId, status: newStatus });
             if (!data.success) {
                 setError(data.error || 'Failed to update enrollment')
                 setEnrollments(prev)
             }
-        } catch (err) {
+        } catch {
             setError('Network error. Please try again.')
             setEnrollments(prev)
         }

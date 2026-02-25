@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-import { API_BASE } from '../../../config';
+import apiClient from '../../../utils/apiClient';
 import { useAuth } from '../../../context/AuthContext'
 import './TeacherExams.css'
 
@@ -51,30 +51,24 @@ function TeacherExams() {
 
     const fetchSubjects = async () => {
         try {
-            const response = await fetch(`${API_BASE}/teachers.php?action=my_subjects`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
+            const data = await apiClient.get('/teachers.php', { action: 'my_subjects' });
             if (data.success) {
                 setSubjects(data.data)
             }
-        } catch (err) {
-            console.error('Failed to fetch subjects:', err)
+        } catch {
+            // Subject fetch failed
         }
     }
 
     const fetchExams = async () => {
         try {
             setLoading(true)
-            const response = await fetch(`${API_BASE}/exams.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
+            const data = await apiClient.get('/exams.php');
             if (data.success) {
                 setExams(data.data)
             }
-        } catch (err) {
-            console.error('Failed to fetch exams:', err)
+        } catch {
+            // Exam fetch failed
         } finally {
             setLoading(false)
         }
@@ -82,24 +76,15 @@ function TeacherExams() {
 
     const fetchStudentsAndResults = async (exam) => {
         try {
-            // Fetch students enrolled in the subject
-            const studentsRes = await fetch(
-                `${API_BASE}/teachers.php?action=subject_students&subject_id=${exam.subject_id}`,
-                { headers: { 'Authorization': `Bearer ${token}` } }
-            )
-            const studentsData = await studentsRes.json()
-
-            // Fetch existing results
-            const resultsRes = await fetch(`${API_BASE}/exams.php?id=${exam.id}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const resultsData = await resultsRes.json()
+            const [studentsData, resultsData] = await Promise.all([
+                apiClient.get('/teachers.php', { action: 'subject_students', subject_id: exam.subject_id }),
+                apiClient.get('/exams.php', { id: exam.id }),
+            ]);
 
             if (studentsData.success) {
                 const studentsList = studentsData.data
                 const existingResults = resultsData.success && resultsData.data.results ? resultsData.data.results : []
 
-                // Merge students with their results
                 const studentsWithResults = studentsList.map(student => {
                     const result = existingResults.find(r => String(r.student_id) === String(student.id))
                     return {
@@ -113,8 +98,8 @@ function TeacherExams() {
                 setStudents(studentsWithResults)
                 setResults(existingResults)
             }
-        } catch (err) {
-            console.error('Failed to fetch students/results:', err)
+        } catch {
+            // Students/results fetch failed
         }
     }
 
@@ -126,15 +111,7 @@ function TeacherExams() {
                 window.alert(`Max marks must be greater than 0.`)
                 return
             }
-            const response = await fetch(`${API_BASE}/exams.php`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(formData)
-            })
-            const data = await response.json()
+            const data = await apiClient.post('/exams.php', formData);
             if (data.success) {
                 setShowCreateModal(false)
                 setFormData({
@@ -147,8 +124,8 @@ function TeacherExams() {
                 })
                 fetchExams()
             }
-        } catch (err) {
-            console.error('Failed to create exam:', err)
+        } catch {
+            // Create exam failed
         }
     }
 
@@ -156,26 +133,17 @@ function TeacherExams() {
         try {
             const numericMarks = marks === '' || marks === null ? null : Number(marks)
 
-            const response = await fetch(`${API_BASE}/exams.php`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    exam_id: selectedExam.id,
-                    student_id: studentId,
-                    marks_obtained: numericMarks,
-                    remarks: remarks
-                })
-            })
-            const data = await response.json()
+            const data = await apiClient.put('/exams.php', {
+                exam_id: selectedExam.id,
+                student_id: studentId,
+                marks_obtained: numericMarks,
+                remarks: remarks
+            });
             if (data.success) {
-                // Refresh results
                 fetchStudentsAndResults(selectedExam)
             }
-        } catch (err) {
-            console.error('Failed to save result:', err)
+        } catch {
+            // Save result failed
         }
     }
 

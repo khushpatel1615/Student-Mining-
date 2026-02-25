@@ -27,7 +27,7 @@ import {
 import { Bar, Scatter, Doughnut } from 'react-chartjs-2';
 
 import { useAuth } from '../../context/AuthContext';
-import { API_BASE } from '../../config';
+import apiClient from '../../utils/apiClient';
 import './InsightsDashboard.css';
 
 ChartJS.register(
@@ -53,11 +53,7 @@ const InsightsDashboard = () => {
     const fetchStats = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await fetch(
-                `${API_BASE}/analytics/features.php?action=stats`,
-                { headers: { 'Authorization': `Bearer ${token}` } }
-            );
-            const data = await response.json();
+            const data = await apiClient.get('/analytics/features.php', { action: 'stats' });
             if (data.success) {
                 setStats(data.data);
             }
@@ -66,7 +62,7 @@ const InsightsDashboard = () => {
         } finally {
             setLoading(false);
         }
-    }, [token]);
+    }, []);
 
     useEffect(() => {
         fetchStats();
@@ -135,10 +131,13 @@ const InsightsDashboard = () => {
             data: correlationPoints,
             backgroundColor: 'rgba(99, 102, 241, 0.6)',
             borderColor: 'rgba(99, 102, 241, 1)',
-            pointRadius: 10,
-            pointHoverRadius: 14,
-            pointBorderWidth: 2,
-            pointHoverBorderWidth: 3
+            pointRadius: 5,
+
+            pointHoverRadius: 8,
+
+            pointBorderWidth: 1.5,
+
+            pointHoverBorderWidth: 2
         }]
     };
 
@@ -343,49 +342,95 @@ const InsightsDashboard = () => {
             </div>
 
             {/* Charts Grid */}
+
             <div className="insights-grid">
-                {/* Risk Distribution */}
-                <div className="insight-card">
-                    <div className="card-header">
-                        <PieChart size={20} />
-                        <h3>Risk Distribution</h3>
+
+                {/* Top row: Doughnut + Scatter side by side */}
+
+                <div className="insights-top-row">
+
+                    <div className="insight-card">
+
+                        <div className="card-header">
+
+                            <PieChart size={20} />
+
+                            <h3>Risk Distribution</h3>
+
+                        </div>
+
+                        <div className="chart-container doughnut">
+
+                            <Doughnut data={riskDistributionData} options={doughnutOptions} />
+
+                        </div>
+
+                        <p className="chart-insight">
+
+                            {totalStudents} total students analyzed
+
+                        </p>
+
                     </div>
-                    <div className="chart-container doughnut">
-                        <Doughnut data={riskDistributionData} options={doughnutOptions} />
+
+
+
+                    <div className="insight-card">
+
+                        <div className="card-header">
+
+                            <TrendingUp size={20} />
+
+                            <h3>Correlation: Attendance vs Grade</h3>
+
+                            <span className="chart-badge">{correlationPoints.length} points</span>
+
+                        </div>
+
+                        <div className="chart-container scatter">
+
+                            <Scatter data={correlationData} options={scatterOptions} />
+
+                        </div>
+
+                        <p className="chart-insight">
+
+                            Each point represents a student. Higher clustering in top-right indicates positive correlation.
+
+                        </p>
+
                     </div>
-                    <p className="chart-insight">
-                        {totalStudents} total students analyzed
-                    </p>
+
                 </div>
 
-                {/* Correlation: Attendance vs Grade */}
-                <div className="insight-card">
-                    <div className="card-header">
-                        <TrendingUp size={20} />
-                        <h3>Correlation: Attendance vs Grade</h3>
-                        <span className="chart-badge">{correlationPoints.length} points</span>
-                    </div>
-                    <div className="chart-container scatter">
-                        <Scatter data={correlationData} options={scatterOptions} />
-                    </div>
-                    <p className="chart-insight">
-                        Each point represents a student. Higher clustering in top-right indicates positive correlation.
-                    </p>
-                </div>
 
-                {/* Cohort Analysis */}
-                <div className="insight-card">
+
+                {/* Bottom row: Cohort Analysis full width */}
+
+                <div className="insight-card insight-card--full">
+
                     <div className="card-header">
+
                         <Users size={20} />
+
                         <h3>Cohort Analysis - Average Grade by Semester</h3>
+
                     </div>
-                    <div className="chart-container bar">
+
+                    <div className="chart-container bar" style={{ height: 240 }}>
+
                         <Bar data={cohortData} options={barOptions} />
+
                     </div>
+
                     <p className="chart-insight">
+
                         Performance comparison across student cohorts by semester level.
+
                     </p>
+
                 </div>
+
             </div>
         </div>
     );

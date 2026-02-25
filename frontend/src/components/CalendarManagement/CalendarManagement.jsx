@@ -1,4 +1,4 @@
-import { API_BASE } from '../../config';
+import apiClient from '../../utils/apiClient';
 
 import { useState, useEffect } from 'react'
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar'
@@ -64,10 +64,7 @@ const CalendarManagement = ({ role: propRole }) => {
 
     const fetchEvents = async () => {
         try {
-            const response = await fetch(`${API_BASE}/calendar.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
+            const data = await apiClient.get('/calendar.php')
             if (data.success) {
                 setEvents(data.data || [])
             }
@@ -80,8 +77,7 @@ const CalendarManagement = ({ role: propRole }) => {
 
     const fetchPrograms = async () => {
         try {
-            const res = await fetch(`${API_BASE}/programs.php`)
-            const data = await res.json()
+            const data = await apiClient.get('/programs.php')
             if (data.success) setPrograms(data.data)
         } catch (e) {
             console.error(e)
@@ -91,10 +87,7 @@ const CalendarManagement = ({ role: propRole }) => {
     const fetchMySubjects = async () => {
         try {
             if (user?.id) {
-                const res = await fetch(`${API_BASE}/teachers.php?id=${user.id}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                })
-                const data = await res.json()
+                const data = await apiClient.get('/teachers.php', { id: user.id })
                 if (data.success) {
                     setMySubjects(data.data.assigned_subjects || [])
                 }
@@ -132,15 +125,7 @@ const CalendarManagement = ({ role: propRole }) => {
         if (selectedEvent) payload.id = selectedEvent.id;
 
         try {
-            const response = await fetch(`${API_BASE}/calendar.php`, {
-                method: method,
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            })
-            const data = await response.json()
+            const data = await (method === 'PUT' ? apiClient.put('/calendar.php', payload) : apiClient.post('/calendar.php', payload))
             if (data.success) {
                 closeModal()
                 fetchEvents()
@@ -158,11 +143,7 @@ const CalendarManagement = ({ role: propRole }) => {
         if (!itemToDelete) return
         setSubmitting(true)
         try {
-            const response = await fetch(`${API_BASE}/calendar.php?id=${itemToDelete}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
+            const data = await apiClient.delete('/calendar.php', { id: itemToDelete })
             if (data.success) {
                 fetchEvents()
                 if (selectedEvent && selectedEvent.id === itemToDelete) {
@@ -242,18 +223,10 @@ const CalendarManagement = ({ role: propRole }) => {
         ))
 
         try {
-            const response = await fetch(`${API_BASE}/calendar.php`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    id: event.id,
-                    event_date: newDateStr
-                })
+            const data = await apiClient.put('/calendar.php', {
+                id: event.id,
+                event_date: newDateStr
             })
-            const data = await response.json()
             if (!data.success) {
                 fetchEvents() // Revert on failure
                 window.alert(data.error || 'Failed to move event')

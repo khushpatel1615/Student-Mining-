@@ -3,7 +3,7 @@ import { Save, CheckCircle, XCircle, AlertTriangle, Calendar, Filter, Loader } f
 import toast from 'react-hot-toast';
 
 import { useAuth } from '../../context/AuthContext';
-import { API_BASE } from '../../config';
+import apiClient from '../../utils/apiClient';
 import './AdminAttendance.css';
 
 // v2.0 - Modern UI Update
@@ -36,14 +36,11 @@ const AdminAttendance = () => {
 
     const fetchPrograms = async () => {
         try {
-            const res = await fetch(`${API_BASE}/programs.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
+            const data = await apiClient.get('/programs.php');
             if (data.success) {
                 setPrograms(data.data);
             }
-        } catch (err) {
+        } catch {
             toast.error("Failed to load programs");
         }
     };
@@ -59,15 +56,12 @@ const AdminAttendance = () => {
 
     const fetchSubjects = async () => {
         try {
-            const res = await fetch(`${API_BASE}/subjects.php?program_id=${selectedProgram}&semester=${selectedSemester}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
+            const data = await apiClient.get('/subjects.php', { program_id: selectedProgram, semester: selectedSemester });
             if (data.success) {
                 setSubjects(data.data);
             }
-        } catch (err) {
-            console.error(err);
+        } catch {
+            // Failed to fetch subjects
         }
     };
 
@@ -85,16 +79,13 @@ const AdminAttendance = () => {
     const fetchAttendanceSheet = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE}/attendance.php?action=fetch_sheet&subject_id=${selectedSubject}&date=${markingDate}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
+            const data = await apiClient.get('/attendance.php', { action: 'fetch_sheet', subject_id: selectedSubject, date: markingDate });
             if (data.success) {
                 setPastDates(data.data.dates);
                 setStudents(data.data.students);
                 setCurrentAttendance(data.data.current || {});
             }
-        } catch (err) {
+        } catch {
             toast.error("Failed to load attendance sheet");
         } finally {
             setLoading(false);
@@ -131,28 +122,20 @@ const AdminAttendance = () => {
 
         setSaving(true);
         try {
-            const res = await fetch(`${API_BASE}/attendance.php`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    action: 'save_daily',
-                    subject_id: selectedSubject,
-                    date: markingDate,
-                    records: currentAttendance
-                })
+            const data = await apiClient.post('/attendance.php', {
+                action: 'save_daily',
+                subject_id: selectedSubject,
+                date: markingDate,
+                records: currentAttendance
             });
 
-            const data = await res.json();
             if (data.success) {
                 toast.success("Attendance saved successfully");
-                fetchAttendanceSheet(); // Refresh to show new column in history
+                fetchAttendanceSheet();
             } else {
                 toast.error(data.error || "Failed to save");
             }
-        } catch (err) {
+        } catch {
             toast.error("Connection failed");
         } finally {
             setSaving(false);

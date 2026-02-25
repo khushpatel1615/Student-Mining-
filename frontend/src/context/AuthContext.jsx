@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import apiClient from '../utils/apiClient'
 import * as authService from '../services/authService'
@@ -12,11 +12,24 @@ export function AuthProvider({ children }) {
     const [error, setError] = useState(null)
     const navigate = useNavigate()
 
+    // Use ref for logout to avoid stale closures in the 401 handler
+    const logoutRef = useRef(null)
+
+    const logout = useCallback(() => {
+        setUser(null)
+        setToken(null)
+        setError(null)
+        authService.logout();
+        navigate('/')
+    }, [navigate])
+
+    // Keep ref in sync
+    logoutRef.current = logout
+
     // Set up global 401 handler
     useEffect(() => {
         apiClient.setUnauthorizedHandler(() => {
-            console.warn('Unauthorized - logging out');
-            logout();
+            logoutRef.current?.();
         });
     }, []);
 
@@ -29,12 +42,11 @@ export function AuthProvider({ children }) {
                     setUser(data.user);
                     setToken(apiClient.token);
                 } else {
-                    console.error('Auth verification failed during initAuth:', verifyError, data);
                     // Only forcefully logout if it's a 401 error, don't logout on network errors
                     if (verifyError && verifyError.includes('401')) {
-                        logout();
+                        logoutRef.current?.();
                     } else if (data?.error && String(data.error).includes('401')) {
-                        logout();
+                        logoutRef.current?.();
                     }
                 }
             }
@@ -101,14 +113,6 @@ export function AuthProvider({ children }) {
         } else {
             return { success: false, error: pwdError || (data && data.error) }
         }
-    }
-
-    const logout = () => {
-        setUser(null)
-        setToken(null)
-        setError(null)
-        authService.logout();
-        navigate('/')
     }
 
     const clearError = () => setError(null)

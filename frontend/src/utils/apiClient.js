@@ -91,9 +91,7 @@ class ApiClient {
         if (contentType && contentType.includes('application/json')) {
             data = await response.json();
         } else {
-            // If contentType is missing (like in some poorly mocked tests), assume JSON if response.json exists and returns JSON
             try {
-                // If response.json exists, we prefer it.
                 if (response.json) {
                     data = await response.json();
                 } else {
@@ -103,6 +101,7 @@ class ApiClient {
                 data = await response.text();
             }
         }
+
         if (response.status === 401) {
             if (this.onUnauthorized) {
                 this.onUnauthorized();
@@ -122,96 +121,80 @@ class ApiClient {
      * GET request
      */
     async get(endpoint, params = {}, options = {}) {
-        try {
-            const url = this.buildURL(endpoint, params);
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: this.getHeaders(options.headers),
-                ...options
-            });
-            return await this.handleResponse(response);
-        } catch (error) {
-            throw error;
-        }
+        const { headers: customHeaders, ...fetchOptions } = options;
+        const url = this.buildURL(endpoint, params);
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: this.getHeaders(customHeaders),
+            ...fetchOptions
+        });
+        return await this.handleResponse(response);
     }
 
     /**
      * POST request
      */
     async post(endpoint, body = {}, options = {}) {
-        try {
-            const response = await fetch(`${this.baseURL}${endpoint}`, {
-                method: 'POST',
-                headers: this.getHeaders(options.headers),
-                body: JSON.stringify(body),
-                ...options
-            });
-            return await this.handleResponse(response);
-        } catch (error) {
-            throw error;
-        }
+        const { headers: customHeaders, ...fetchOptions } = options;
+        const response = await fetch(`${this.baseURL}${endpoint}`, {
+            method: 'POST',
+            headers: this.getHeaders(customHeaders),
+            body: JSON.stringify(body),
+            ...fetchOptions
+        });
+        return await this.handleResponse(response);
     }
 
     /**
      * PUT request
      */
     async put(endpoint, body = {}, options = {}) {
-        try {
-            const response = await fetch(`${this.baseURL}${endpoint}`, {
-                method: 'PUT',
-                headers: this.getHeaders(options.headers),
-                body: JSON.stringify(body),
-                ...options
-            });
-            return await this.handleResponse(response);
-        } catch (error) {
-            throw error;
-        }
+        const { headers: customHeaders, ...fetchOptions } = options;
+        const response = await fetch(`${this.baseURL}${endpoint}`, {
+            method: 'PUT',
+            headers: this.getHeaders(customHeaders),
+            body: JSON.stringify(body),
+            ...fetchOptions
+        });
+        return await this.handleResponse(response);
     }
 
     /**
      * DELETE request
      */
     async delete(endpoint, params = {}, options = {}) {
-        try {
-            const url = this.buildURL(endpoint, params);
-            const response = await fetch(url, {
-                method: 'DELETE',
-                headers: this.getHeaders(options.headers),
-                ...options
-            });
-            return await this.handleResponse(response);
-        } catch (error) {
-            throw error;
-        }
+        const { headers: customHeaders, ...fetchOptions } = options;
+        const url = this.buildURL(endpoint, params);
+        const response = await fetch(url, {
+            method: 'DELETE',
+            headers: this.getHeaders(customHeaders),
+            ...fetchOptions
+        });
+        return await this.handleResponse(response);
     }
 
     /**
      * Upload / Multipart request
      */
     async upload(endpoint, formData, options = {}) {
-        try {
-            const headers = { ...options.headers };
-            const currentToken = this.getTokenFromStorage();
-            if (currentToken) {
-                headers['Authorization'] = `Bearer ${currentToken}`;
-            }
-            // Note: Don't set Content-Type, browser will handle it for FormData
-
-            const response = await fetch(`${this.baseURL}${endpoint}`, {
-                method: 'POST',
-                headers,
-                body: formData,
-                ...options
-            });
-            return await this.handleResponse(response);
-        } catch (error) {
-            throw error;
+        const { headers: customHeaders, ...fetchOptions } = options;
+        const headers = { ...customHeaders };
+        const currentToken = this.getTokenFromStorage();
+        if (currentToken) {
+            headers['Authorization'] = `Bearer ${currentToken}`;
         }
+        // Note: Don't set Content-Type, browser will handle it for FormData
+
+        const response = await fetch(`${this.baseURL}${endpoint}`, {
+            method: 'POST',
+            headers,
+            body: formData,
+            ...fetchOptions
+        });
+        return await this.handleResponse(response);
     }
 }
 
 const apiClient = new ApiClient();
 export { apiClient, ApiError };
 export default apiClient;
-

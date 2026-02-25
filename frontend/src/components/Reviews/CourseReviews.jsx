@@ -3,7 +3,7 @@ import { Star, ThumbsUp, MessageCircle, TrendingUp, Award, ChevronDown } from 'l
 import toast from 'react-hot-toast'
 
 import { useAuth } from '../../context/AuthContext'
-import { API_BASE } from '../../config';
+import apiClient from '../../utils/apiClient';
 import './CourseReviews.css'
 
 
@@ -31,15 +31,12 @@ function CourseReviews({ subjectId = null, subjectName = '' }) {
     const fetchReviews = async () => {
         setLoading(true)
         try {
-            const res = await fetch(`${API_BASE}/course_reviews.php?action=list&subject_id=${subjectId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await res.json()
+            const data = await apiClient.get('/course_reviews.php', { action: 'list', subject_id: subjectId });
             if (data.success) {
                 setReviews(data.data.reviews)
                 setStats(data.data.stats)
             }
-        } catch (err) {
+        } catch {
             toast.error('Failed to load reviews')
         } finally {
             setLoading(false)
@@ -48,12 +45,9 @@ function CourseReviews({ subjectId = null, subjectName = '' }) {
 
     const fetchTopRated = async () => {
         try {
-            const res = await fetch(`${API_BASE}/course_reviews.php?action=top_rated`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await res.json()
+            const data = await apiClient.get('/course_reviews.php', { action: 'top_rated' });
             if (data.success) setTopRated(data.data)
-        } catch (err) { /* ignore */ } finally { setLoading(false) }
+        } catch { /* ignore */ } finally { setLoading(false) }
     }
 
     const submitReview = async () => {
@@ -62,12 +56,7 @@ function CourseReviews({ subjectId = null, subjectName = '' }) {
             return
         }
         try {
-            const res = await fetch(`${API_BASE}/course_reviews.php`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'create', subject_id: subjectId, ...newReview })
-            })
-            const data = await res.json()
+            const data = await apiClient.post('/course_reviews.php', { action: 'create', subject_id: subjectId, ...newReview });
             if (data.success) {
                 toast.success('Review submitted for approval!')
                 setShowForm(false)
@@ -75,17 +64,13 @@ function CourseReviews({ subjectId = null, subjectName = '' }) {
             } else {
                 toast.error(data.error)
             }
-        } catch (err) {
+        } catch {
             toast.error('Failed to submit review')
         }
     }
 
     const markHelpful = async (id) => {
-        await fetch(`${API_BASE}/course_reviews.php`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'helpful', id })
-        })
+        await apiClient.post('/course_reviews.php', { action: 'helpful', id });
         fetchReviews()
     }
 

@@ -91,7 +91,7 @@ if ($method === 'GET') {
             }
         };
 
-        $totalStudents = $safeQuery(fn() => $pdo->query("SELECT COUNT(*) FROM users WHERE role='student'")->fetchColumn());
+        $totalStudents = $safeQuery(fn() => $pdo->query("SELECT COUNT(*) FROM users WHERE role='student' AND is_active = 1")->fetchColumn());
         $totalEnrollments = $safeQuery(fn() => $pdo->query("SELECT COUNT(*) FROM student_enrollments")->fetchColumn());
         $totalGradesEntered = $safeQuery(fn() => $pdo->query("SELECT COUNT(*) FROM student_grades WHERE marks_obtained IS NOT NULL")->fetchColumn());
         $finalizedSubjects = $safeQuery(fn() => $pdo->query("SELECT COUNT(*) FROM student_enrollments WHERE is_finalized=1")->fetchColumn());

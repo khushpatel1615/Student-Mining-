@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
-import { API_BASE } from '../../config';
+import apiClient from '../../utils/apiClient';
 import './RiskCenter.css';
 
 
@@ -71,11 +71,7 @@ const RiskCenter = () => {
     const fetchRiskData = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await fetch(
-                `${API_BASE}/analytics/features.php?action=list&filter=${filter}`,
-                { headers: { 'Authorization': `Bearer ${token}` } }
-            );
-            const data = await response.json();
+            const data = await apiClient.get('/analytics/features.php', { action: 'list', filter });
             if (data.success) {
                 setStudents(data.data || []);
             }
@@ -84,32 +80,25 @@ const RiskCenter = () => {
         } finally {
             setLoading(false);
         }
-    }, [token, filter]);
+    }, [filter]);
 
     const fetchStats = useCallback(async () => {
         try {
-            const response = await fetch(
-                `${API_BASE}/analytics/features.php?action=stats`,
-                { headers: { 'Authorization': `Bearer ${token}` } }
-            );
-            const data = await response.json();
+            const data = await apiClient.get('/analytics/features.php', { action: 'stats' });
             if (data.success) {
                 setStats(data.data);
             }
         } catch (err) {
             console.error('Failed to fetch stats:', err);
         }
-    }, [token]);
+    }, []);
 
     const recomputeFeatures = async () => {
         setRefreshing(true);
         try {
-            const response = await fetch(`${API_BASE}/analytics/compute_features.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const result = await response.json();
-            if (!response.ok || !result.success) {
-                console.error('Recompute failed:', result.error || response.statusText);
+            const result = await apiClient.get('/analytics/compute_features.php');
+            if (!result.success) {
+                console.error('Recompute failed:', result.error);
             }
             await fetchRiskData();
             await fetchStats();

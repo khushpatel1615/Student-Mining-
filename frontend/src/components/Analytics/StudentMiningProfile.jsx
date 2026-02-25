@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
-import { API_BASE } from '../../config';
+import apiClient from '../../utils/apiClient';
 import './StudentMiningProfile.css';
 
 
@@ -32,11 +32,7 @@ const StudentMiningProfile = ({ studentId }) => {
         if (!studentId) return;
         setLoading(true);
         try {
-            const response = await fetch(
-                `${API_BASE}/analytics/features.php?action=profile&user_id=${studentId}`,
-                { headers: { 'Authorization': `Bearer ${token}` } }
-            );
-            const data = await response.json();
+            const data = await apiClient.get('/analytics/features.php', { action: 'profile', user_id: studentId });
             if (data.success) {
                 setProfile(data.data);
             }
@@ -45,7 +41,7 @@ const StudentMiningProfile = ({ studentId }) => {
         } finally {
             setLoading(false);
         }
-    }, [token, studentId]);
+    }, [studentId]);
 
     useEffect(() => {
         fetchProfile();

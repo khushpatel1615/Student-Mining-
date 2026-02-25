@@ -10,9 +10,44 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
 // Enforce Method
 requireMethod('POST');
+
+// Brute-force protection: limit login attempts per IP
+$clientIp = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+$rateLimitDir = __DIR__ . '/../data/rate_limits';
+if (!is_dir($rateLimitDir)) {
+    @mkdir($rateLimitDir, 0755, true);
+}
+$rateLimitFile = $rateLimitDir . '/' . md5('login_' . $clientIp) . '.json';
+$maxAttempts = 5;
+$windowSeconds = 900; // 15 minutes
+if (file_exists($rateLimitFile)) {
+    $rateData = json_decode(file_get_contents($rateLimitFile), true);
+    if ($rateData && isset($rateData['count']) && isset($rateData['expires'])) {
+        if (time() < $rateData['expires']) {
+            if ($rateData['count'] >= $maxAttempts) {
+                $retryAfter = $rateData['expires'] - time();
+                http_response_code(429);
+                header('Content-Type: application/json');
+                header('Retry-After: ' . $retryAfter);
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Too many login attempts. Please try again in ' . ceil($retryAfter / 60) . ' minutes.',
+                    'retryAfter' => $retryAfter
+                ]);
+                exit;
+            }
+        } else {
+            // Window expired, reset
+            $rateData = null;
+        }
+    }
+}
+// Increment attempt counter
+$rateData = $rateData ?? ['count' => 0, 'expires' => time() + $windowSeconds];
+$rateData['count']++;
+file_put_contents($rateLimitFile, json_encode($rateData), LOCK_EX);
 // Get Input
 $input = getJsonInput();
-// throw new Exception("Test Error"); // Uncomment to test handler
 
 if (!$input) {
     sendError('Invalid JSON input', 400);
@@ -48,7 +83,7 @@ try {
     // Verify user and password together to prevent enumeration
     if (!$user || !password_verify($password, $user['password_hash'])) {
         // Add random delay to prevent timing attacks
-        usleep(rand(100000, 300000));
+        usleep(random_int(100000, 300000));
         sendError('Invalid credentials. Please check your Student ID and Password.', 401);
     }
 
@@ -74,6 +109,11 @@ try {
         ]);
     } catch (Exception $e) {
         // Continue login even if log fails
+    }
+
+    // Clear rate limit on successful login
+    if (file_exists($rateLimitFile)) {
+        @unlink($rateLimitFile);
     }
 
     // Generate JWT token

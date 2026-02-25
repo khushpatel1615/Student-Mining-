@@ -3,7 +3,7 @@ import { Bell, Pin, Eye, ArrowLeft, Clock, Megaphone } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 import { useAuth } from '../../context/AuthContext'
-import { API_BASE } from '../../config';
+import apiClient from '../../utils/apiClient';
 import './DiscussionForum.css'
 
 
@@ -21,10 +21,7 @@ function AnnouncementsPage() {
     const fetchAnnouncements = async () => {
         setLoading(true)
         try {
-            const res = await fetch(`${API_BASE}/discussions.php?action=list`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await res.json()
+            const data = await apiClient.get('/discussions.php', { action: 'list' })
             if (data.success) {
                 // Filter to show only announcements
                 const announcementPosts = data.data.filter(d => d.category === 'announcement')
@@ -39,10 +36,7 @@ function AnnouncementsPage() {
 
     const viewAnnouncement = async (id) => {
         try {
-            const res = await fetch(`${API_BASE}/discussions.php?action=view&id=${id}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await res.json()
+            const data = await apiClient.get('/discussions.php', { action: 'view', id })
             if (data.success) setSelectedAnnouncement(data.data)
         } catch (err) {
             toast.error('Failed to load announcement')

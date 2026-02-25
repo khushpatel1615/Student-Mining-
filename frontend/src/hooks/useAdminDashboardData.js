@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { API_BASE } from '../config';
+import apiClient from '../utils/apiClient';
 
 export const useAdminDashboardData = () => {
     const { token } = useAuth();
@@ -38,18 +38,18 @@ export const useAdminDashboardData = () => {
         setError(null);
 
         try {
-            // Parallel fetch for better performance
+            // Parallel fetch using apiClient for centralized error handling
             const [analyticsRes, eventsRes, notifRes] = await Promise.allSettled([
-                fetch(`${API_BASE}/analytics/admin.php`, { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch(`${API_BASE}/calendar.php`, { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch(`${API_BASE}/notifications.php?limit=8`, { headers: { 'Authorization': `Bearer ${token}` } })
+                apiClient.get('/analytics/admin.php'),
+                apiClient.get('/calendar.php'),
+                apiClient.get('/notifications.php', { limit: 8 })
             ]);
 
             let activeAlerts = [];
 
             // Process Analytics
-            if (analyticsRes.status === 'fulfilled' && analyticsRes.value.ok) {
-                const analyticsData = await analyticsRes.value.json();
+            if (analyticsRes.status === 'fulfilled' && analyticsRes.value) {
+                const analyticsData = analyticsRes.value;
                 if (analyticsData.success) {
                     const {
                         system_overview = {},
@@ -119,8 +119,8 @@ export const useAdminDashboardData = () => {
                                 });
                             }
                         }
-                    } catch (err) {
-                        console.error("Error generating alerts:", err);
+                    } catch {
+                        // Error generating alerts — non-critical
                     }
                     setAlerts(activeAlerts);
                 }
@@ -128,8 +128,8 @@ export const useAdminDashboardData = () => {
 
             // Process Events
             const today = new Date();
-            if (eventsRes.status === 'fulfilled' && eventsRes.value.ok) {
-                const eventsData = await eventsRes.value.json();
+            if (eventsRes.status === 'fulfilled' && eventsRes.value) {
+                const eventsData = eventsRes.value;
                 if (eventsData.success && Array.isArray(eventsData.data)) {
                     const upcoming = eventsData.data
                         .filter(e => e && new Date(e.event_date) >= today)
@@ -142,15 +142,14 @@ export const useAdminDashboardData = () => {
             }
 
             // Process Notifications
-            if (notifRes.status === 'fulfilled' && notifRes.value.ok) {
-                const notifData = await notifRes.value.json();
+            if (notifRes.status === 'fulfilled' && notifRes.value) {
+                const notifData = notifRes.value;
                 if (notifData.success) {
                     setRecentActivity(Array.isArray(notifData.data?.notifications) ? notifData.data.notifications : []);
                 }
             }
 
         } catch (err) {
-            console.error('Failed to fetch dashboard data:', err);
             setError(err.message);
         } finally {
             setLoading(false);

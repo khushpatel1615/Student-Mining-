@@ -193,10 +193,19 @@
 
 /* Grid Layout */
 .insights-grid {
-    display: grid;
-    grid-template-columns: 1.2fr 1.8fr;
-    grid-template-rows: auto auto;
+    display: flex;
+    flex-direction: column;
     gap: 16px;
+}
+
+.insights-top-row {
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    gap: 16px;
+}
+
+.insight-card--full {
+    width: 100%;
 }
 
 /* Cards */
@@ -272,8 +281,8 @@
 }
 
 /* Responsive */
-@media (max-width: 1200px) {
-    .insights-grid {
+@media (max-width: 1100px) {
+    .insights-top-row {
         grid-template-columns: 1fr;
     }
 }

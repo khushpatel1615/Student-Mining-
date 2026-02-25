@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react'
 
-import { API_BASE } from '../../config';
+import apiClient from '../../utils/apiClient';
 import { useAuth } from '../../context/AuthContext'
 import './NotificationBell.css'
-
-
 
 function NotificationBell({ onClick }) {
     const { token } = useAuth()
@@ -12,22 +10,18 @@ function NotificationBell({ onClick }) {
 
     useEffect(() => {
         fetchUnreadCount()
-        const interval = setInterval(fetchUnreadCount, 30000) // Poll every 30 seconds
+        const interval = setInterval(fetchUnreadCount, 30000)
         return () => clearInterval(interval)
     }, [])
 
     const fetchUnreadCount = async () => {
         try {
-            const response = await fetch(`${API_BASE}/notifications.php?unread=true`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
-
+            const data = await apiClient.get('/notifications.php', { unread: true });
             if (data.success) {
                 setUnreadCount(data.data.unread_count)
             }
-        } catch (err) {
-            console.error('Error fetching unread count:', err)
+        } catch {
+            // Non-critical polling failure
         }
     }
 
@@ -45,6 +39,3 @@ function NotificationBell({ onClick }) {
 }
 
 export default NotificationBell
-
-
-

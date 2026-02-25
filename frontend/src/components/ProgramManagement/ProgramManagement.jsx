@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 
-import { API_BASE } from '../../config';
+import apiClient from '../../utils/apiClient';
 import { useAuth } from '../../context/AuthContext'
 import './ProgramManagement.css'
 
@@ -78,25 +78,19 @@ function ProgramManagement() {
             setLoading(true)
             setError(null)
 
-            const response = await fetch(`${API_BASE}/programs.php?active=false`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            })
-
-            const data = await response.json()
+            const data = await apiClient.get('/programs.php', { active: false });
 
             if (data.success) {
                 setPrograms(data.data)
             } else {
                 setError(data.error || 'Failed to fetch programs')
             }
-        } catch (err) {
+        } catch {
             setError('Network error. Please try again.')
         } finally {
             setLoading(false)
         }
-    }, [token])
+    }, [])
 
     useEffect(() => {
         fetchPrograms()
@@ -137,22 +131,12 @@ function ProgramManagement() {
         setSaving(true)
 
         try {
-            const url = `${API_BASE}/programs.php`
-            const method = modalMode === 'add' ? 'POST' : 'PUT'
+            const method = modalMode === 'add' ? 'post' : 'put'
             const body = modalMode === 'add'
                 ? formData
                 : { ...formData, id: editingProgram.id }
 
-            const response = await fetch(url, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(body)
-            })
-
-            const data = await response.json()
+            const data = await apiClient[method]('/programs.php', body);
 
             if (data.success) {
                 setShowModal(false)
@@ -160,7 +144,7 @@ function ProgramManagement() {
             } else {
                 setError(data.error || 'Failed to save program')
             }
-        } catch (err) {
+        } catch {
             setError('Network error. Please try again.')
         } finally {
             setSaving(false)
@@ -171,14 +155,7 @@ function ProgramManagement() {
         setSaving(true)
 
         try {
-            const response = await fetch(`${API_BASE}/programs.php?id=${deletingProgram.id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            })
-
-            const data = await response.json()
+            const data = await apiClient.delete('/programs.php', { id: deletingProgram.id });
 
             if (data.success) {
                 setShowDeleteModal(false)
@@ -187,7 +164,7 @@ function ProgramManagement() {
             } else {
                 setError(data.error || 'Failed to delete program')
             }
-        } catch (err) {
+        } catch {
             setError('Network error. Please try again.')
         } finally {
             setSaving(false)

@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { API_BASE } from '../../config';
+import apiClient from '../../utils/apiClient';
 import { useAuth } from '../../context/AuthContext'
 
 import './NotificationCenter.css'
-
-
 
 // Icons
 const BellIcon = () => (
@@ -42,7 +40,6 @@ function NotificationCenter({ isOpen, onClose }) {
         }
     }, [isOpen])
 
-    // Poll for new notifications every 30 seconds
     useEffect(() => {
         fetchUnreadCount()
         const interval = setInterval(fetchUnreadCount, 30000)
@@ -52,17 +49,13 @@ function NotificationCenter({ isOpen, onClose }) {
     const fetchNotifications = async () => {
         setLoading(true)
         try {
-            const response = await fetch(`${API_BASE}/notifications.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
-
+            const data = await apiClient.get('/notifications.php');
             if (data.success) {
                 setNotifications(data.data.notifications)
                 setUnreadCount(data.data.unread_count)
             }
-        } catch (err) {
-            console.error('Error fetching notifications:', err)
+        } catch {
+            // Notification fetch failed
         } finally {
             setLoading(false)
         }
@@ -70,65 +63,44 @@ function NotificationCenter({ isOpen, onClose }) {
 
     const fetchUnreadCount = async () => {
         try {
-            const response = await fetch(`${API_BASE}/notifications.php?unread=true`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            const data = await response.json()
-
+            const data = await apiClient.get('/notifications.php', { unread: true });
             if (data.success) {
                 setUnreadCount(data.data.unread_count)
             }
-        } catch (err) {
-            console.error('Error fetching unread count:', err)
+        } catch {
+            // Non-critical polling failure
         }
     }
 
     const markAsRead = async (notificationId) => {
         try {
-            await fetch(`${API_BASE}/notifications.php`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    action: 'mark_read',
-                    notification_id: notificationId
-                })
-            })
+            await apiClient.put('/notifications.php', {
+                action: 'mark_read',
+                notification_id: notificationId
+            });
             fetchNotifications()
-        } catch (err) {
-            console.error('Error marking as read:', err)
+        } catch {
+            // Mark-as-read failed
         }
     }
 
     const markAllAsRead = async () => {
         try {
-            await fetch(`${API_BASE}/notifications.php`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    action: 'mark_read'
-                })
-            })
+            await apiClient.put('/notifications.php', {
+                action: 'mark_read'
+            });
             fetchNotifications()
-        } catch (err) {
-            console.error('Error marking all as read:', err)
+        } catch {
+            // Mark-all failed
         }
     }
 
     const deleteNotification = async (notificationId) => {
         try {
-            await fetch(`${API_BASE}/notifications.php?id=${notificationId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
+            await apiClient.delete('/notifications.php', { id: notificationId });
             fetchNotifications()
-        } catch (err) {
-            console.error('Error deleting notification:', err)
+        } catch {
+            // Delete failed
         }
     }
 
@@ -250,6 +222,3 @@ function NotificationCenter({ isOpen, onClose }) {
 }
 
 export default NotificationCenter
-
-
-

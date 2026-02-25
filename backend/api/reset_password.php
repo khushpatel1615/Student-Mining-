@@ -17,6 +17,10 @@ if (strlen($password) < 8) {
     sendError('Password must be at least 8 characters', 400);
 }
 
+if (!preg_match('/[A-Z]/', $password) || !preg_match('/[a-z]/', $password) || !preg_match('/[0-9]/', $password)) {
+    sendError('Password must contain at least one uppercase letter, one lowercase letter, and one number', 400);
+}
+
 try {
     $pdo = getDBConnection();
 

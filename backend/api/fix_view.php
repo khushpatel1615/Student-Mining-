@@ -1,6 +1,19 @@
 <?php
-require 'e:/XAMP/htdocs/StudentDataMining/backend/config/database.php';
+/**
+ * Database View Maintenance Script
+ * Creates/Updates the vw_student_performance view
+ * 
+ * SECURITY: Requires admin authentication
+ */
+
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/jwt.php';
+
+// Require admin role
+requireRole('admin');
+
 $pdo = getDBConnection();
+
 $sql = "CREATE OR REPLACE VIEW vw_student_performance AS
 SELECT 
     u.id AS user_id,
@@ -48,6 +61,11 @@ FROM users u
 JOIN programs p ON u.program_id = p.id
 JOIN student_enrollments se ON u.id = se.user_id
 JOIN subjects s ON se.subject_id = s.id
-WHERE u.role = 'student'";
-$pdo->exec($sql);
-echo "View Updated successfully.";
+WHERE u.role = 'student' AND u.is_active = 1";
+
+try {
+    $pdo->exec($sql);
+    sendResponse(['success' => true, 'message' => 'View updated successfully']);
+} catch (PDOException $e) {
+    sendError('Failed to update view', 500, $e->getMessage());
+}

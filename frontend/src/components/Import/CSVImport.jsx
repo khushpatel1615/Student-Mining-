@@ -3,7 +3,7 @@ import { Upload, FileText, CheckCircle, AlertCircle, Download, X } from 'lucide-
 import toast from 'react-hot-toast'
 
 import { useAuth } from '../../context/AuthContext'
-import { API_BASE } from '../../config';
+import apiClient from '../../utils/apiClient';
 import './CSVImport.css'
 
 
@@ -51,15 +51,7 @@ function CSVImport({ onClose, onSuccess }) {
         formData.append('file', file)
 
         try {
-            const response = await fetch(`${API_BASE}/import/grades.php`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
-                body: formData
-            })
-
-            const data = await response.json()
+            const data = await apiClient.upload('/import/grades.php', formData);
 
             if (data.success) {
                 setResult(data.stats)
@@ -68,7 +60,7 @@ function CSVImport({ onClose, onSuccess }) {
             } else {
                 toast.error(data.error || 'Upload failed')
             }
-        } catch (err) {
+        } catch {
             toast.error('Failed to upload file')
         } finally {
             setUploading(false)

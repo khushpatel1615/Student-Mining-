@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Award, Trophy, Star, Target, Zap, Crown } from 'lucide-react';
 
 import { useAuth } from '../../../context/AuthContext';
-import { API_BASE } from '../../../config';
+import apiClient from '../../../utils/apiClient';
 
 const Badges = () => {
     const { token } = useAuth();
@@ -18,10 +18,7 @@ const Badges = () => {
 
     const fetchBadges = async () => {
         try {
-            const response = await fetch(`${API_BASE}/student_dashboard.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
+            const data = await apiClient.get('/student_dashboard.php');
             if (data.success) {
                 setSummary({
                     gpa: data.data.summary?.gpa_4 || data.data.summary?.gpa || 0,
@@ -29,8 +26,8 @@ const Badges = () => {
                 });
                 calculateBadges(data.data.summary);
             }
-        } catch (err) {
-            console.error(err);
+        } catch {
+            // Badge fetch failed — non-critical
         } finally {
             setLoading(false);
         }
@@ -38,16 +35,13 @@ const Badges = () => {
 
     const calculateBadges = (data) => {
         const badges = [];
-        // Use gpa_4 for 4.0 scale, and overall_attendance for attendance
         const gpa = data?.gpa_4 || data?.gpa || 0;
         const attendance = data?.overall_attendance || 0;
 
-        // GPA-based badges
         if (gpa >= 3.8) badges.push({ id: 'gpa-perfect', name: 'Perfect Scholar', icon: <Crown size={48} />, color: '#fbbf24', description: 'Maintained GPA above 3.8' });
         else if (gpa >= 3.5) badges.push({ id: 'gpa-excellent', name: 'Excellent Student', icon: <Trophy size={48} />, color: '#facc15', description: 'Maintained GPA above 3.5' });
         else if (gpa >= 3.0) badges.push({ id: 'gpa-good', name: 'Good Student', icon: <Star size={48} />, color: '#3b82f6', description: 'Maintained GPA above 3.0' });
 
-        // Attendance badges
         if (attendance >= 95) badges.push({ id: 'attendance-perfect', name: 'Perfect Attendance', icon: <Target size={48} />, color: '#10b981', description: '95%+ attendance rate' });
         else if (attendance >= 85) badges.push({ id: 'attendance-excellent', name: 'Excellent Attendance', icon: <Zap size={48} />, color: '#06b6d4', description: '85%+ attendance rate' });
         else if (attendance >= 75) badges.push({ id: 'attendance-good', name: 'Good Attendance', icon: <Award size={48} />, color: '#8b5cf6', description: '75%+ attendance rate' });

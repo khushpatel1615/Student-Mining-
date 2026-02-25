@@ -134,8 +134,11 @@ function handleDelete($pdo)
 {
     requireRole(['admin', 'teacher']);
 
-    $data = getJsonInput();
+    $id = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);
+    if (!$id) {
+        sendError('Video ID required');
+    }
     $stmt = $pdo->prepare("DELETE FROM video_lectures WHERE id = ?");
-    $stmt->execute([$data['id']]);
+    $stmt->execute([$id]);
     sendResponse(['success' => true]);
 }

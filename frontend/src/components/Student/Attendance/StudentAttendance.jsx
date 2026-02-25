@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, CheckCircle, XCircle, AlertTriangle, ChevronDown, ChevronUp, Loader } from 'lucide-react';
 
-import { API_BASE } from '../../../config';
+import apiClient from '../../../utils/apiClient';
 import { useAuth } from '../../../context/AuthContext';
 
 import './StudentAttendance.css';
@@ -20,19 +20,12 @@ const StudentAttendance = () => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                // Fetch enrollments for current semester (all statuses)
-                // Backend defaults to 'active', so we explicitly request 'all' to include completed/failed
-                const res = await fetch(`${API_BASE}/enrollments.php?status=all&current_sem_only=true`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
+                const data = await apiClient.get('/enrollments.php', { status: 'all', current_sem_only: true });
 
                 if (data.success) {
-                    // Deduplicate subjects - keep only most recent enrollment per subject_id
                     const subjectMap = new Map();
                     data.data.forEach(enrollment => {
                         const subId = enrollment.subject_id;
-                        // Keep the enrollment with higher enrollment_id (more recent)
                         if (!subjectMap.has(subId) || enrollment.enrollment_id > subjectMap.get(subId).enrollment_id) {
                             subjectMap.set(subId, enrollment);
                         }
@@ -41,13 +34,12 @@ const StudentAttendance = () => {
                     const uniqueSubjects = Array.from(subjectMap.values());
                     setSubjects(uniqueSubjects);
 
-                    // 2. Fetch attendance for each unique subject
                     uniqueSubjects.forEach(sub => {
                         fetchSubjectAttendance(sub.subject_id);
                     });
                 }
-            } catch (err) {
-                console.error("Error fetching data", err);
+            } catch {
+                // Enrollment fetch failed
             } finally {
                 setLoading(false);
             }
@@ -60,18 +52,15 @@ const StudentAttendance = () => {
 
     const fetchSubjectAttendance = async (subjectId) => {
         try {
-            const res = await fetch(`${API_BASE}/attendance.php?action=student_view&subject_id=${subjectId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
+            const data = await apiClient.get('/attendance.php', { action: 'student_view', subject_id: subjectId });
             if (data.success) {
                 setAttendanceData(prev => ({
                     ...prev,
                     [subjectId]: data.data
                 }));
             }
-        } catch (err) {
-            console.error(`Error fetching attendance for ${subjectId}`, err);
+        } catch {
+            // Attendance fetch failed for subject
         }
     };
 

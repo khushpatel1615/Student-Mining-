@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Layers, TrendingUp, AlertCircle, Award } from 'lucide-react';
 
 import { useAuth } from '../../../context/AuthContext';
-import { API_BASE } from '../../../config';
+import apiClient from '../../../utils/apiClient';
 
 const Difficulty = () => {
     const { token } = useAuth();
@@ -17,15 +17,12 @@ const Difficulty = () => {
 
     const fetchDifficulty = async () => {
         try {
-            const response = await fetch(`${API_BASE}/grades.php`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
+            const data = await apiClient.get('/grades.php');
             if (data.success) {
                 setGrades(data.data || []);
             }
-        } catch (err) {
-            console.error(err);
+        } catch {
+            // Grade fetch failed — non-critical
         } finally {
             setLoading(false);
         }

@@ -27,7 +27,7 @@ try {
     }
 
     // Generate 6-digit OTP
-    $otp = sprintf("%06d", mt_rand(100000, 999999));
+    $otp = sprintf("%06d", random_int(100000, 999999));
     $expires_at = date('Y-m-d H:i:s', strtotime('+15 minutes'));
 
     // Store OTP
