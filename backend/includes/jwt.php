@@ -143,20 +143,23 @@ function getTokenFromRequest($allowQueryString = false)
  * @param bool $allowQueryString Allow token from query string (default: false)
  * @return array User payload
  */
-function requireAuth($allowQueryString = false)
-{
-    $token = getTokenFromRequest($allowQueryString);
-    if (!$token) {
-        sendError('Unauthorized: No token provided', 401);
-    }
+if (!function_exists('requireAuth')) {
+    function requireAuth($allowQueryString = false)
+    {
+        $token = getTokenFromRequest($allowQueryString);
+        if (!$token) {
+            sendError('Unauthorized: No token provided', 401);
+        }
 
-    $result = verifyToken($token);
-    if (!$result['valid']) {
-        sendError('Unauthorized: ' . $result['error'], 401);
-    }
+        $result = verifyToken($token);
+        if (!$result['valid']) {
+            sendError('Unauthorized: ' . $result['error'], 401);
+        }
 
-    return $result['payload'];
+        return $result['payload'];
+    }
 }
+
 
 /**
  * Middleware: Require specific role(s)
@@ -164,34 +167,40 @@ function requireAuth($allowQueryString = false)
  * @param bool $allowQueryString Allow token from query string (default: false)
  * @return array User payload
  */
-function requireRole($requiredRoles, $allowQueryString = false)
-{
-    $payload = requireAuth($allowQueryString);
-    $allowedRoles = is_array($requiredRoles) ? $requiredRoles : [$requiredRoles];
+if (!function_exists('requireRole')) {
+    function requireRole($requiredRoles, $allowQueryString = false)
+    {
+        $payload = requireAuth($allowQueryString);
+        $allowedRoles = is_array($requiredRoles) ? $requiredRoles : [$requiredRoles];
 
-    if (!in_array($payload['role'], $allowedRoles)) {
-        sendError('Forbidden: Insufficient permissions', 403);
+        if (!in_array($payload['role'], $allowedRoles)) {
+            sendError('Forbidden: Insufficient permissions', 403);
+        }
+
+        return $payload;
     }
-
-    return $payload;
 }
+
 
 /**
  * Get authenticated user payload (non-blocking, returns null if not authenticated)
  * @param bool $allowQueryString Allow token from query string (default: false)
  * @return array|null User payload or null
  */
-function getAuthUser($allowQueryString = false)
-{
-    $token = getTokenFromRequest($allowQueryString);
-    if (!$token) {
-        return null;
-    }
+if (!function_exists('getAuthUser')) {
+    function getAuthUser($allowQueryString = false)
+    {
+        $token = getTokenFromRequest($allowQueryString);
+        if (!$token) {
+            return null;
+        }
 
-    $result = verifyToken($token);
-    if (!$result['valid']) {
-        return null;
-    }
+        $result = verifyToken($token);
+        if (!$result['valid']) {
+            return null;
+        }
 
-    return $result['payload'];
+        return $result['payload'];
+    }
 }
+

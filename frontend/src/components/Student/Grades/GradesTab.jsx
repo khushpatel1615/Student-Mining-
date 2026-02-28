@@ -177,17 +177,37 @@ const GradesTab = ({ selectedSemester }) => {
     const semesterStats = useMemo(() => {
         if (currentSubjects.length === 0) return { avgGrade: 0, totalCredits: 0, gpa: 0 };
 
-        const totalGrade = currentSubjects.reduce((sum, s) => {
-            const grade = parseFloat(s.final_percentage || s.overall_grade || 0);
-            return sum + grade;
-        }, 0);
+        // Standardized GPA 4.0 mapping (must match backend gpa_helpers.php)
+        const pctToGPA4 = (pct) => {
+            if (pct >= 90) return 4.0;
+            if (pct >= 80) return 3.7;
+            if (pct >= 70) return 3.3;
+            if (pct >= 60) return 3.0;
+            if (pct >= 50) return 2.0;
+            if (pct >= 40) return 1.0;
+            return 0.0;
+        };
 
-        const totalCredits = currentSubjects.reduce((sum, s) => sum + (parseInt(s.credits) || 0), 0);
+        let totalGpaPoints = 0;
+        let totalCredits = 0;
+        let totalPercentage = 0;
+        let gradeCount = 0;
+
+        currentSubjects.forEach(s => {
+            const grade = parseFloat(s.final_percentage || s.overall_grade || 0);
+            const credits = parseInt(s.credits) || 3;
+            totalPercentage += grade;
+            gradeCount++;
+            if (grade > 0) {
+                totalGpaPoints += pctToGPA4(grade) * credits;
+                totalCredits += credits;
+            }
+        });
 
         return {
-            avgGrade: (totalGrade / currentSubjects.length).toFixed(1),
+            avgGrade: gradeCount > 0 ? (totalPercentage / gradeCount).toFixed(1) : '0.0',
             totalCredits,
-            gpa: ((totalGrade / currentSubjects.length) / 25).toFixed(2) // Assuming 100% = 4.0 GPA
+            gpa: totalCredits > 0 ? (totalGpaPoints / totalCredits).toFixed(2) : '0.00'
         };
     }, [currentSubjects]);
 

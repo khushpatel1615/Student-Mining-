@@ -230,12 +230,40 @@ const StudentDashboard = () => {
 
     // Calculate semester-specific GPA and attendance
     const semesterStats = selectedSemester ? (() => {
-        const avgPercent = filteredCourses.length > 0
-            ? (filteredCourses.reduce((sum, c) => sum + (parseFloat(c.overall_score) || 0), 0) / filteredCourses.length)
-            : 0;
+        // Standardized GPA mappings (must match backend gpa_helpers.php)
+        const pctToGPA10 = (pct) => {
+            if (pct >= 90) return 10.0;
+            if (pct >= 80) return 9.0;
+            if (pct >= 70) return 8.0;
+            if (pct >= 60) return 7.0;
+            if (pct >= 50) return 6.0;
+            if (pct >= 40) return 5.0;
+            return 0.0;
+        };
+        const pctToGPA4 = (pct) => {
+            if (pct >= 90) return 4.0;
+            if (pct >= 80) return 3.7;
+            if (pct >= 70) return 3.3;
+            if (pct >= 60) return 3.0;
+            if (pct >= 50) return 2.0;
+            if (pct >= 40) return 1.0;
+            return 0.0;
+        };
+
+        let gpa10Points = 0, gpa4Points = 0, totalCredits = 0;
+        filteredCourses.forEach(c => {
+            const score = parseFloat(c.overall_score) || 0;
+            const credits = parseInt(c.credits) || 3;
+            if (score > 0) {
+                gpa10Points += pctToGPA10(score) * credits;
+                gpa4Points += pctToGPA4(score) * credits;
+                totalCredits += credits;
+            }
+        });
+
         return {
-            gpa10: Number((avgPercent / 10).toFixed(2)),
-            gpa4: Number((avgPercent / 25).toFixed(2)),
+            gpa10: totalCredits > 0 ? Number((gpa10Points / totalCredits).toFixed(2)) : 0,
+            gpa4: totalCredits > 0 ? Number((gpa4Points / totalCredits).toFixed(2)) : 0,
             attendance: filteredCourses.length > 0
                 ? Math.round(filteredCourses.reduce((sum, c) => sum + (c.attendance?.percentage || 0), 0) / filteredCourses.length)
                 : 0,

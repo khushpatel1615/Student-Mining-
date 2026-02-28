@@ -290,7 +290,7 @@ function SubjectDetailPage() {
                                             ))}
                                             {announcement.attachment_url && (
                                                 <a
-                                                    href={`http://localhost/StudentDataMining/${announcement.attachment_url}`}
+                                                    href={`${import.meta.env.VITE_APP_URL || 'http://localhost/StudentDataMining'}/${announcement.attachment_url}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="attachment-link"

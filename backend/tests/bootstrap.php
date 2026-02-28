@@ -59,10 +59,38 @@ if (!function_exists('createNotification')) {
 if (!class_exists('Cache')) {
     class Cache
     {
+        public static function init(): void
+        {
+        }
         public static function forget(string $key): void
         {
         }
         public static function forgetPattern(string $pattern): void
+        {
+        }
+    }
+}
+
+// Stub Logger class
+if (!class_exists('Logger')) {
+    class Logger
+    {
+        public static function init(string $env = 'production'): void
+        {
+        }
+        public static function log($level, $message, $context = []): void
+        {
+        }
+        public static function info($msg, $ctx = []): void
+        {
+        }
+        public static function error($msg, $ctx = []): void
+        {
+        }
+        public static function fatal($msg, $ctx = []): void
+        {
+        }
+        public static function logRequest($start, $status, $end): void
         {
         }
     }

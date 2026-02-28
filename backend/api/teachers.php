@@ -3,6 +3,9 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
 
+// Set CORS headers
+handleCORS();
+
 // Ensure method
 requireMethod(['GET']);
 
@@ -40,10 +43,10 @@ try {
 
             $stmt = $pdo->prepare("
                 SELECT u.id, u.student_id, u.full_name, u.email,
-                       se.enrollment_date, se.status
+                       se.id as enrollment_id, se.enrolled_at, se.status
                 FROM student_enrollments se
                 JOIN users u ON se.user_id = u.id
-                WHERE se.subject_id = ?
+                WHERE se.subject_id = ? AND se.status = 'active'
                 ORDER BY u.full_name
             ");
             $stmt->execute([$subject_id]);

@@ -101,39 +101,41 @@ require_once __DIR__ . '/../includes/api_helpers.php';
 
 
 // PDO Database Connection
-function getDBConnection()
-{
-    static $pdo = null;
+if (!function_exists('getDBConnection')) {
+    function getDBConnection()
+    {
+        static $pdo = null;
 
-    if ($pdo === null) {
-        $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
-        $options = [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false,
-            PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
-        ];
+        if ($pdo === null) {
+            $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
+            $options = [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false,
+                PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
+            ];
 
-        try {
-            $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
-        } catch (PDOException $e) {
-            // Log full error for admin
-            Logger::fatal('Database Connection Failed', [
-                'error' => $e->getMessage(),
-                'host' => DB_HOST,
-                'db' => DB_NAME,
-            ]);
+            try {
+                $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+            } catch (PDOException $e) {
+                // Log full error for admin
+                Logger::fatal('Database Connection Failed', [
+                    'error' => $e->getMessage(),
+                    'host' => DB_HOST,
+                    'db' => DB_NAME,
+                ]);
 
-            // Return safe generic error to user
-            if (function_exists('sendError')) {
-                sendError('Database Connection Failed', 500);
-            } else {
-                http_response_code(500);
-                echo json_encode(['success' => false, 'error' => 'Database Connection Failed']);
-                exit;
+                // Return safe generic error to user
+                if (function_exists('sendError')) {
+                    sendError('Database Connection Failed', 500);
+                } else {
+                    http_response_code(500);
+                    echo json_encode(['success' => false, 'error' => 'Database Connection Failed']);
+                    exit;
+                }
             }
         }
-    }
 
-    return $pdo;
+        return $pdo;
+    }
 }

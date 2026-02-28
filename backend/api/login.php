@@ -13,6 +13,9 @@ requireMethod('POST');
 
 // Brute-force protection: limit login attempts per IP
 $clientIp = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+
+// Skip rate limiting for localhost during development
+$isLocal = ($clientIp === '127.0.0.1' || $clientIp === '::1' || $clientIp === 'localhost');
 $rateLimitDir = __DIR__ . '/../data/rate_limits';
 if (!is_dir($rateLimitDir)) {
     @mkdir($rateLimitDir, 0755, true);
@@ -20,7 +23,7 @@ if (!is_dir($rateLimitDir)) {
 $rateLimitFile = $rateLimitDir . '/' . md5('login_' . $clientIp) . '.json';
 $maxAttempts = 5;
 $windowSeconds = 900; // 15 minutes
-if (file_exists($rateLimitFile)) {
+if (!$isLocal && file_exists($rateLimitFile)) {
     $rateData = json_decode(file_get_contents($rateLimitFile), true);
     if ($rateData && isset($rateData['count']) && isset($rateData['expires'])) {
         if (time() < $rateData['expires']) {

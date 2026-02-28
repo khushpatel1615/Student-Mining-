@@ -3,6 +3,7 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/cache.php';
 require_once __DIR__ . '/../includes/jwt.php';
 require_once __DIR__ . '/../includes/api_helpers.php';
+require_once __DIR__ . '/../includes/gpa_helpers.php';
 
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
@@ -118,11 +119,12 @@ try {
             JOIN (
                 SELECT id as enrollment_id,
                 CASE 
-                    WHEN final_grade IN ('A+','A') THEN 4.0
-                    WHEN final_grade = 'B+' THEN 3.5
-                    WHEN final_grade = 'B' THEN 3.0
-                    WHEN final_grade = 'C' THEN 2.0
-                    WHEN final_grade = 'D' THEN 1.0
+                    WHEN final_percentage >= 90 THEN 4.0
+                    WHEN final_percentage >= 80 THEN 3.7
+                    WHEN final_percentage >= 70 THEN 3.3
+                    WHEN final_percentage >= 60 THEN 3.0
+                    WHEN final_percentage >= 50 THEN 2.0
+                    WHEN final_percentage >= 40 THEN 1.0
                     ELSE 0.0 
                 END as gpa_points
                 FROM student_enrollments

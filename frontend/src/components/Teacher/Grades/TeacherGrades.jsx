@@ -74,21 +74,46 @@ function TeacherGrades() {
     const fetchStudentsAndGrades = async () => {
         try {
             setLoading(true);
-            const [studentsData, componentsData, gradesData] = await Promise.all([
+            const [studentsData, gradesData] = await Promise.all([
                 apiClient.get('/teachers.php', { action: 'subject_students', subject_id: selectedSubject.id }),
-                apiClient.get('/grade_components.php', { subject_id: selectedSubject.id }),
                 apiClient.get('/grades.php', { subject_id: selectedSubject.id }),
             ]);
 
             if (studentsData.success) setStudents(studentsData.data);
-            if (componentsData.success) setGradeComponents(componentsData.data);
-            if (gradesData.success) {
-                const gradesMap = {};
-                gradesData.data.forEach(g => {
-                    const key = `${g.student_id}_${g.component_id}`;
-                    gradesMap[key] = { id: g.id, marks: g.marks_obtained, remarks: g.remarks || '' };
-                });
-                setGrades(gradesMap);
+
+            if (gradesData.success && gradesData.data) {
+                const responseData = gradesData.data;
+
+                // grades.php returns { criteria: [...], enrollments: [...], pagination }
+                // Extract grade components from criteria
+                if (responseData.criteria) {
+                    setGradeComponents(responseData.criteria.map(c => ({
+                        id: c.id,
+                        name: c.component_name,
+                        max_marks: parseInt(c.max_marks),
+                        weightage: parseFloat(c.weight_percentage),
+                    })));
+                }
+
+                // Build grades map from enrollments' nested grades
+                if (responseData.enrollments) {
+                    const gradesMap = {};
+                    responseData.enrollments.forEach(enrollment => {
+                        const studentId = enrollment.user_id;
+                        if (enrollment.grades) {
+                            enrollment.grades.forEach(g => {
+                                const key = `${studentId}_${g.criteria_id}`;
+                                gradesMap[key] = {
+                                    id: g.grade_id || g.id,
+                                    marks: g.marks_obtained,
+                                    remarks: g.remarks || '',
+                                    enrollment_id: enrollment.id,
+                                };
+                            });
+                        }
+                    });
+                    setGrades(gradesMap);
+                }
             }
         } catch {
             // Grade data fetch failed
@@ -96,6 +121,7 @@ function TeacherGrades() {
             setLoading(false);
         }
     };
+
 
     const handleGradeChange = (studentId, componentId, field, value) => {
         const key = `${studentId}_${componentId}`;
@@ -108,16 +134,30 @@ function TeacherGrades() {
         if (!gradeData || gradeData.marks === undefined || gradeData.marks === '') return;
 
         try {
-            const method = gradeData.id ? 'put' : 'post';
-            const body = {
-                student_id: studentId,
-                subject_id: selectedSubject.id,
-                component_id: componentId,
+            // Find enrollment_id for this student+subject combination
+            let enrollmentId = gradeData.enrollment_id;
+            if (!enrollmentId) {
+                // Look it up from students list (they come from subject_students endpoint)
+                const student = students.find(s => s.id === studentId || s.user_id === studentId);
+                if (student) {
+                    enrollmentId = student.enrollment_id;
+                }
+            }
+
+            const gradeEntry = {
+                enrollment_id: enrollmentId,
+                criteria_id: componentId,
                 marks_obtained: parseFloat(gradeData.marks),
                 remarks: gradeData.remarks || '',
-                ...(gradeData.id ? { id: gradeData.id } : {}),
             };
-            const data = await apiClient[method]('/grades.php', body);
+            if (gradeData.id) {
+                gradeEntry.grade_id = gradeData.id;
+            }
+
+            const data = await apiClient.put('/grades.php', {
+                action: 'update_enrollment',
+                grades: [gradeEntry]
+            });
             if (data.success && !gradeData.id && data.id) {
                 setGrades(prev => ({ ...prev, [key]: { ...prev[key], id: data.id } }));
             }
@@ -125,6 +165,7 @@ function TeacherGrades() {
             // Save failed
         }
     };
+
 
     const saveAllGrades = async () => {
         setSaving(true);

@@ -28,7 +28,7 @@ const DashboardKPIs = ({ systemStats, onKPIClick }) => {
                     <span className="kpi-value">{systemStats.totalStudents}</span>
                     <div className="kpi-trend neutral">
                         <Users size={14} />
-                        <span>{systemStats.totalTeachers} teachers</span>
+                        <span>{systemStats.totalStudents} active students</span>
                     </div>
                 </div>
             </div>

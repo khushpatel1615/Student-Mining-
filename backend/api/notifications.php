@@ -25,8 +25,6 @@ try {
         case 'DELETE':
             handleDelete($pdo);
             break;
-        case 'OPTIONS':
-            exit(0);
         default:
             sendError('Method not allowed', 405);
     }

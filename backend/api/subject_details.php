@@ -101,7 +101,7 @@ function handleGet($pdo)
     ");
     $gradesStmt->execute([$enrollment['id'], $subjectId]);
     $grades = $gradesStmt->fetchAll(PDO::FETCH_ASSOC);
-// Calculate totals
+    // Calculate totals
     $totalObtained = 0;
     $totalMax = 0;
     $totalWeightAchieved = 0;
@@ -111,10 +111,16 @@ function handleGet($pdo)
         $totalMax += $grade['max_marks'];
         if ($grade['marks_obtained'] !== null) {
             $totalObtained += $grade['marks_obtained'];
-        // Calculate weight achieved for this component
-            $weightAchieved = ($grade['marks_obtained'] / $grade['max_marks']) * $grade['weight_percentage'];
-            $grade['weight_achieved'] = round($weightAchieved, 2);
-            $grade['percentage'] = round(($grade['marks_obtained'] / $grade['max_marks']) * 100, 2);
+            // Calculate weight achieved for this component (guard against max_marks = 0)
+            if ($grade['max_marks'] > 0) {
+                $weightAchieved = ($grade['marks_obtained'] / $grade['max_marks']) * $grade['weight_percentage'];
+                $grade['weight_achieved'] = round($weightAchieved, 2);
+                $grade['percentage'] = round(($grade['marks_obtained'] / $grade['max_marks']) * 100, 2);
+            } else {
+                $weightAchieved = 0;
+                $grade['weight_achieved'] = 0;
+                $grade['percentage'] = 0;
+            }
             $totalWeightAchieved += $weightAchieved;
         } else {
             $grade['weight_achieved'] = null;
@@ -122,9 +128,16 @@ function handleGet($pdo)
         }
     }
 
-    $overallPercentage = $totalMax > 0 ? round(($totalObtained / $totalMax) * 100, 2) : null;
+    // Use weighted percentage (normalized by graded weight) for consistency with grades.php
+    $gradedWeight = 0;
+    foreach ($grades as $g) {
+        if ($g['marks_obtained'] !== null) {
+            $gradedWeight += $g['weight_percentage'];
+        }
+    }
+    $overallPercentage = $gradedWeight > 0 ? round(($totalWeightAchieved / $gradedWeight) * 100, 2) : null;
     $letterGrade = calculateLetterGrade($overallPercentage);
-// Get attendance stats
+    // Get attendance stats
     $attendanceStmt = $pdo->prepare("
         SELECT 
             COUNT(CASE WHEN status = 'present' THEN 1 END) as present,

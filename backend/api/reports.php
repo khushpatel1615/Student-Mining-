@@ -10,6 +10,7 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/cors.php';
 require_once __DIR__ . '/../includes/jwt.php';
 require_once __DIR__ . '/../includes/api_helpers.php';
+require_once __DIR__ . '/../includes/gpa_helpers.php';
 
 // Enable CORS
 handleCORS();
@@ -57,7 +58,7 @@ function handleGet($pdo)
 
     $action = $_GET['action'] ?? 'report_card';
     $studentId = $_GET['student_id'] ?? null;
-// If no student_id provided and user is a student, use their own ID
+    // If no student_id provided and user is a student, use their own ID
     if (!$studentId && $user['role'] === 'student') {
         $studentId = $user['user_id'];
     }
@@ -110,7 +111,7 @@ function generateReportCard($pdo, $studentId)
 
     // Get current semester to filter report card
     $currentSemester = $student['current_semester'] ?? 1;
-// Get enrollments with final grades (from student_enrollments table) for CURRENT SEMESTER ONLY
+    // Get enrollments with final grades (from student_enrollments table) for CURRENT SEMESTER ONLY
     $stmt = $pdo->prepare("
         SELECT 
             s.code as subject_code,
@@ -123,9 +124,10 @@ function generateReportCard($pdo, $studentId)
             CASE 
                 WHEN se.final_percentage >= 90 THEN 4.0
                 WHEN se.final_percentage >= 80 THEN 3.7
-                WHEN se.final_percentage >= 70 THEN 3.0
-                WHEN se.final_percentage >= 60 THEN 2.3
-                WHEN se.final_percentage >= 50 THEN 1.0
+                WHEN se.final_percentage >= 70 THEN 3.3
+                WHEN se.final_percentage >= 60 THEN 3.0
+                WHEN se.final_percentage >= 50 THEN 2.0
+                WHEN se.final_percentage >= 40 THEN 1.0
                 ELSE 0.0
             END as grade_points
         FROM student_enrollments se
@@ -140,7 +142,7 @@ function generateReportCard($pdo, $studentId)
             $grade['score'] = clampPercentage($grade['score']);
         }
     }
-// Calculate GPA
+    // Calculate GPA
     $totalPoints = 0;
     $totalCredits = 0;
     foreach ($grades as $grade) {
@@ -151,7 +153,7 @@ function generateReportCard($pdo, $studentId)
         }
     }
     $gpa = $totalCredits > 0 ? round($totalPoints / $totalCredits, 2) : 0;
-// Get attendance summary
+    // Get attendance summary
     $stmt = $pdo->prepare("
         SELECT 
             COUNT(*) as total,
@@ -218,9 +220,10 @@ function generateTranscript($pdo, $studentId)
             CASE 
                 WHEN se.final_percentage >= 90 THEN 4.0
                 WHEN se.final_percentage >= 80 THEN 3.7
-                WHEN se.final_percentage >= 70 THEN 3.0
-                WHEN se.final_percentage >= 60 THEN 2.3
-                WHEN se.final_percentage >= 50 THEN 1.0
+                WHEN se.final_percentage >= 70 THEN 3.3
+                WHEN se.final_percentage >= 60 THEN 3.0
+                WHEN se.final_percentage >= 50 THEN 2.0
+                WHEN se.final_percentage >= 40 THEN 1.0
                 ELSE 0.0
             END as grade_points
         FROM student_enrollments se
@@ -235,7 +238,7 @@ function generateTranscript($pdo, $studentId)
             $grade['score'] = clampPercentage($grade['score']);
         }
     }
-// Group by semester
+    // Group by semester
     $semesters = [];
     foreach ($allGrades as $grade) {
         $sem = $grade['semester'] ?? 1;
@@ -313,7 +316,7 @@ function generateAttendanceReport($pdo, $studentId)
     ");
     $stmt->execute([$studentId]);
     $student = $stmt->fetch(PDO::FETCH_ASSOC);
-// Get attendance by subject
+    // Get attendance by subject
     $stmt = $pdo->prepare("
         SELECT 
             s.code as subject_code,
@@ -331,7 +334,7 @@ function generateAttendanceReport($pdo, $studentId)
     ");
     $stmt->execute([$studentId]);
     $subjectAttendance = $stmt->fetchAll(PDO::FETCH_ASSOC);
-// Calculate percentages
+    // Calculate percentages
     foreach ($subjectAttendance as &$subject) {
         $subject['percentage'] = $subject['total_classes'] > 0
             ? round(($subject['present'] / $subject['total_classes']) * 100, 1)
@@ -354,7 +357,7 @@ function generateAttendanceReport($pdo, $studentId)
     ");
     $stmt->execute([$studentId]);
     $monthlyData = $stmt->fetchAll(PDO::FETCH_ASSOC);
-// Calculate overall
+    // Calculate overall
     $totalClasses = array_sum(array_column($subjectAttendance, 'total_classes'));
     $totalPresent = array_sum(array_column($subjectAttendance, 'present'));
     $overallPercentage = $totalClasses > 0 ? round(($totalPresent / $totalClasses) * 100, 1) : 100;
@@ -400,7 +403,7 @@ function generatePerformanceReport($pdo, $studentId)
     ");
     $stmt->execute([$studentId]);
     $grades = $stmt->fetchAll(PDO::FETCH_ASSOC);
-// Group by subject
+    // Group by subject
     $subjects = [];
     foreach ($grades as $grade) {
         $name = $grade['subject_name'];

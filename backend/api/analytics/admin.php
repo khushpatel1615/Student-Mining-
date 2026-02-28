@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../includes/jwt.php';
+require_once __DIR__ . '/../../includes/gpa_helpers.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 $pdo = getDBConnection();
@@ -39,20 +40,16 @@ try {
     // Given previous context, it likely has `final_percentage` or `final_grade`.
     // I'll use a safe fallback query if view columns are unknown, but generally views abstract joins.
 
-    // System GPA
+    // System GPA — use proper CASE mapping instead of percentage/25 approximation
     $avgGpa = 0;
+    $gpaCaseExpr = gpa4SqlCase('final_percentage');
     try {
-        // Attempt to select from view. If fails, fallback to raw calculation.
-        // Assuming view has `final_percentage`
-        $stmt = $pdo->query("SELECT AVG(final_percentage) FROM vw_student_performance");
-        $avgPct = $stmt->fetchColumn();
-        if ($avgPct) {
-            $avgGpa = ($avgPct / 25); // Approx
-        } else {
-            // Fallback to student_enrollments final_percentage
-            $stmt = $pdo->query("SELECT AVG(final_percentage) FROM student_enrollments WHERE final_percentage IS NOT NULL");
-            $avgRaw = $stmt->fetchColumn();
-            $avgGpa = $avgRaw ? ($avgRaw / 25) : 0;
+        $stmt = $pdo->query("SELECT AVG({$gpaCaseExpr}) FROM vw_student_performance WHERE final_percentage IS NOT NULL");
+        $avgGpa = $stmt->fetchColumn();
+        if (!$avgGpa) {
+            // Fallback to student_enrollments
+            $stmt = $pdo->query("SELECT AVG({$gpaCaseExpr}) FROM student_enrollments WHERE final_percentage IS NOT NULL");
+            $avgGpa = $stmt->fetchColumn() ?: 0;
         }
     } catch (Exception $e) {
         $avgGpa = 0;
@@ -136,12 +133,16 @@ try {
     try {
         $sql = "
             SELECT 
-                SUM(CASE WHEN final_percentage >= 80 THEN 1 ELSE 0 END) as excellent,
-                SUM(CASE WHEN final_percentage BETWEEN 70 AND 79.99 THEN 1 ELSE 0 END) as good,
-                SUM(CASE WHEN final_percentage BETWEEN 60 AND 69.99 THEN 1 ELSE 0 END) as average,
-                SUM(CASE WHEN final_percentage BETWEEN 50 AND 59.99 THEN 1 ELSE 0 END) as below_average,
-                SUM(CASE WHEN final_percentage < 50 THEN 1 ELSE 0 END) as at_risk
-            FROM vw_student_performance
+                SUM(CASE WHEN avg_perc >= 80 THEN 1 ELSE 0 END) as excellent,
+                SUM(CASE WHEN avg_perc BETWEEN 70 AND 79.99 THEN 1 ELSE 0 END) as good,
+                SUM(CASE WHEN avg_perc BETWEEN 60 AND 69.99 THEN 1 ELSE 0 END) as average,
+                SUM(CASE WHEN avg_perc BETWEEN 50 AND 59.99 THEN 1 ELSE 0 END) as below_average,
+                SUM(CASE WHEN avg_perc < 50 THEN 1 ELSE 0 END) as at_risk
+            FROM (
+                SELECT AVG(final_percentage) as avg_perc
+                FROM vw_student_performance
+                GROUP BY user_id
+            ) as student_averages
          ";
         $stmt = $pdo->query($sql);
         $distRes = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -158,9 +159,11 @@ try {
     // 6. Semester Trends (Aggregate)
     $semesterTrends = [];
     try {
+        $gpaCaseExpr2 = gpa4SqlCase('final_percentage');
         $sql = "
-            SELECT semester, AVG(final_percentage)/25 as average_gpa
+            SELECT semester, AVG({$gpaCaseExpr2}) as average_gpa
             FROM vw_student_performance
+            WHERE final_percentage IS NOT NULL
             GROUP BY semester
             ORDER BY semester ASC
         ";
@@ -181,11 +184,11 @@ try {
                 p.name,
                 COUNT(DISTINCT v.user_id) as student_count,
                 AVG(v.final_percentage) as avg_score,
-                AVG(v.final_percentage) / 25 as average_gpa,
+                AVG(" . gpa4SqlCase('v.final_percentage') . ") as average_gpa,
                 SUM(CASE WHEN v.final_percentage >= 40 THEN 1 ELSE 0 END) * 100.0 / COUNT(*) as pass_rate
             FROM programs p
-            JOIN subjects s ON p.id = s.program_id
-            JOIN vw_student_performance v ON s.id = v.subject_id
+            JOIN users u ON p.id = u.program_id
+            JOIN vw_student_performance v ON u.id = v.user_id
             GROUP BY p.id
             LIMIT 5
          ";

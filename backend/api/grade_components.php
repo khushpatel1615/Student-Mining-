@@ -2,7 +2,8 @@
 
 /**
  * Grade Components API
- * Handles CRUD operations for grade/evaluation components
+ * Handles CRUD operations for evaluation criteria (grade components)
+ * Maps the evaluation_criteria table to the frontend's expected format
  */
 
 require_once __DIR__ . '/../config/database.php';
@@ -23,10 +24,14 @@ try {
             }
 
             $stmt = $pdo->prepare("
-                SELECT id, name, weightage, max_marks, component_type
-                FROM grade_components
+                SELECT id, 
+                       component_name AS name, 
+                       weight_percentage AS weightage, 
+                       max_marks, 
+                       description AS component_type
+                FROM evaluation_criteria
                 WHERE subject_id = ?
-                ORDER BY component_type, name
+                ORDER BY component_name
             ");
             $stmt->execute([$subject_id]);
             $components = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -34,8 +39,8 @@ try {
             break;
 
         case 'POST':
-            // Create grade component (Admin only)
-            if ($user['role'] !== 'admin') {
+            // Create grade component (Admin/Teacher)
+            if (!in_array($user['role'], ['admin', 'teacher'])) {
                 sendError('Unauthorized', 403);
             }
 
@@ -45,22 +50,22 @@ try {
             }
 
             $stmt = $pdo->prepare("
-                INSERT INTO grade_components (subject_id, name, weightage, max_marks, component_type)
+                INSERT INTO evaluation_criteria (subject_id, component_name, weight_percentage, max_marks, description)
                 VALUES (?, ?, ?, ?, ?)
             ");
             $stmt->execute([
                 $data['subject_id'],
                 $data['name'],
-                $data['weightage'] ?? 0,
+                $data['weightage'] ?? $data['weight_percentage'] ?? 0,
                 $data['max_marks'] ?? 100,
-                $data['component_type'] ?? 'assessment'
+                $data['component_type'] ?? $data['description'] ?? ''
             ]);
             sendResponse(['success' => true, 'id' => $pdo->lastInsertId()]);
             break;
 
         case 'PUT':
-            // Update grade component (Admin only)
-            if ($user['role'] !== 'admin') {
+            // Update grade component (Admin/Teacher)
+            if (!in_array($user['role'], ['admin', 'teacher'])) {
                 sendError('Unauthorized', 403);
             }
 
@@ -70,32 +75,33 @@ try {
             }
 
             $stmt = $pdo->prepare("
-                UPDATE grade_components
-                SET name = ?, weightage = ?, max_marks = ?, component_type = ?
+                UPDATE evaluation_criteria
+                SET component_name = ?, weight_percentage = ?, max_marks = ?, description = ?
                 WHERE id = ?
             ");
             $stmt->execute([
                 $data['name'],
-                $data['weightage'],
+                $data['weightage'] ?? $data['weight_percentage'] ?? 0,
                 $data['max_marks'],
-                $data['component_type'],
+                $data['component_type'] ?? $data['description'] ?? '',
                 $data['id']
             ]);
             sendResponse(['success' => true]);
             break;
 
         case 'DELETE':
-            // Delete grade component (Admin only)
-            if ($user['role'] !== 'admin') {
+            // Delete grade component (Admin/Teacher)
+            if (!in_array($user['role'], ['admin', 'teacher'])) {
                 sendError('Unauthorized', 403);
             }
 
-            $id = $_GET['id'] ?? null;
+            $data = getJsonInput();
+            $id = $data['id'] ?? $_GET['id'] ?? null;
             if (!$id) {
                 sendError('Component ID required', 400);
             }
 
-            $stmt = $pdo->prepare("DELETE FROM grade_components WHERE id = ?");
+            $stmt = $pdo->prepare("DELETE FROM evaluation_criteria WHERE id = ?");
             $stmt->execute([$id]);
             sendResponse(['success' => true]);
             break;

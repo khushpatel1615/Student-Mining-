@@ -9,6 +9,7 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/cache.php';
 require_once __DIR__ . '/../includes/jwt.php';
 require_once __DIR__ . '/../includes/api_helpers.php';
+require_once __DIR__ . '/../includes/gpa_helpers.php';
 
 // Enable error reporting for debugging
 error_reporting(E_ALL);
@@ -80,14 +81,15 @@ function handleGet($pdo, $dataDir, $userId)
         sendResponse([
             'success' => true,
             'data' => [
-            'enrolled' => false,
-            'student' => [
-                'name' => $student['full_name'],
-                'email' => $student['email'],
-                'student_id' => $student['student_id'],
-                'enrollment_date' => $student['enrollment_date']
+                'enrolled' => false,
+                'student' => [
+                    'name' => $student['full_name'],
+                    'email' => $student['email'],
+                    'student_id' => $student['student_id'],
+                    'enrollment_date' => $student['enrollment_date']
+                ]
             ]
-        ]]);
+        ]);
         return;
     }
 
@@ -114,6 +116,7 @@ function handleGet($pdo, $dataDir, $userId)
     $totalCredits = 0;
     $earnedCredits = 0;
     $gradePointsSum = 0;
+    $gradePoints4Sum = 0;
 
     foreach ($subjects as $subject) {
         // Get Enrollment
@@ -172,6 +175,7 @@ function handleGet($pdo, $dataDir, $userId)
 
                 // Track for GPA (weighted by credits)
                 $gradePointsSum += ($gradeData['points'] * $subject['credits']);
+                $gradePoints4Sum += (percentageToGPA4($overallPercentage) * $subject['credits']);
                 $earnedCredits += $subject['credits'];
             }
 
@@ -189,7 +193,7 @@ function handleGet($pdo, $dataDir, $userId)
     // Final Stats
     $overallAttendancePercent = $totalClassesOverall > 0 ? round(($totalPresentOverall / $totalClassesOverall) * 100) : 0;
     $gpa10 = $earnedCredits > 0 ? round($gradePointsSum / $earnedCredits, 2) : 0;
-    $gpa4 = round($gpa10 / 2.5, 2); // Quick conversion from 10.0 to 4.0
+    $gpa4 = $earnedCredits > 0 ? round($gradePoints4Sum / $earnedCredits, 2) : 0;
 
     $response = [
         'enrolled' => true,

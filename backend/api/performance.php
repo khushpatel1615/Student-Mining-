@@ -8,6 +8,7 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/jwt.php';
 require_once __DIR__ . '/../includes/api_helpers.php';
+require_once __DIR__ . '/../includes/gpa_helpers.php';
 
 handleCORS();
 
@@ -65,6 +66,7 @@ try {
     $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $gradePointsWeighted = 0.0;
+    $gradePoints4Weighted = 0.0;
     $gradeCredits = 0;
     $scoreSum = 0.0;
     $scoreCount = 0;
@@ -88,6 +90,7 @@ try {
         if ($percentage !== null) {
             $points10 = percentageToPoints10($percentage);
             $gradePointsWeighted += $points10 * $credits;
+            $gradePoints4Weighted += percentageToGPA4($percentage) * $credits;
             $gradeCredits += $credits;
             $scoreSum += $percentage;
             $scoreCount++;
@@ -104,7 +107,7 @@ try {
     }
 
     $gpa10 = $gradeCredits > 0 ? round($gradePointsWeighted / $gradeCredits, 2) : 0.0;
-    $gpa4 = round($gpa10 / 2.5, 2);
+    $gpa4 = $gradeCredits > 0 ? round($gradePoints4Weighted / $gradeCredits, 2) : 0.0;
     $avgScore = $scoreCount > 0 ? round($scoreSum / $scoreCount, 2) : 0.0;
     $avgAttendance = $attendanceCount > 0 ? round($attendanceSum / $attendanceCount, 2) : 0.0;
 

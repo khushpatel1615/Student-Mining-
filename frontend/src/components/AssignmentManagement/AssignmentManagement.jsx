@@ -373,7 +373,7 @@ function AssignmentManagement() {
                                                     {sub.file_path ? (
                                                         <a
                                                             className="submission-file-link"
-                                                            href={`http://localhost/StudentDataMining/backend/uploads/${sub.file_path}`}
+                                                            href={`${import.meta.env.VITE_APP_URL || 'http://localhost/StudentDataMining'}/backend/uploads/${sub.file_path}`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                         >

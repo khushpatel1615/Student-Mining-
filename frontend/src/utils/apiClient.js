@@ -91,14 +91,12 @@ class ApiClient {
         if (contentType && contentType.includes('application/json')) {
             data = await response.json();
         } else {
+            // Read body as text first (safe, single read), then try to parse as JSON
+            const text = await response.text();
             try {
-                if (response.json) {
-                    data = await response.json();
-                } else {
-                    data = await response.text();
-                }
+                data = JSON.parse(text);
             } catch {
-                data = await response.text();
+                data = text;
             }
         }
 
@@ -106,7 +104,8 @@ class ApiClient {
             if (this.onUnauthorized) {
                 this.onUnauthorized();
             }
-            throw new ApiError('Session expired. Please login again.', 401, data);
+            const errorMessage = data?.error || data?.message || 'Session expired. Please login again.';
+            throw new ApiError(errorMessage, 401, data);
         }
 
         if (!response.ok) {

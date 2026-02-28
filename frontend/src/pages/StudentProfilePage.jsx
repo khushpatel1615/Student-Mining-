@@ -182,24 +182,41 @@ function StudentProfilePage() {
         }
     }, [studentId])
 
+    // Standardized GPA 4.0 mapping (must match backend gpa_helpers.php)
+    const percentageToGPA4 = (pct) => {
+        if (pct >= 90) return 4.0
+        if (pct >= 80) return 3.7
+        if (pct >= 70) return 3.3
+        if (pct >= 60) return 3.0
+        if (pct >= 50) return 2.0
+        if (pct >= 40) return 1.0
+        return 0.0
+    }
+
     // Calculate overall stats
     const calculateStats = () => {
         if (!enrollments.length) return { gpa: 0, attendance: 0, passed: 0, total: 0 }
 
         let totalPercentage = 0
+        let totalGpaPoints = 0
+        let totalCredits = 0
         let count = 0
         let passed = 0
 
         enrollments.forEach(e => {
             if (e.final_percentage) {
-                totalPercentage += parseFloat(e.final_percentage)
+                const pct = parseFloat(e.final_percentage)
+                const credits = parseInt(e.credits) || 3
+                totalPercentage += pct
+                totalGpaPoints += percentageToGPA4(pct) * credits
+                totalCredits += credits
                 count++
-                if (parseFloat(e.final_percentage) >= 50) passed++
+                if (pct >= 50) passed++
             }
         })
 
         const avgPercentage = count > 0 ? totalPercentage / count : 0
-        const gpa = (avgPercentage / 100) * 4
+        const gpa = totalCredits > 0 ? totalGpaPoints / totalCredits : 0
 
         return {
             gpa: gpa.toFixed(2),

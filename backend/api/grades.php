@@ -10,6 +10,7 @@ require_once __DIR__ . '/../includes/cache.php';
 require_once __DIR__ . '/../includes/jwt.php';
 require_once __DIR__ . '/../includes/api_helpers.php';
 require_once __DIR__ . '/../includes/notifications.php';
+require_once __DIR__ . '/../includes/gpa_helpers.php';
 
 // Enable error reporting for debugging
 error_reporting(E_ALL);
@@ -186,8 +187,10 @@ function handleGet($pdo)
         ]);
     }
 
-    // Case 1b: Fetch all students enrolled in a subject (Admin grading view)
-    if ($subjectId && $user['role'] === 'admin') {
+    // Case 1b: Fetch all students enrolled in a subject (Admin/Teacher grading view)
+    if ($subjectId && in_array($user['role'], ['admin', 'teacher'])) {
+        // Optional: If teacher, verify they teach this subject here
+
         // Get evaluation criteria for the subject
         $criteriaStmt = $pdo->prepare("
             SELECT id, component_name, weight_percentage, max_marks 
@@ -429,11 +432,14 @@ function handleGet($pdo)
 }
 
 /**
- * PUT - Update grades (Admin only)
+ * PUT - Update grades (Admin and Teacher)
  */
 function handlePut($pdo)
 {
-    $user = requireRole('admin');
+    $user = requireAuth();
+    if (!in_array($user['role'], ['admin', 'teacher'])) {
+        sendError('Access denied', 403);
+    }
     $data = getJsonInput();
 
     // Support recalculate action
@@ -531,8 +537,13 @@ function handlePut($pdo)
             if ((float) $marks < 0)
                 sendError('Marks cannot be negative', 400);
 
-            if ($criteriaId && isset($criteriaMax[(int) $criteriaId]) && (float) $marks > $criteriaMax[(int) $criteriaId]) {
-                sendError("Marks exceed max for criteria {$criteriaId}", 400);
+            if ($criteriaId) {
+                if (!isset($criteriaMax[(int) $criteriaId])) {
+                    sendError("Criteria {$criteriaId} not found", 400);
+                }
+                if ((float) $marks > $criteriaMax[(int) $criteriaId]) {
+                    sendError("Marks exceed max for criteria {$criteriaId}", 400);
+                }
             }
         }
     }
@@ -912,21 +923,7 @@ function syncStudentAnalytics($pdo, $userId)
         }
 
         if ($pct !== null) {
-            $pts = 0;
-            if ($pct >= 90)
-                $pts = 4.0;
-            elseif ($pct >= 80)
-                $pts = 4.0;
-            elseif ($pct >= 70)
-                $pts = 3.5;
-            elseif ($pct >= 60)
-                $pts = 3.0;
-            elseif ($pct >= 50)
-                $pts = 2.0;
-            elseif ($pct >= 40)
-                $pts = 1.0;
-            else
-                $pts = 0.0;
+            $pts = percentageToGPA4((float) $pct);
 
             $cr = $e['credits'] ? (int) $e['credits'] : 3;
 

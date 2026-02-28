@@ -19,9 +19,6 @@ try {
         handlePut($pdo);
     } elseif ($method === 'DELETE') {
         handleDelete($pdo);
-    } elseif ($method === 'OPTIONS') {
-        http_response_code(200);
-        exit();
     } else {
         http_response_code(405);
         echo json_encode(['error' => 'Method not allowed']);
@@ -43,7 +40,7 @@ function handleGet($pdo)
 
     $role = $user['role'];
     $userId = $user['user_id'];
-// 2. Build Query based on Role
+    // 2. Build Query based on Role
     $sql = "SELECT ac.id, ac.title, ac.event_date, ac.type, ac.description, ac.target_audience, 
                    ac.target_program_id, ac.target_semester, ac.target_subject_id, 
                    ac.created_by, s.name as subject_name 
@@ -52,9 +49,9 @@ function handleGet($pdo)
             WHERE 1=1 ";
     $params = [];
     $extraEvents = [];
-// Admins see everything
+    // Admins see everything
     if ($role === 'admin') {
-// No filter needed for calendar events
+        // No filter needed for calendar events
 
         // Fetch ALL Assignments
         $stmtEx = $pdo->query("SELECT a.id, a.title, DATE(a.due_date) as event_date, 'assignment' as type, 
@@ -63,7 +60,7 @@ function handleGet($pdo)
                               JOIN subjects s ON a.subject_id = s.id");
         while ($row = $stmtEx->fetch(PDO::FETCH_ASSOC)) {
             $row['id'] = 'assign_' . $row['id'];
-        // Avoid ID collision
+            // Avoid ID collision
             $row['target_audience'] = 'subject';
             $extraEvents[] = $row;
         }
@@ -80,21 +77,21 @@ function handleGet($pdo)
         }
     } elseif ($role === 'student') {
         $sql .= " AND (ac.target_audience IN ('all', 'students') ";
-    // Fetch student details to filter by program/semester
+        // Fetch student details to filter by program/semester
         $stmtUser = $pdo->prepare("SELECT program_id, current_semester FROM users WHERE id = ? AND role = 'student'");
         $stmtUser->execute([$userId]);
         $studentData = $stmtUser->fetch(PDO::FETCH_ASSOC);
         $enrolledSubjectIds = [];
-    // Get enrolled subjects for fetching specific assignments/exams
+        // Get enrolled subjects for fetching specific assignments/exams
         $stmtSubs = $pdo->prepare("SELECT subject_id FROM student_enrollments WHERE user_id = ? AND status = 'active'");
         $stmtSubs->execute([$user['user_id']]);
         $enrolledSubjectIds = $stmtSubs->fetchAll(PDO::FETCH_COLUMN);
         if ($studentData) {
-        // Match program events if the student has a program_id
+            // Match program events if the student has a program_id
             if ($studentData['program_id']) {
                 $sql .= " OR (ac.target_audience = 'program' AND ac.target_program_id = ?) ";
                 $params[] = $studentData['program_id'];
-// New: Program + Semester specific
+                // New: Program + Semester specific
                 if ($studentData['current_semester']) {
                     $sql .= " OR (ac.target_audience = 'program_semester' AND ac.target_program_id = ? AND ac.target_semester = ?) ";
                     $params[] = $studentData['program_id'];
@@ -119,7 +116,7 @@ function handleGet($pdo)
         }
 
         $sql .= ")";
-    // Fetch Assignments for enrolled subjects
+        // Fetch Assignments for enrolled subjects
         if (!empty($enrolledSubjectIds)) {
             $inQuery = implode(',', array_fill(0, count($enrolledSubjectIds), '?'));
             $stmtEx = $pdo->prepare("SELECT a.id, a.title, DATE(a.due_date) as event_date, 'assignment' as type, 
@@ -148,9 +145,9 @@ function handleGet($pdo)
             }
         }
     } elseif ($role === 'teacher') {
-    // Teacher sees all/teacher events OR events for their subjects
+        // Teacher sees all/teacher events OR events for their subjects
         $sql .= " AND (ac.target_audience IN ('all', 'teachers') ";
-    // Get subjects taught by teacher
+        // Get subjects taught by teacher
         $stmtSubs = $pdo->prepare("SELECT subject_id FROM teacher_subjects WHERE teacher_id = ?");
         $stmtSubs->execute([$userId]);
         $teacherSubjectIds = $stmtSubs->fetchAll(PDO::FETCH_COLUMN);
@@ -162,7 +159,7 @@ function handleGet($pdo)
             }
         }
         $sql .= ")";
-    // Fetch Assignments created by this teacher (via subjects)
+        // Fetch Assignments created by this teacher (via subjects)
         if (!empty($teacherSubjectIds)) {
             $inQuery = implode(',', array_fill(0, count($teacherSubjectIds), '?'));
             $stmtEx = $pdo->prepare("SELECT a.id, a.title, DATE(a.due_date) as event_date, 'assignment' as type, 
@@ -196,7 +193,7 @@ function handleGet($pdo)
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
-// Merge standard events with assignments/exams
+    // Merge standard events with assignments/exams
     $allEvents = array_merge($events, $extraEvents);
     echo json_encode([
         'success' => true,
@@ -223,7 +220,7 @@ function handlePost($pdo)
     }
 
     $data = json_decode(file_get_contents("php://input"), true);
-// Validate Basic Fields
+    // Validate Basic Fields
     if (empty($data['title']) || empty($data['event_date']) || empty($data['type'])) {
         http_response_code(400);
         echo json_encode(['error' => 'Missing required fields']);
@@ -232,7 +229,7 @@ function handlePost($pdo)
 
     // Role-Based Validation
     if ($role === 'teacher') {
-// Teacher can ONLY post 'assignment' or 'event'
+        // Teacher can ONLY post 'assignment' or 'event'
         if (!in_array($data['type'], ['assignment', 'event'])) {
             http_response_code(403);
             echo json_encode(['error' => 'Teachers can only post Assignments or Events']);
@@ -355,7 +352,7 @@ function handlePut($pdo)
     // Build Dynamic Update
     $updates = [];
     $params = [];
-// Allowed fields to update
+    // Allowed fields to update
     $allowed = ['title', 'event_date', 'description', 'type', 'target_audience', 'target_dept_id', 'target_program_id', 'target_semester', 'target_subject_id'];
     foreach ($allowed as $field) {
         if (isset($data[$field])) {

@@ -177,7 +177,7 @@ export function LearningBehaviorDashboard() {
                         <span>{setupMessage.message}</span>
                         {setupMessage.setupUrl && showDevTools && (
                             <a
-                                href={`http://localhost/StudentDataMining${setupMessage.setupUrl}`}
+                                href={`${import.meta.env.VITE_APP_URL || 'http://localhost/StudentDataMining'}${setupMessage.setupUrl}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="notice-link"
@@ -216,7 +216,7 @@ export function LearningBehaviorDashboard() {
                     <p>{searchTerm ? 'Try adjusting your search criteria' : 'No at-risk students in the current period'}</p>
                     {!searchTerm && showDevTools && (
                         <a
-                            href="http://localhost/StudentDataMining/backend/api/behavior/seed_mock_data.php"
+                            href={`${import.meta.env.VITE_APP_URL || 'http://localhost/StudentDataMining'}/backend/api/behavior/seed_mock_data.php`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="lba-seed-btn"

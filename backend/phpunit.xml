@@ -27,9 +27,9 @@
 
     <php>
         <!-- Override these in your local .env or CI environment -->
-        <env name="TEST_BASE_URL"      value="http://localhost/backend/api/"/>
+        <env name="TEST_BASE_URL"      value="http://localhost/StudentDataMining/backend/api/"/>
         <env name="TEST_DB_HOST"       value="127.0.0.1"/>
-        <env name="TEST_DB_NAME"       value="student_dm_test"/>
+        <env name="TEST_DB_NAME"       value="student_data_mining"/>
         <env name="TEST_DB_USER"       value="root"/>
         <env name="TEST_DB_PASS"       value=""/>
         <env name="TEST_ADMIN_TOKEN"   value=""/>
