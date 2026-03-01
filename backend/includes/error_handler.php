@@ -108,25 +108,27 @@ function logError($message, $context = [])
  * @param mixed $data Response data
  * @param int $statusCode HTTP status code
  */
-function sendResponse($data, $statusCode = 200)
-{
-    $response = [
-        'success' => true,
-        'data' => $data,
-        'requestId' => getRequestId()
-    ];
+if (!function_exists('sendResponse')) {
+    function sendResponse($data, $statusCode = 200)
+    {
+        $response = [
+            'success' => true,
+            'data' => $data,
+            'requestId' => getRequestId()
+        ];
 
-    http_response_code($statusCode);
-    header('Content-Type: application/json');
-    echo json_encode($response);
+        http_response_code($statusCode);
+        header('Content-Type: application/json');
+        echo json_encode($response);
 
-    // Log request completion
-    logInfo('Request completed', [
-        'statusCode' => $statusCode,
-        'durationMs' => getRequestDuration()
-    ]);
+        // Log request completion
+        logInfo('Request completed', [
+            'statusCode' => $statusCode,
+            'durationMs' => getRequestDuration()
+        ]);
 
-    exit;
+        exit;
+    }
 }
 
 /**
@@ -135,33 +137,35 @@ function sendResponse($data, $statusCode = 200)
  * @param int $statusCode HTTP status code
  * @param array $details Error details (only in dev mode)
  */
-function sendError($message, $statusCode = 400, $details = [])
-{
-    $isProduction = getenv('APP_ENV') === 'production';
+if (!function_exists('sendError')) {
+    function sendError($message, $statusCode = 400, $details = [])
+    {
+        $isProduction = getenv('APP_ENV') === 'production';
 
-    $response = [
-        'success' => false,
-        'error' => $message,
-        'requestId' => getRequestId()
-    ];
+        $response = [
+            'success' => false,
+            'error' => $message,
+            'requestId' => getRequestId()
+        ];
 
-    // Only include details in development mode
-    if (!$isProduction && !empty($details)) {
-        $response['details'] = $details;
+        // Only include details in development mode
+        if (!$isProduction && !empty($details)) {
+            $response['details'] = $details;
+        }
+
+        http_response_code($statusCode);
+        header('Content-Type: application/json');
+        echo json_encode($response);
+
+        // Log error
+        logError($message, [
+            'statusCode' => $statusCode,
+            'durationMs' => getRequestDuration(),
+            'details' => $details
+        ]);
+
+        exit;
     }
-
-    http_response_code($statusCode);
-    header('Content-Type: application/json');
-    echo json_encode($response);
-
-    // Log error
-    logError($message, [
-        'statusCode' => $statusCode,
-        'durationMs' => getRequestDuration(),
-        'details' => $details
-    ]);
-
-    exit;
 }
 
 /**

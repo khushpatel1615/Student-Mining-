@@ -86,7 +86,7 @@ class UpdateFinalPercentageTest extends TestCase
         $updateStmt->method('execute')
             ->with($this->callback(function ($params) {
                 $this->assertSame(39.0, $params[0], 'Partial grade sum should be 39.0.');
-                $this->assertSame('D', $params[1], '39.0% maps to grade D.');
+                $this->assertSame('F', $params[1], '39.0% maps to grade F.');
                 return true;
             }))
             ->willReturn(true);
@@ -279,7 +279,7 @@ class UpdateFinalPercentageTest extends TestCase
             'excellent at 80%' => [80.0, 'excellent'],  // GPA 4.0 → >=3.5 → excellent
             'good at 70%' => [70.0, 'good'],       // GPA 3.5 → >=3.0 → good
             'good at 60%' => [60.0, 'good'],       // GPA 3.0 → >=3.0 → good (edge)
-            'average at 50%' => [50.0, 'average'],    // GPA 2.0 → not <2.0, not <2.5 → average... 
+            'below_average at 50%' => [50.0, 'below_average'],    // GPA 2.0 -> < 2.5 -> below_average
             // NOTE: 2.0 is NOT < 2.0, so not at_risk. 
             // 2.0 IS < 2.5, so below_average
             'at_risk at 30%' => [30.0, 'at_risk'],    // GPA 0.0 → <2.0 → at_risk

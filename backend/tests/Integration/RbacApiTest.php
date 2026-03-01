@@ -21,7 +21,7 @@ class RbacApiTest extends TestCase
 
         // We will attempt to use JWT tokens generated directly to bypass full authentication dependency
         require_once __DIR__ . '/../../includes/jwt.php';
-        require_once __DIR__ . '/../../config/env.php';
+        require_once __DIR__ . '/../../config/EnvLoader.php';
 
         $this->adminToken = generateToken(1, 'admin@college.edu', 'admin', 'Admin User');
         $this->teacherToken = generateToken(2, 'teacher@college.edu', 'teacher', 'Teacher User');

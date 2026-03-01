@@ -1,3 +1,4 @@
+import { ThemeProvider } from '../context/ThemeContext';
 import { describe, test, expect, beforeEach, vi } from 'vitest';
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
@@ -13,7 +14,7 @@ vi.mock('../context/AuthContext', () => ({
 
 // Mock components to simplify integration tests (avoid rendering deep trees)
 vi.mock('../pages/LoginPage', () => ({ default: () => <div data-testid="login-page">Login Page</div> }));
-vi.mock('../pages/StudentDashboard', () => ({ default: () => <div data-testid="student-dashboard">Student Dashboard</div> }));
+vi.mock('../pages/StudentDashboardRedesigned', () => ({ default: () => <div data-testid="student-dashboard">Student Dashboard</div> }));
 vi.mock('../pages/AdminDashboard', () => ({ default: () => <div data-testid="admin-dashboard">Admin Dashboard</div> }));
 vi.mock('../pages/SubjectDetailPage', () => ({ default: () => <div data-testid="subject-detail-page">Subject Detail Page</div> }));
 vi.mock('../pages/StudentProfilePage', () => ({ default: () => <div data-testid="student-profile-page">Student Profile Page</div> }));
@@ -34,9 +35,11 @@ describe('App Routing & Integration', () => {
         });
 
         render(
-            <MemoryRouter initialEntries={['/']}>
-                <App />
-            </MemoryRouter>
+            <ThemeProvider>
+                <MemoryRouter initialEntries={['/']}>
+                    <App />
+                </MemoryRouter>
+            </ThemeProvider>
         );
 
         await waitFor(() => {
@@ -52,9 +55,11 @@ describe('App Routing & Integration', () => {
         });
 
         render(
-            <MemoryRouter initialEntries={['/']}>
-                <App />
-            </MemoryRouter>
+            <ThemeProvider>
+                <MemoryRouter initialEntries={['/']}>
+                    <App />
+                </MemoryRouter>
+            </ThemeProvider>
         );
 
         await waitFor(() => {
@@ -70,9 +75,11 @@ describe('App Routing & Integration', () => {
         });
 
         render(
-            <MemoryRouter initialEntries={['/']}>
-                <App />
-            </MemoryRouter>
+            <ThemeProvider>
+                <MemoryRouter initialEntries={['/']}>
+                    <App />
+                </MemoryRouter>
+            </ThemeProvider>
         );
 
         await waitFor(() => {
@@ -88,9 +95,11 @@ describe('App Routing & Integration', () => {
         });
 
         render(
-            <MemoryRouter initialEntries={['/admin/dashboard']}>
-                <App />
-            </MemoryRouter>
+            <ThemeProvider>
+                <MemoryRouter initialEntries={['/admin/dashboard']}>
+                    <App />
+                </MemoryRouter>
+            </ThemeProvider>
         );
 
         // Should redirect to student dashboard (as per App logic)

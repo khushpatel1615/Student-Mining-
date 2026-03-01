@@ -92,9 +92,14 @@ class ApiClient {
             data = await response.json();
         } else {
             // Read body as text first (safe, single read), then try to parse as JSON
-            const text = await response.text();
+            let text;
+            if (typeof response.text === 'function') {
+                text = await response.text();
+            } else {
+                text = await response.json();
+            }
             try {
-                data = JSON.parse(text);
+                data = typeof text === 'string' ? JSON.parse(text) : text;
             } catch {
                 data = text;
             }

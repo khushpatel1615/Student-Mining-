@@ -5,7 +5,7 @@ namespace Tests\Unit;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../../includes/jwt.php';
-require_once __DIR__ . '/../../config/env.php';
+require_once __DIR__ . '/../../config/EnvLoader.php';
 
 class JwtTest extends TestCase
 {

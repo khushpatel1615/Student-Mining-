@@ -1,3 +1,4 @@
+import { ThemeProvider } from '../context/ThemeContext';
 import { describe, test, expect, vi } from 'vitest';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
@@ -32,11 +33,13 @@ describe('Route Guards', () => {
         });
 
         render(
-            <MemoryRouter>
+            <ThemeProvider>
+<MemoryRouter>
                 <AuthRoute>
                     <div>Login Page</div>
                 </AuthRoute>
             </MemoryRouter>
+</ThemeProvider>
         );
 
         expect(screen.getByText('Redirected to Dashboard')).toBeInTheDocument();
@@ -51,11 +54,13 @@ describe('Route Guards', () => {
         });
 
         render(
-            <MemoryRouter>
+            <ThemeProvider>
+<MemoryRouter>
                 <AuthRoute>
                     <div>Login Page</div>
                 </AuthRoute>
             </MemoryRouter>
+</ThemeProvider>
         );
 
         expect(screen.getByText('Login Page')).toBeInTheDocument();
@@ -69,11 +74,13 @@ describe('Route Guards', () => {
         });
 
         render(
-            <MemoryRouter>
+            <ThemeProvider>
+<MemoryRouter>
                 <ProtectedRoute allowedRoles={['admin']}>
                     <div>Admin Dashboard</div>
                 </ProtectedRoute>
             </MemoryRouter>
+</ThemeProvider>
         );
 
         expect(screen.getByText('Admin Dashboard')).toBeInTheDocument();
@@ -87,11 +94,13 @@ describe('Route Guards', () => {
         });
 
         render(
-            <MemoryRouter>
+            <ThemeProvider>
+<MemoryRouter>
                 <ProtectedRoute allowedRoles={['admin']}>
                     <div>Admin Dashboard</div>
                 </ProtectedRoute>
             </MemoryRouter>
+</ThemeProvider>
         );
 
         expect(screen.getByText('Redirected to Dashboard')).toBeInTheDocument();
