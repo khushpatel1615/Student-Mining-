@@ -38,6 +38,7 @@ import AnnouncementsPage from '../components/Discussions/AnnouncementsPage'
 import StudentAttendance from '../components/Student/Attendance/StudentAttendance'
 import QuickActions from '../components/Student/Overview/QuickActions'
 import ActivityFeed from '../components/Student/Overview/ActivityFeed'
+import VideoLectures from '../components/VideoLectures/VideoLectures'
 import './StudentDashboard.css'
 
 import {
@@ -564,6 +565,12 @@ const StudentDashboard = () => {
                     {(activeTab === 'discussions' || activeTab === 'announcements') && (
                         <div className="card">
                             <AnnouncementsPage />
+                        </div>
+                    )}
+
+                    {activeTab === 'videos' && (
+                        <div className="card card-padded-lg">
+                            <VideoLectures />
                         </div>
                     )}
 

@@ -55,6 +55,7 @@ const Sidebar = ({ role = 'student', onLogout, collapsed, mobileMenuOpen, onTogg
         { id: 'reports', label: 'Reports', icon: Download, tab: 'reports' },
         { id: 'attendance', label: 'Attendance', icon: CheckSquare, tab: 'attendance' },
         { id: 'announcements', label: 'Announcements', icon: Bell, tab: 'announcements' },
+        { id: 'videos', label: 'Videos', icon: Video, tab: 'videos' },
         { id: 'profile', label: 'Profile', icon: User, tab: 'profile' },
         { id: 'calendar', label: 'Calendar', icon: CalendarDays, tab: 'calendar' }
     ];

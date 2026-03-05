@@ -76,3 +76,18 @@ export const recalculateFinalGrade = async (subjectId) => {
     });
     return response.data;
 };
+
+/**
+ * Fetch data quality report for a subject (validation issues, statistics, distribution)
+ */
+export const fetchDataQuality = async (subjectId) => {
+    try {
+        const response = await apiClient.get('/grades.php', {
+            subject_id: subjectId,
+            action: 'data_quality'
+        });
+        return { data: response.data || response, error: null };
+    } catch (error) {
+        return { data: null, error: error.message };
+    }
+};

@@ -178,7 +178,11 @@ const StudentEnrollmentCard = ({
                 {/* Actions */}
                 <div className="ec-actions-wrap" onClick={e => e.stopPropagation()}>
                     <ActionMenu student={student} />
-                    <button className={`ec-chevron ${expanded ? 'ec-chevron--open' : ''}`}>
+                    <button
+                        className={`ec-chevron ${expanded ? 'ec-chevron--open' : ''}`}
+                        onClick={onToggle}
+                        title="Toggle Details"
+                    >
                         <ChevronDown size={16} />
                     </button>
                 </div>

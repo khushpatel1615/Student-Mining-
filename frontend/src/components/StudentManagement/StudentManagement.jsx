@@ -379,7 +379,7 @@ function StudentManagement() {
                     <Search size={18} />
                     <input
                         type="text"
-                        className="search-input"
+                        className="sm-search-input"
                         placeholder="Search by name, email, or student ID..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}

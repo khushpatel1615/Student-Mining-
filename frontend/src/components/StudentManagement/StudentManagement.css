@@ -124,9 +124,9 @@
     pointer-events: none;
 }
 
-.search-input {
+.sm-search-input {
     width: 100%;
-    padding: 0.875rem 1rem 0.875rem 2.75rem;
+    padding: 0.875rem 1rem 0.875rem 3rem;
     border: 1.5px solid var(--sm-border-light);
     border-radius: var(--sm-card-radius);
     background: var(--sm-bg-card);
@@ -136,13 +136,13 @@
     box-shadow: var(--sm-shadow-card);
 }
 
-.search-input:focus {
+.sm-search-input:focus {
     outline: none;
     border-color: var(--sm-purple);
     box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
 }
 
-.search-input::placeholder {
+.sm-search-input::placeholder {
     color: var(--text-tertiary);
 }
 
