@@ -126,7 +126,7 @@ const RiskAlertSettings = () => {
         setSending(true);
         setMessage(null);
         try {
-            const data = await apiClient.post('/risk_alerts.php', { action: 'send' });
+            const data = await apiClient.post('/risk_alerts.php?action=send', {});
             if (data.success) {
                 setMessage({
                     type: 'success',
