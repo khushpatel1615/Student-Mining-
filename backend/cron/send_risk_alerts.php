@@ -156,7 +156,8 @@ if ($isCLI) {
 } else {
     echo json_encode([
         'success' => $result['success'],
-        'message' => $result['success'] ? 'Risk alert emails sent successfully' : $result['error'],
+        'message' => $result['success'] ? 'Risk alert emails sent successfully' : 'Failed to send emails',
+        'error' => $result['success'] ? null : $result['error'],
         'students_count' => count($atRiskStudents),
         'admins_notified' => count($adminEmails)
     ]);
@@ -274,19 +275,21 @@ function getAdminEmails($pdo)
 
         $recipientsMode = $settings['email_recipients'] ?? 'admins';
 
-        if ($recipientsMode === 'custom' && !empty($settings['custom_emails'])) {
-            $emails = explode("\n", $settings['custom_emails']);
+        if ($recipientsMode === 'custom') {
             $recipientList = [];
-            foreach ($emails as $email) {
-                $email = trim($email);
-                if (!empty($email) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                    $recipientList[] = ['email' => $email, 'full_name' => 'Administrator'];
+            if (!empty($settings['custom_emails'])) {
+                // Support both comma-separated and newline-separated emails
+                $customEmailsStr = str_replace(',', "\n", $settings['custom_emails']);
+                $emails = explode("\n", $customEmailsStr);
+                foreach ($emails as $email) {
+                    $email = trim($email);
+                    if (!empty($email) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                        $recipientList[] = ['email' => $email, 'full_name' => 'Administrator'];
+                    }
                 }
             }
-            // If we have valid custom emails, return them
-            if (!empty($recipientList)) {
-                return $recipientList;
-            }
+            // Always return list for custom mode, even if empty, so it doesn't fall back to all admins
+            return $recipientList;
         }
     } catch (PDOException $e) {
         // Table might not exist yet, fallback to default
