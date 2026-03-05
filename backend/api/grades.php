@@ -67,6 +67,132 @@ function handleGet($pdo)
     $subjectId = $_GET['subject_id'] ?? null;
     $programId = $_GET['program_id'] ?? null;
     $semester = $_GET['semester'] ?? null;
+    $action = $_GET['action'] ?? null;
+
+    // ── Data Quality / Statistics Endpoint ──
+    if ($action === 'data_quality' && $subjectId && in_array($user['role'], ['admin', 'teacher'])) {
+        // Get criteria for subject
+        $critStmt = $pdo->prepare("SELECT id, component_name, weight_percentage, max_marks FROM evaluation_criteria WHERE subject_id = ? ORDER BY weight_percentage DESC");
+        $critStmt->execute([$subjectId]);
+        $criteria = $critStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Get enrollments + grades
+        $enrollStmt = $pdo->prepare("
+            SELECT se.id, se.user_id, se.final_percentage, se.final_grade,
+                   u.full_name as student_name, u.student_id
+            FROM student_enrollments se
+            JOIN users u ON se.user_id = u.id
+            WHERE se.subject_id = ? AND se.status = 'active'
+            ORDER BY u.full_name ASC
+        ");
+        $enrollStmt->execute([$subjectId]);
+        $enrollments = $enrollStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $issues = [];
+        $gradeDistribution = ['A+' => 0, 'A' => 0, 'B+' => 0, 'B' => 0, 'C' => 0, 'D' => 0, 'F' => 0];
+        $scores = [];
+        $incompleteCount = 0;
+        $exceededCount = 0;
+        $allZeroCount = 0;
+        $validCount = 0;
+        $atRiskStudents = [];
+
+        foreach ($enrollments as $enrollment) {
+            $gradeStmt = $pdo->prepare("
+                SELECT sg.marks_obtained, sg.graded_at, ec.max_marks, ec.component_name, ec.weight_percentage
+                FROM student_grades sg
+                JOIN evaluation_criteria ec ON sg.criteria_id = ec.id
+                WHERE sg.enrollment_id = ?
+            ");
+            $gradeStmt->execute([$enrollment['id']]);
+            $grades = $gradeStmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $hasAnyGrade = false;
+            $allZero = true;
+            $isComplete = true;
+            $studentIssues = [];
+
+            foreach ($grades as $grade) {
+                if ($grade['marks_obtained'] === null) {
+                    $isComplete = false;
+                    $allZero = false;
+                    $studentIssues[] = ['type' => 'incomplete', 'component' => $grade['component_name'], 'message' => 'No grade entered'];
+                } else {
+                    $hasAnyGrade = true;
+                    $marks = (float) $grade['marks_obtained'];
+                    if ($marks > 0)
+                        $allZero = false;
+                    if ($marks > (float) $grade['max_marks']) {
+                        $exceededCount++;
+                        $studentIssues[] = [
+                            'type' => 'exceeded',
+                            'component' => $grade['component_name'],
+                            'message' => "Score {$marks} exceeds max {$grade['max_marks']}"
+                        ];
+                    }
+                }
+            }
+
+            if (!$isComplete)
+                $incompleteCount++;
+            if ($hasAnyGrade && $allZero && count($grades) > 0) {
+                $allZeroCount++;
+                $studentIssues[] = ['type' => 'all_zero', 'component' => 'All', 'message' => 'All scores are zero — verify if intentional'];
+            }
+
+            // Grade distribution
+            $pct = $enrollment['final_percentage'];
+            if ($pct !== null) {
+                $pct = (float) $pct;
+                $scores[] = $pct;
+                $letterGrade = calculateGrade($pct);
+                if (isset($gradeDistribution[$letterGrade]))
+                    $gradeDistribution[$letterGrade]++;
+                if ($pct < 70) {
+                    $atRiskStudents[] = ['name' => $enrollment['student_name'], 'student_id' => $enrollment['student_id'], 'score' => $pct];
+                }
+            }
+
+            if (empty($studentIssues))
+                $validCount++;
+
+            if (!empty($studentIssues)) {
+                $issues[] = [
+                    'student_name' => $enrollment['student_name'],
+                    'student_id' => $enrollment['student_id'],
+                    'enrollment_id' => $enrollment['id'],
+                    'issues' => $studentIssues
+                ];
+            }
+        }
+
+        $classAvg = !empty($scores) ? round(array_sum($scores) / count($scores), 2) : 0;
+        $highest = !empty($scores) ? max($scores) : 0;
+        $lowest = !empty($scores) ? min($scores) : 0;
+        $passingRate = count($scores) > 0 ? round(count(array_filter($scores, fn($s) => $s >= 40)) / count($scores) * 100, 1) : 0;
+
+        sendResponse([
+            'success' => true,
+            'data' => [
+                'summary' => [
+                    'total_students' => count($enrollments),
+                    'valid_count' => $validCount,
+                    'incomplete_count' => $incompleteCount,
+                    'exceeded_count' => $exceededCount,
+                    'all_zero_count' => $allZeroCount,
+                ],
+                'statistics' => [
+                    'class_average' => $classAvg,
+                    'highest_score' => $highest,
+                    'lowest_score' => $lowest,
+                    'passing_rate' => $passingRate,
+                ],
+                'grade_distribution' => $gradeDistribution,
+                'at_risk_students' => $atRiskStudents,
+                'issues' => $issues,
+            ]
+        ]);
+    }
 
     // Authorization Check
     if ($user['role'] !== 'admin' && $userId && $userId != $user['user_id']) {
@@ -286,10 +412,13 @@ function handleGet($pdo)
             $gradeStmt = $pdo->prepare("
                 SELECT 
                     sg.id as grade_id, sg.criteria_id, sg.marks_obtained, sg.remarks,
+                    sg.graded_by, sg.graded_at,
                     ec.weight_percentage, ec.max_marks, ec.component_name,
-                    (sg.marks_obtained / ec.max_marks) * ec.weight_percentage AS weighted_contribution
+                    (sg.marks_obtained / ec.max_marks) * ec.weight_percentage AS weighted_contribution,
+                    u_grader.full_name as graded_by_name
                 FROM student_grades sg
                 JOIN evaluation_criteria ec ON sg.criteria_id = ec.id
+                LEFT JOIN users u_grader ON sg.graded_by = u_grader.id
                 WHERE sg.enrollment_id = ?
             ");
             $gradeStmt->execute([$enrollment['id']]);

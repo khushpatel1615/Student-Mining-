@@ -206,7 +206,13 @@ function handleManualSend($pdo)
 
 function handlePreview($pdo)
 {
-    // Get at-risk students data
+    // Read the configured risk threshold from settings
+    $thresholdStmt = $pdo->query("SELECT setting_value FROM risk_alert_settings WHERE setting_key = 'min_risk_score_threshold'");
+    $threshold = $thresholdStmt ? (int) $thresholdStmt->fetchColumn() : 50;
+    if ($threshold <= 0)
+        $threshold = 50;
+
+    // Get at-risk students using the configured threshold
     $sql = "
         SELECT 
             u.id,
@@ -227,11 +233,12 @@ function handlePreview($pdo)
         LEFT JOIN programs p ON u.program_id = p.id
         JOIN student_risk_scores srs ON u.id = srs.user_id
         WHERE u.role = 'student' AND u.is_active = 1
-          AND srs.risk_level = 'At Risk'
+          AND srs.risk_score <= ?
         ORDER BY srs.risk_score ASC
         LIMIT 10
     ";
-    $stmt = $pdo->query($sql);
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$threshold]);
     $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
     foreach ($students as &$student) {
         $student['risk_factors'] = json_decode($student['risk_factors'] ?? '[]', true);
@@ -251,13 +258,20 @@ function handlePreview($pdo)
         'data' => [
             'students' => $students,
             'count' => count($students),
-            'preview_note' => 'This is a preview of the data that would be included in the email.'
+            'threshold' => $threshold,
+            'preview_note' => "Preview showing students with risk score ≤ {$threshold}%"
         ]
     ]);
 }
 
 function handleStats($pdo)
 {
+    // Read the configured risk threshold
+    $thresholdStmt = $pdo->query("SELECT setting_value FROM risk_alert_settings WHERE setting_key = 'min_risk_score_threshold'");
+    $threshold = $thresholdStmt ? (int) $thresholdStmt->fetchColumn() : 50;
+    if ($threshold <= 0)
+        $threshold = 50;
+
     // Get statistics about risk alerts
     $stats = [];
     // Last 7 days of alerts
@@ -275,9 +289,11 @@ function handleStats($pdo)
     // Total alerts sent
     $stmt = $pdo->query("SELECT COUNT(*) FROM risk_alert_logs WHERE success = 1");
     $stats['total_alerts_sent'] = (int) $stmt->fetchColumn();
-    // Current at-risk count
-    $stmt = $pdo->query("SELECT COUNT(*) FROM student_risk_scores WHERE risk_level = 'At Risk'");
+    // Current at-risk count using configured threshold
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM student_risk_scores srs JOIN users u ON u.id = srs.user_id WHERE u.role = 'student' AND u.is_active = 1 AND srs.risk_score <= ?");
+    $stmt->execute([$threshold]);
     $stats['current_at_risk_count'] = (int) $stmt->fetchColumn();
+    $stats['threshold'] = $threshold;
     // Last alert timestamp
     $stmt = $pdo->query("SELECT MAX(sent_at) FROM risk_alert_logs WHERE success = 1");
     $stats['last_alert_sent'] = $stmt->fetchColumn();

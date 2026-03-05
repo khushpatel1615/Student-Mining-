@@ -105,8 +105,14 @@ createRiskAlertTables($pdo);
 // Get email configuration
 $smtpConfig = getEmailConfig();
 
-// Fetch at-risk students with their details
-$atRiskStudents = getAtRiskStudents($pdo);
+// Read the configured risk threshold from settings
+$thresholdRow = $pdo->query("SELECT setting_value FROM risk_alert_settings WHERE setting_key = 'min_risk_score_threshold'");
+$minRiskScoreThreshold = $thresholdRow ? (int) $thresholdRow->fetchColumn() : 50;
+if ($minRiskScoreThreshold <= 0)
+    $minRiskScoreThreshold = 50; // fallback
+
+// Fetch at-risk students with their details using the configured threshold
+$atRiskStudents = getAtRiskStudents($pdo, $minRiskScoreThreshold);
 
 if (empty($atRiskStudents)) {
     $message = "No at-risk students found today.";
@@ -204,7 +210,7 @@ function getEmailConfig()
 /**
  * Get all at-risk students with their subjects
  */
-function getAtRiskStudents($pdo)
+function getAtRiskStudents($pdo, $threshold = 50)
 {
     $sql = "
         SELECT 
@@ -226,11 +232,13 @@ function getAtRiskStudents($pdo)
         LEFT JOIN programs p ON u.program_id = p.id
         JOIN student_risk_scores srs ON u.id = srs.user_id
         WHERE u.role = 'student'
-          AND srs.risk_level = 'At Risk'
+          AND u.is_active = 1
+          AND srs.risk_score <= ?
         ORDER BY srs.risk_score ASC
     ";
 
-    $stmt = $pdo->query($sql);
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$threshold]);
     $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Fetch subjects for each at-risk student
