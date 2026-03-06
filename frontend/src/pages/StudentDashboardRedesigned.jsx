@@ -38,6 +38,7 @@ import Badges from '../components/Student/Badges/Badges'
 import ReportGenerator from '../components/Reports/ReportGenerator'
 import AnnouncementsPage from '../components/Discussions/AnnouncementsPage'
 import StudentAttendance from '../components/Student/Attendance/StudentAttendance'
+import VideoLectures from '../components/VideoLectures/VideoLectures'
 import QuickActionsRedesigned from '../components/Student/Overview/QuickActionsRedesigned'
 import ActivityFeedRedesigned from '../components/Student/Overview/ActivityFeedRedesigned'
 import './StudentDashboardRedesigned.css'
@@ -540,6 +541,7 @@ const StudentDashboard = () => {
                     {activeTab === 'exams' && <div className="card-redesigned"><StudentExams /></div>}
                     {activeTab === 'reports' && <div className="card-redesigned"><ReportGenerator /></div>}
                     {(activeTab === 'discussions' || activeTab === 'announcements') && <div className="card-redesigned"><AnnouncementsPage /></div>}
+                    {activeTab === 'videos' && <div className="card-redesigned"><VideoLectures /></div>}
                     {(activeTab === 'schedule' || activeTab === 'calendar') && <div className="card-redesigned"><CalendarManagement role="student" /></div>}
                     {activeTab === 'analytics' && <Analytics />}
                     {activeTab === 'skills-map' && <div className="card-redesigned"><SkillsMap /></div>}

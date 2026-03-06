@@ -159,6 +159,9 @@ export const useAdminDashboardData = () => {
 
     useEffect(() => {
         fetchDashboardData();
+        // Auto-refresh every 5 minutes so admin dashboard stats stay live
+        const interval = setInterval(() => fetchDashboardData(), 5 * 60 * 1000);
+        return () => clearInterval(interval);
     }, [fetchDashboardData]);
 
     return {

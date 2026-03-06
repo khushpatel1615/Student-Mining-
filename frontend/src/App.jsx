@@ -8,6 +8,7 @@ import SubjectDetailPage from './pages/SubjectDetailPage'
 import AdminDashboard from './pages/AdminDashboard'
 import StudentProfilePage from './pages/StudentProfilePage'
 import TeacherDashboard from './pages/TeacherDashboard'
+import LoadingScreen from './components/ui/LoadingScreen'
 import './App.css'
 
 // Protected Route Component
@@ -16,12 +17,7 @@ function ProtectedRoute({ children, allowedRoles }) {
 
     // Show loading state while checking auth
     if (loading) {
-        return (
-            <div className="loading-screen">
-                <div className="loading-spinner"></div>
-                <p>Loading...</p>
-            </div>
-        )
+        return <LoadingScreen />
     }
 
     // Not authenticated, redirect to login
@@ -48,12 +44,7 @@ function AuthRoute({ children }) {
     const { user, loading, isAuthenticated } = useAuth()
 
     if (loading) {
-        return (
-            <div className="loading-screen">
-                <div className="loading-spinner"></div>
-                <p>Loading...</p>
-            </div>
-        )
+        return <LoadingScreen />
     }
 
     if (isAuthenticated) {

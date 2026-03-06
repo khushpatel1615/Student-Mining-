@@ -45,10 +45,13 @@ export const loginWithGoogle = async (credential) => {
 
 export const verifyToken = async () => {
     try {
-        const data = await apiClient.get('/verify-token.php');
+        // skipUnauthorizedHandler: true prevents the global auto-logout
+        // from firing during the initial auth check on page load.
+        // AuthContext handles the 401 case explicitly itself.
+        const data = await apiClient.get('/verify-token.php', {}, { skipUnauthorizedHandler: true });
         return { data, error: null };
     } catch (error) {
-        return { data: null, error: error.message };
+        return { data: null, error: error.message, status: error.status };
     }
 };
 

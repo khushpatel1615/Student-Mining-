@@ -153,6 +153,8 @@ const SystemHealth = () => {
     const [copiedText, setCopiedText] = useState(null);
     const [showCacheModal, setShowCacheModal] = useState(false);
     const [memHistory, setMemHistory] = useState([0, 0, 0, 0, 0, 0, 0, 0]);
+    const [errorHistory, setErrorHistory] = useState([0, 0, 0, 0, 0, 0, 0, 0]);   // rolling real error counts
+    const [slowHistory, setSlowHistory] = useState([0, 0, 0, 0, 0, 0, 0, 0]);     // rolling real slow-request counts
     const prevStatusRef = useRef(null);
 
     const fetchData = useCallback(async (isRefresh = false) => {
@@ -164,8 +166,16 @@ const SystemHealth = () => {
         } else if (data) {
             setHealthData(data);
             setError(null);
+
+            // Update REAL rolling histories (append current reading, keep last 8)
             const mem = parseFloat(data?.performance?.api_script_memory_mb || 0);
+            const errs = parseInt(data?.errors?.errors_today || 0, 10);
+            const slow = parseInt(data?.performance?.slow_requests_today?.length || 0, 10);
+
             setMemHistory(prev => [...prev.slice(-7), mem]);
+            setErrorHistory(prev => [...prev.slice(-7), errs]);
+            setSlowHistory(prev => [...prev.slice(-7), slow]);
+
             if (data.status !== 'ok' && prevStatusRef.current === 'ok') setBannerDismissed(false);
             prevStatusRef.current = data.status;
         }
@@ -424,7 +434,7 @@ const SystemHealth = () => {
                             <CountUp target={errorsToday} />
                         </p>
                         <div className="mt-4 pt-4 border-t border-gray-50">
-                            <Sparkline values={[0, 1, 0, 2, errorsToday, 0, errorsToday]} color={errorsToday > 0 ? '#ef4444' : '#10b981'} width={160} height={36} />
+                            <Sparkline values={errorHistory} color={errorsToday > 0 ? '#ef4444' : '#10b981'} width={160} height={36} />
                         </div>
                     </div>
 
@@ -443,7 +453,7 @@ const SystemHealth = () => {
                             <CountUp target={slowRequestsCnt} />
                         </p>
                         <div className="mt-4 pt-4 border-t border-gray-50">
-                            <Sparkline values={[2, 0, 1, 3, slowRequestsCnt, 1, slowRequestsCnt]} color={slowRequestsCnt > 0 ? '#f59e0b' : '#10b981'} width={160} height={36} />
+                            <Sparkline values={slowHistory} color={slowRequestsCnt > 0 ? '#f59e0b' : '#10b981'} width={160} height={36} />
                         </div>
                     </div>
 

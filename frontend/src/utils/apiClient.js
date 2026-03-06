@@ -12,11 +12,15 @@ class ApiError extends Error {
     }
 }
 
+// Milliseconds to debounce duplicate 401 triggers (prevents multi-request race on page load)
+const UNAUTHORIZED_DEBOUNCE_MS = 1000;
+
 class ApiClient {
     constructor() {
         this.baseURL = API_BASE;
         this.token = this.getTokenFromStorage();
         this.onUnauthorized = null;
+        this._lastUnauthorizedAt = 0; // Debounce guard
     }
 
     getTokenFromStorage() {
@@ -83,8 +87,10 @@ class ApiClient {
 
     /**
      * Handle API response
+     * @param {Response} response - The fetch Response object
+     * @param {boolean} skipUnauthorizedHandler - If true, the global 401 logout handler is NOT called
      */
-    async handleResponse(response) {
+    async handleResponse(response, skipUnauthorizedHandler = false) {
         const contentType = response.headers ? response.headers.get('content-type') : null;
         let data;
 
@@ -106,8 +112,16 @@ class ApiClient {
         }
 
         if (response.status === 401) {
-            if (this.onUnauthorized) {
-                this.onUnauthorized();
+            // Only trigger the global logout handler if:
+            // 1. A handler is registered
+            // 2. The caller hasn't opted out (e.g. verifyToken during init)
+            // 3. We aren't already handling a recent 401 (debounce)
+            if (this.onUnauthorized && !skipUnauthorizedHandler) {
+                const now = Date.now();
+                if (now - this._lastUnauthorizedAt > UNAUTHORIZED_DEBOUNCE_MS) {
+                    this._lastUnauthorizedAt = now;
+                    this.onUnauthorized();
+                }
             }
             const errorMessage = data?.error || data?.message || 'Session expired. Please login again.';
             throw new ApiError(errorMessage, 401, data);
@@ -123,44 +137,47 @@ class ApiClient {
 
     /**
      * GET request
+     * @param {boolean} [options.skipUnauthorizedHandler] - Pass true to suppress auto-logout on 401
      */
     async get(endpoint, params = {}, options = {}) {
-        const { headers: customHeaders, ...fetchOptions } = options;
+        const { headers: customHeaders, skipUnauthorizedHandler = false, ...fetchOptions } = options;
         const url = this.buildURL(endpoint, params);
         const response = await fetch(url, {
             method: 'GET',
             headers: this.getHeaders(customHeaders),
             ...fetchOptions
         });
-        return await this.handleResponse(response);
+        return await this.handleResponse(response, skipUnauthorizedHandler);
     }
 
     /**
      * POST request
+     * @param {boolean} [options.skipUnauthorizedHandler] - Pass true to suppress auto-logout on 401
      */
     async post(endpoint, body = {}, options = {}) {
-        const { headers: customHeaders, ...fetchOptions } = options;
+        const { headers: customHeaders, skipUnauthorizedHandler = false, ...fetchOptions } = options;
         const response = await fetch(`${this.baseURL}${endpoint}`, {
             method: 'POST',
             headers: this.getHeaders(customHeaders),
             body: JSON.stringify(body),
             ...fetchOptions
         });
-        return await this.handleResponse(response);
+        return await this.handleResponse(response, skipUnauthorizedHandler);
     }
 
     /**
      * PUT request
+     * @param {boolean} [options.skipUnauthorizedHandler] - Pass true to suppress auto-logout on 401
      */
     async put(endpoint, body = {}, options = {}) {
-        const { headers: customHeaders, ...fetchOptions } = options;
+        const { headers: customHeaders, skipUnauthorizedHandler = false, ...fetchOptions } = options;
         const response = await fetch(`${this.baseURL}${endpoint}`, {
             method: 'PUT',
             headers: this.getHeaders(customHeaders),
             body: JSON.stringify(body),
             ...fetchOptions
         });
-        return await this.handleResponse(response);
+        return await this.handleResponse(response, skipUnauthorizedHandler);
     }
 
     /**

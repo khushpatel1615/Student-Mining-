@@ -1,0 +1,277 @@
+/* ============================================================
+   LOADING / SPLASH SCREEN  — EduPortal
+   ============================================================ */
+
+/* Full-viewport overlay */
+.ls-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #0f0c29 0%, #1a1042 50%, #24243e 100%);
+    z-index: 9999;
+    overflow: hidden;
+}
+
+/* ── Animated background blobs ── */
+.ls-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.35;
+    animation: lsBlobDrift 8s ease-in-out infinite alternate;
+}
+
+.ls-blob-1 {
+    width: 480px;
+    height: 480px;
+    background: radial-gradient(circle, #6366f1, transparent 70%);
+    top: -10%;
+    left: -10%;
+    animation-duration: 9s;
+}
+
+.ls-blob-2 {
+    width: 380px;
+    height: 380px;
+    background: radial-gradient(circle, #ec4899, transparent 70%);
+    bottom: -8%;
+    right: -8%;
+    animation-duration: 11s;
+    animation-delay: -3s;
+}
+
+.ls-blob-3 {
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, #8b5cf6, transparent 70%);
+    top: 50%;
+    left: 55%;
+    animation-duration: 7s;
+    animation-delay: -5s;
+}
+
+@keyframes lsBlobDrift {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    50% {
+        transform: translate(30px, -20px) scale(1.08);
+    }
+
+    100% {
+        transform: translate(-15px, 25px) scale(0.95);
+    }
+}
+
+/* ── Center card ── */
+.ls-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 2.5rem 3rem;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    box-shadow:
+        0 40px 80px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+    animation: lsCardIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    min-width: 320px;
+}
+
+@keyframes lsCardIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ── Logo ── */
+.ls-logo-wrap {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.25rem;
+}
+
+/* Rotating outer ring */
+.ls-logo-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    background:
+        linear-gradient(white, white) padding-box,
+        linear-gradient(135deg, #6366f1, #ec4899) border-box;
+    animation: lsRingSpin 2s linear infinite;
+}
+
+@keyframes lsRingSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Inner logo circle */
+.ls-logo-inner {
+    position: relative;
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        0 0 30px rgba(99, 102, 241, 0.5),
+        0 0 60px rgba(99, 102, 241, 0.2);
+    animation: lsLogoPulse 2s ease-in-out infinite;
+}
+
+@keyframes lsLogoPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 30px rgba(99, 102, 241, 0.5), 0 0 60px rgba(99, 102, 241, 0.2);
+    }
+
+    50% {
+        box-shadow: 0 0 45px rgba(99, 102, 241, 0.7), 0 0 80px rgba(99, 102, 241, 0.35);
+    }
+}
+
+.ls-logo-icon {
+    width: 28px;
+    height: 28px;
+    color: #ffffff;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* ── Brand title ── */
+.ls-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.85rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #ffffff 30%, rgba(255, 255, 255, 0.65) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+    line-height: 1;
+    animation: lsFadeUp 0.6s 0.15s ease-out both;
+}
+
+.ls-subtitle {
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.45);
+    margin: 0;
+    animation: lsFadeUp 0.6s 0.25s ease-out both;
+}
+
+/* ── Progress bar ── */
+.ls-progress-track {
+    width: 100%;
+    height: 4px;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    margin-top: 0.5rem;
+    animation: lsFadeUp 0.6s 0.35s ease-out both;
+}
+
+.ls-progress-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+    background-size: 200% 100%;
+    transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    animation: lsProgressGlow 1.8s ease-in-out infinite;
+}
+
+@keyframes lsProgressGlow {
+
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+/* ── Status text ── */
+.ls-status {
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    margin: 0;
+    min-height: 1.2em;
+    transition: opacity 0.3s ease;
+    animation: lsFadeUp 0.6s 0.4s ease-out both;
+}
+
+/* ── Bouncing dots ── */
+.ls-dots {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-top: 0.25rem;
+    animation: lsFadeUp 0.6s 0.45s ease-out both;
+}
+
+.ls-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #ec4899);
+    animation: lsDotBounce 1.2s ease-in-out infinite;
+    opacity: 0.75;
+}
+
+@keyframes lsDotBounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+        opacity: 0.5;
+    }
+
+    50% {
+        transform: translateY(-6px);
+        opacity: 1;
+    }
+}
+
+/* ── Shared fade-up entry ── */
+@keyframes lsFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

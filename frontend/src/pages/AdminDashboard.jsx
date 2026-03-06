@@ -17,7 +17,7 @@ import StudentManagement from '../components/StudentManagement/StudentManagement
 import ProgramManagement from '../components/ProgramManagement/ProgramManagement'
 import SubjectManagement from '../components/SubjectManagement/SubjectManagement'
 import EnrollmentManagement from '../components/enrollment/EnrollmentManagement'
-import GradeManagement from '../components/GradeManagement/GradeManagement'
+import GradeManagement from '../components/GradeManagement_v2/GradeManagement'
 import AdminAttendance from '../components/AttendanceManagement/AdminAttendance'
 import CalendarManagement from '../components/CalendarManagement/CalendarManagement'
 import AdminOverview from '../components/Overview/AdminOverview'

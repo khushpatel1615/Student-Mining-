@@ -104,7 +104,7 @@ if ($method === 'GET') {
         $oldestPendingMinutes = $safeQuery(fn() => (int) $pdo->query("SELECT TIMESTAMPDIFF(MINUTE, MIN(created_at), NOW()) FROM email_queue WHERE status='pending'")->fetchColumn());
 
         $jobsPending = $safeQuery(fn() => $pdo->query("SELECT COUNT(*) FROM grade_import_jobs WHERE status='pending'")->fetchColumn());
-        $jobsAppliedToday = $safeQuery(fn() => $pdo->query("SELECT COUNT(*) FROM grade_import_jobs WHERE status='completed' AND DATE(completed_at) = CURDATE()")->fetchColumn());
+        $jobsAppliedToday = $safeQuery(fn() => $pdo->query("SELECT COUNT(*) FROM grade_import_jobs WHERE status='applied' AND DATE(applied_at) = CURDATE()")->fetchColumn());
         $jobsFailed = $safeQuery(fn() => $pdo->query("SELECT COUNT(*) FROM grade_import_jobs WHERE status='failed'")->fetchColumn());
 
         if (!empty($systemErrors)) {
