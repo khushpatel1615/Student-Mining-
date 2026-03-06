@@ -31,4 +31,4 @@ Follow these steps to set up the Student Data Mining system locally.
 ## 🔑 Default Credentials
 - **Admin**: `admin@college.edu` / `password123`
 - **Student**: `student@college.edu` / `password123`
-- **Teacher**: `teacher@college.edu` / `teacher123`
+- **Teacher**: `teacher@college.edu` / `password123`

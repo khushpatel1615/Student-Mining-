@@ -14,3 +14,9 @@ A comprehensive university management system with role-based access, real-time a
 
 ## 📖 Setup Guide
 Please refer to `SETUP.md` for complete installation and configuration instructions.
+
+## 🔑 Default Credentials
+Use the following credentials to log in after setting up the database:
+- **Admin**: `admin@college.edu` / `password123`
+- **Student**: `student@college.edu` / `password123`
+- **Teacher**: `teacher@college.edu` / `password123`
